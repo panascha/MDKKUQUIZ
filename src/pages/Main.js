@@ -1,0 +1,33 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const Main = () => {
+    return (
+        <>
+            <div className="container mx-auto flex flex-col items-center justify-center min-h-screen gap-4">
+                <div className="flex items-center justify-center m-8">
+                    <h1 className="text-4xl font-bold text-center">Welcome to the Main Page</h1>
+                </div>
+                <div className="flex items-center justify-center m-4">
+                    <p className="text-lg text-gray-600 text-center">Navigate through the sections below to explore more.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 w-full left-0 right-0 top-0 bottom-0 p-4">
+                    <Link to="/subject" className="box bg-black text-white text-center text-xl p-6 rounded shadow-md hover:bg-blue-600 transition duration-300 ease-in-out">
+                        Subject
+                    </Link>
+                    <Link to="/atlas" className="box bg-black text-white text-center text-xl p-6 rounded shadow-md hover:bg-green-600 transition duration-300 ease-in-out">
+                        Atlas
+                    </Link>
+                    <Link to="/keyword" className="box bg-black text-white text-center text-xl p-6 rounded shadow-md hover:bg-yellow-600 transition duration-300 ease-in-out">
+                        Keyword
+                    </Link>
+                    <Link to="/report" className="box bg-black text-white text-center text-xl p-6 rounded shadow-md hover:bg-red-600 transition duration-300 ease-in-out">
+                        Report
+                    </Link>
+                </div>
+            </div>
+        </>
+    );
+};
+
+export default Main;
