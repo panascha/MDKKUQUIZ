@@ -1,9 +1,9 @@
-import React from 'react'
+// import React from 'react'
 
-const Quiz = () => {
-    return (
-        <div>Quiz</div>
-    )
-}
+// const Quiz = () => {
+//     return (
+//         <div>Quiz</div>
+//     )
+// }
 
-export default Quiz
+// export default Quiz

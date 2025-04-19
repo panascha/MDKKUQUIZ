@@ -1,9 +1,7 @@
 import React from 'react'
-// import { NavLink } from 'react-router-dom'
-// import { Link } from 'react-router-dom'
 import { useContext } from 'react'
 import logo from '../assets/logo.svg'
-import { AuthContext } from '../pages/api/auth/AuthContext'
+import { AuthContext } from '../api/auth/AuthContext'
 import { FaBars } from "react-icons/fa";
 import { FaXmark } from 'react-icons/fa6';
 

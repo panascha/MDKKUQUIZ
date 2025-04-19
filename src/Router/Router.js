@@ -2,9 +2,9 @@ import React from 'react'
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Home from "../pages/Home";
-import Quiz from "../pages/Quiz";
 import Main from "../pages/Main";
-import Subject from "../pages/Subject";
+import Subjects from "../pages/Subjects";
+import SubjectDetail from "../pages/SubjectDetail";
 import Atlas from "../pages/Atlas";
 import Keyword from "../pages/Keyword";
 import Report from "../pages/Report";
@@ -12,18 +12,18 @@ import Report from "../pages/Report";
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <App />,
+        element: <App />, // App wraps all routes, ensuring Navbar is always rendered
         errorElement: <div>404</div>,
         children: [
-            { path: '/', element: <Home />, },
-            { path: '/quiz', element: <Quiz />, },
-            { path: '/main', element: <Main />, },
-        ]
+            { path: '/', element: <Home /> },
+            { path: '/main', element: <Main /> },
+            { path: '/subjects', element: <Subjects /> },
+            { path: '/subject/:subjectName', element: <SubjectDetail /> },
+            { path: '/atlas', element: <Atlas /> },
+            { path: '/keyword', element: <Keyword /> },
+            { path: '/report', element: <Report /> },
+        ],
     },
-    { path: '/subject', element: <Subject />, },
-    { path: '/atlas', element: <Atlas />, },
-    { path: '/keyword', element: <Keyword />, },
-    { path: '/report', element: <Report />, },
 ]);
 
 export default router;
