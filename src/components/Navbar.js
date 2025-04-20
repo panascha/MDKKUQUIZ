@@ -28,7 +28,7 @@ const Navbar = () => {
                 <div className="flex gap-2 items-center">
                     <a href="/" className="flex items-center space-x-3 text-2xl font-semibold mx-4">
                         <img src={logo} alt="Logo" className="h-8 w-8" />
-                        <span>MDKKUQUIZ</span>
+                        <span>วิชาการให้ใช้เนื้อหาเถอะๆๆๆๆ</span>
                     </a>
                 </div>
 

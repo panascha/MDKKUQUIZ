@@ -15,7 +15,7 @@ module.exports = {
         quaternary: '#FFF4B7', // Light teal color
       },
       fontFamily: {
-        thsarabun: ['"TH Sarabun New"', 'sans-serif'], // Added TH Sarabun font
+        body: ['Sarabun'], // Custom font family
       },
     },
   },
