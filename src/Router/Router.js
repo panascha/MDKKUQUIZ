@@ -8,6 +8,8 @@ import SubjectDetail from "../pages/SubjectDetail";
 import Atlas from "../pages/Atlas";
 import Keyword from "../pages/Keyword";
 import Report from "../pages/Report";
+import Quiz from "../pages/Quiz";
+import QuizEdit from "../pages/QuizEdit";
 
 const router = createBrowserRouter([
     {
@@ -22,6 +24,8 @@ const router = createBrowserRouter([
             { path: '/atlas', element: <Atlas /> },
             { path: '/keyword', element: <Keyword /> },
             { path: '/report', element: <Report /> },
+            { path: '/quiz/:subjectName', element: <Quiz /> },
+            { path: '/quiz/:subjectName/edit', element: <QuizEdit /> },
         ],
     },
 ]);

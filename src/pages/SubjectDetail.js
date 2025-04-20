@@ -48,13 +48,13 @@ const SubjectDetail = () => {
             </div>
             <div className="flex justify-center mt-8 gap-6">
                 <Link
-                    to={`/${subjectName}/quiz`}
+                    to={`/quiz/${subjectName}`}
                     className="px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out"
                 >
                     Take Quiz
                 </Link>
                 <Link
-                    to={`/${subjectName}/atlas`}
+                    to={`/atlas/${subjectName}`}
                     className="px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out"
                 >
                     Explore Atlas

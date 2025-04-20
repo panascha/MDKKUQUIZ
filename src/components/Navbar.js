@@ -4,6 +4,8 @@ import logo from '../assets/logo.svg'
 import { AuthContext } from '../api/auth/AuthContext'
 import { FaBars } from "react-icons/fa";
 import { FaXmark } from 'react-icons/fa6';
+import { IoMdNotificationsOutline } from "react-icons/io";
+
 
 
 const Navbar = () => {
@@ -19,11 +21,6 @@ const Navbar = () => {
 
     const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
 
-    // const navItems = [
-    //     { name: 'Notification', path: '/notification' },
-    //     { name: 'Profile', path: '/profile' },
-    // ]
-
     return (
         <header className='fixed top-0 left-0 w-full z-50'>
             {/* Navbar */}
@@ -38,11 +35,11 @@ const Navbar = () => {
                 <div className="hidden lg:flex gap-4 items-center">
                     {isLoggedIn ? (
                         <>
-                            <button className="text-base font-semibold hover:bg-gray-100 py-2 px-5 rounded">
-                                Notification
+                            <button className="text-base font-semibold py-3 px-4 hover:bg-gray-100 rounded transition duration-300 ease-in-out">
+                                <IoMdNotificationsOutline />
                             </button>
                             <div className="relative">
-                                <button onClick={toggleProfile} className="text-base font-semibold hover:bg-gray-100 py-2 px-5 rounded">
+                                <button onClick={toggleProfile} className="text-base font-semibold hover:bg-gray-100 py-2 px-5 rounded transition duration-300 ease-in-out">
                                     Profile
                                 </button>
                                 {isProfileOpen && (
