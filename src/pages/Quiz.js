@@ -1,21 +1,19 @@
 // Quiz.js
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import allQuestions from '../api/ImportQuestion'; // Import allQuestions
-import allsubjects from '../api/ImportSubject'; // Import allsubjects
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import allQuestions from '../api/ImportQuestion';
+import allsubjects from '../api/ImportSubject';
 
 const Quiz = () => {
     const { subjectName } = useParams();
 
     // API Data (Replace with actual API calls)
-    const [topics, setTopics] = useState([]); // Initialize topics as an empty array
-    const [maxQuestions, setMaxQuestions] = useState(0); // Initialize maxQuestions to 0
-    // Quiz Type Options
-    const quizTypes = ['chillquiz', 'realtest', 'custom'];
-    // Answer Mode Options
-    const answerModes = React.useMemo(() => ['one-by-one', 'all-at-once'], []);
-    // Timer Duration Options
-    const timerDurations = ['30 sec', '45 sec', '1 min', '1 min 15 sec', '1 min 30 sec'];
+    const [topics, setTopics] = useState(null); // Initialize topics as null
+    const [maxQuestions, setMaxQuestions] = useState(0);
+    const [quizTypes] = useState(['chillquiz', 'realtest', 'custom']);
+    const [answerModes] = useState(['one-by-one', 'all-at-once']);
+    const [questionTypes] = useState(['mcq', 'shortanswer']);
+    const [timerDurations] = useState(['30 sec', '45 sec', '1 min', '1 min 15 sec', '1 min 30 sec']);
 
     // State Variables
     const [quizType, setQuizType] = useState('');
@@ -23,85 +21,81 @@ const Quiz = () => {
     const [answerMode, setAnswerMode] = useState('');
     const [questionCount, setQuestionCount] = useState(0);
     const [timerEnabled, setTimerEnabled] = useState(false);
-    const [timerDuration, setTimerDuration] = useState(timerDurations[0]); // Default: 30 sec
-    const [questions, setQuestions] = useState([]); // State to store filtered questions
-    const [questionTypes, setQuestionTypes] = useState([]); // New state for question types
+    const [timerDuration, setTimerDuration] = useState(timerDurations[0]);
+    const [questions, setQuestions] = useState([]);
+    const [selectedQuestionTypes, setSelectedQuestionTypes] = useState([]);
+    const [randomizedQuestions, setRandomizedQuestions] = useState(false);
+    const [loading, setLoading] = useState(false); // Add loading state
+    const [error, setError] = useState(null); // Add error state
 
-    // Default Values (Using useMemo for optimization)
-    const defaultValues_Question = React.useMemo(() => ({
+    // Default Values
+    const defaultValues_Question = useMemo(() => ({
         chillquiz: Math.min(10, Math.ceil(maxQuestions * 0.3)),
         realtest: Math.min(30, Math.ceil(maxQuestions * 0.8)),
         custom: maxQuestions,
     }), [maxQuestions]);
 
-    const defaultValues_AnswerMode = React.useMemo(() => ({
-        chillquiz: answerModes[0], // 'one-by-one'
-        realtest: answerModes[1], // 'all-at-once'
-        custom: answerModes[0], // 'one-by-one'
+    const defaultValues_AnswerMode = useMemo(() => ({
+        chillquiz: answerModes[0],
+        realtest: answerModes[1],
+        custom: answerModes[0],
     }), [answerModes]);
 
-    const defaultValues_QuestionType = React.useMemo(() => ({
+    const defaultValues_QuestionType = useMemo(() => ({
         chillquiz: ['mcq'],
-        realtest: ['mcq', 'short-answer'],
-        custom: ['mcq', 'short-answer'],
+        realtest: ['mcq', 'shortanswer'],
+        custom: ['mcq', 'shortanswer'],
     }), []);
 
-    const defaultValues_TimerEnabled = React.useMemo(() => ({
+    const defaultValues_TimerEnabled = useMemo(() => ({
         chillquiz: false,
         realtest: true,
         custom: false,
     }), []);
+
+    const defaultValues_RandomizedQuestions = useMemo(() => ({
+        chillquiz: true,
+        realtest: false,
+        custom: false,
+    }), []);
+
     // Event Handlers
-    const handleQuizTypeChange = (type) => {
+    const handleQuizTypeChange = useCallback((type) => {
         setQuizType(type);
         setQuestionCount(defaultValues_Question[type] || 0);
-        setAnswerMode(defaultValues_AnswerMode[type] || answerModes[0]); // Set default answer mode
-        setQuestionTypes(defaultValues_QuestionType[type] || []); // Set default question types
-        setTimerEnabled(defaultValues_TimerEnabled[type] || false); // Set default timer enabled
+        setAnswerMode(defaultValues_AnswerMode[type] || answerModes[0]);
+        setSelectedQuestionTypes(defaultValues_QuestionType[type] || []);
+        setTimerEnabled(defaultValues_TimerEnabled[type] || false);
+        setRandomizedQuestions(defaultValues_RandomizedQuestions[type] || false);
+    }, [defaultValues_Question, defaultValues_AnswerMode, defaultValues_QuestionType, defaultValues_TimerEnabled, defaultValues_RandomizedQuestions, answerModes]);
 
-        console.log('maxQuestions', maxQuestions);
-    };
-
-    const handleTopicToggle = (topic) => {
+    const handleTopicToggle = useCallback((topic) => {
         setSelectedTopics((prev) =>
-            prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]
+            prev.includes(String(topic)) ? prev.filter((t) => t !== String(topic)) : [...prev, String(topic)]
         );
-    };
+    }, []);
 
-    const handleAnswerModeChange = (mode) => {
+    const handleAnswerModeChange = useCallback((mode) => {
         setAnswerMode(mode);
-    };
+    }, []);
 
-    const handleQuestionCountChange = (e) => {
+    const handleQuestionCountChange = useCallback((e) => {
         const value = parseInt(e.target.value, 10);
-        if (!isNaN(value) && value >= 0) {
-            setQuestionCount(Math.min(value, maxQuestions)); // Ensure question count does not exceed maxQuestions
-        } else {
-            setQuestionCount(0); // Reset to 0 if invalid input
-        }
+        setQuestionCount(isNaN(value) || value < 0 ? 0 : Math.min(value, maxQuestions));
+    }, [maxQuestions]);
 
-    };
-
-
-    // Ensure initial question count does not exceed total available questions
-    useEffect(() => {
-        if (questionCount > maxQuestions) {
-            setQuestionCount(maxQuestions);
-        }
-    }, [questionCount, maxQuestions]);
-
-    const handleTimerDurationChange = (e) => {
+    const handleTimerDurationChange = useCallback((e) => {
         setTimerDuration(e.target.value);
-    };
+    }, []);
 
-    const handleQuestionTypeToggle = (type) => {
-        setQuestionTypes((prev) =>
+    const handleQuestionTypeToggle = useCallback((type) => {
+        setSelectedQuestionTypes((prev) =>
             prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
         );
-    };
+    }, []);
 
-    const handleStartQuiz = () => {
-        if (!quizType || selectedTopics.length === 0 || !answerMode || questionCount <= 0 || questionTypes.length === 0 || questionCount > maxQuestions) {
+    const handleStartQuiz = useCallback(() => {
+        if (!quizType || selectedTopics.length === 0 || !answerMode || questionCount <= 0 || selectedQuestionTypes.length === 0 || questionCount > maxQuestions) {
             alert('Please complete all quiz settings before starting.');
             return;
         }
@@ -112,69 +106,103 @@ const Quiz = () => {
             questionCount,
             timerEnabled,
             timerDuration,
-            questionTypes,
+            selectedQuestionTypes,
+            randomizedQuestions,
+            maxQuestions,
             questions // Log the questions being used
         });
-        // Implement quiz start logic here (navigate to quiz page, etc.)
-    };
 
-    // useEffect Hook (Fetch Topics and Questions based on subjectName)
+    }, [quizType, selectedTopics, answerMode, questionCount, timerEnabled, timerDuration, selectedQuestionTypes, randomizedQuestions, maxQuestions, questions]);
+
+    // Fetch Topics and Questions
     useEffect(() => {
-        // Fetch topics for the selected subject
-        const selectedSubject = allsubjects.find(subject => subject.name.toLowerCase() === (subjectName || '').toLowerCase());
-        if (selectedSubject) {
-            setTopics(selectedSubject.topics || []);
-        } else {
-            setTopics('not found'); // Handle case where subject is not found
-        }
+        const abortController = new AbortController(); // Create AbortController
 
-        // Filter Questions based on selectedTopics and questionTypes
-        const filteredQuestions = allQuestions.filter(question =>
-            (!selectedTopics.length || selectedTopics.includes(question.topicId)) &&
-            (!questionTypes.length || questionTypes.includes(question.type))
-        );
-        setQuestions(filteredQuestions);
+        const fetchSubjectData = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                // Fetch topics for the selected subject
+                const selectedSubject = allsubjects.find(subject => subject.name.toLowerCase() === (subjectName || '').toLowerCase());
+                if (selectedSubject) {
+                    setTopics(selectedSubject.topics || []);
+                } else {
+                    setTopics(null); // Handle case where subject is not found
+                }
 
-        // Update maxQuestions only if filteredQuestions length changes
-        if (filteredQuestions.length !== maxQuestions) {
-            setMaxQuestions(filteredQuestions.length);
-        }
+                // Filter Questions based on selectedTopics and selectedQuestionTypes
+                const filteredQuestions = allQuestions.filter(question =>
+                    (!selectedTopics.length || selectedTopics.includes(String(question.topicId))) &&
+                    (!selectedQuestionTypes.length || selectedQuestionTypes.includes(question.type.toLowerCase())) // แปลงเป็น Lowercase
+                );
+                setQuestions(filteredQuestions);
+                setMaxQuestions(filteredQuestions.length);
 
-    }, [subjectName, selectedTopics]);
+            } catch (err) {
+                if (abortController.signal.aborted) {
+                    console.log("Fetch aborted");
+                } else {
+                    setError(err);
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSubjectData();
+
+        return () => {
+            abortController.abort(); // Clean up function to abort the fetch
+        };
+    }, [subjectName, selectedTopics, selectedQuestionTypes]);
+
+    // Memoize topic IDs for dependency array
+    const topicIds = useMemo(() => topics ? topics.map(topic => topic.id) : [], [topics]);
 
     return (
-        <div className="container p-6 rounded-lg mt-10 mx-auto animate-fade-in">
-            <h1 className="text-4xl font-bold text-center mb-6 animate-slide-down">Quiz for {subjectName}</h1>
-            {/* Topic Selection */}
-            <div className="mb-6 animate-fade-in">
-                <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-2xl font-semibold mb-2">Select Topics</h2>
-                    <button
-                        className="px-4 py-2 rounded-lg text-lg font-medium bg-secondary text-white transition-transform duration-300 transform hover:scale-105"
-                        onClick={() => {
-                            if (selectedTopics.length === topics.length) {
-                                setSelectedTopics([]); // Deselect all
-                            } else {
-                                setSelectedTopics(topics.map(topic => topic.id)); // Select all
-                            }
-                        }}
-                    >
-                        {selectedTopics.length === topics.length ? 'Deselect All' : 'Select All'}
-                    </button>
-                </div>
-                <div className="flex flex-wrap gap-3 mb-3">
+        <div className="container p-10 lg:p-20 rounded-lg mt-2 mx-auto justify-center bg-white animate-fade-in">
+            <Link to="/subjects" className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition duration-300 ease-in-out mb-4">
+                <h1 className="text-4xl font-bold text-center mb-6 animate-slide-down">Quiz for {subjectName}</h1>
+            </Link>
 
-                    {topics.map((topic) => (
+            {/* Loading State */}
+            {loading && <div className="text-center">Loading...</div>}
+
+            {/* Error State */}
+            {error && <div className="text-center text-red-500">Error: {error.message}</div>}
+
+            {/* Topic Selection */}
+            {topics && (
+                <div className="mb-6 animate-fade-in">
+                    <div className="flex items-center justify-between mb-2">
+                        <h2 className="text-2xl font-semibold mb-2">Select Topics</h2>
                         <button
-                            key={topic.id}
-                            className={`px-4 py-2 rounded-lg text-lg font-medium transition-colors duration-300 transform hover:scale-105 ${selectedTopics.includes(topic.id) ? 'bg-quaternary text-black' : 'bg-gray-300'}`}
-                            onClick={() => handleTopicToggle(topic.id)}
+                            className="px-4 py-2 rounded-lg text-lg font-medium bg-secondary text-white transition-transform duration-300 transform hover:scale-105"
+                            onClick={() => {
+                                if (selectedTopics.length === topicIds.length) {
+                                    setSelectedTopics([]); // Deselect all
+                                } else {
+                                    setSelectedTopics(topicIds); // Select all
+                                }
+                            }}
                         >
-                            {topic.name}
+                            {selectedTopics.length === topicIds.length ? 'Deselect All' : 'Select All'}
                         </button>
-                    ))}
+                    </div>
+                    <div className="flex flex-wrap gap-3 mb-3">
+                        {topics.map((topic) => (
+                            <button
+                                key={topic.id}
+                                className={`px-4 py-2 rounded-lg text-lg font-medium transition-colors duration-300 transform hover:scale-105 ${selectedTopics.includes(String(topic.id)) ? 'bg-quaternary text-black' : 'bg-gray-300'}`}
+                                onClick={() => handleTopicToggle(topic.id)}
+                            >
+                                {topic.name} {/* ใช้ topic.name แทน topic.id */}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
+
             {/* Quiz Type Selection */}
             <div className="mb-6 animate-fade-in">
                 <h2 className="text-2xl font-semibold mb-2">Choose Quiz Type</h2>
@@ -211,15 +239,19 @@ const Quiz = () => {
             <div className="mb-6 animate-fade-in">
                 <h2 className="text-2xl font-semibold mb-2">Question Type</h2>
                 <div className="grid grid-cols-2 gap-4">
-                    {['mcq', 'short-answer'].map((type) => (
-                        <button
-                            key={type}
-                            className={`px-4 py-2 rounded-lg text-lg font-medium transition-transform duration-300 transform hover:scale-105 ${questionTypes.includes(type) ? 'bg-secondary text-white' : 'bg-gray-300'}`}
-                            onClick={() => handleQuestionTypeToggle(type)}
-                        >
-                            {type.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-                        </button>
-                    ))}
+                    {questionTypes.map((type) => {
+                        const countForType = questions.filter((q) => q.type === type).length;
+                        return (
+                            <button
+                                key={type}
+                                className={`px-4 py-2 rounded-lg text-lg font-medium transition-transform duration-300 transform hover:scale-105 ${selectedQuestionTypes.includes(type) ? 'bg-secondary text-white' : 'bg-gray-300'}`}
+                                onClick={() => handleQuestionTypeToggle(type)}
+                            >
+                                {type.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())} ({countForType})
+                                {selectedQuestionTypes.includes(type) ? ' (Selected)' : ''}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -264,14 +296,40 @@ const Quiz = () => {
                 )}
             </div>
 
+            {/* Randomized Questions Selection */}
+            <div className="mb-6 animate-fade-in">
+                <h2 className="text-2xl font-semibold mb-2">Randomize Questions</h2>
+                <label className="flex items-center space-x-3">
+                    <input
+                        type="checkbox"
+                        checked={randomizedQuestions}
+                        onChange={(e) => setRandomizedQuestions(e.target.checked)}
+                        className="w-5 h-5"
+                    />
+                    <span className="text-lg">Enable Randomization</span>
+                </label>
+            </div>
+
             {/* Start Quiz Button */}
-            <button
+            <Link
+                to={`/quiz/${subjectName}/problem`}
+                state={{
+                    quizType,
+                    selectedTopics,
+                    answerMode,
+                    questionCount,
+                    timerEnabled,
+                    timerDuration,
+                    selectedQuestionTypes,
+                    randomizedQuestions,
+                    questions,
+                }}
                 className="px-6 py-3 bg-secondary text-white rounded-lg text-lg font-bold w-full transition-transform duration-300 transform hover:scale-105 animate-fade-in"
                 onClick={handleStartQuiz}
             >
                 Start Quiz
-            </button>
-        </div>
+            </Link>
+        </div >
     );
 };
 

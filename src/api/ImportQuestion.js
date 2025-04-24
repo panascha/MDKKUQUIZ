@@ -17,7 +17,7 @@ const allQuestions = [
     {
         _id: "2",
         topicId: "1", // Epithelial Tissue
-        type: "short_answer",
+        type: "shortanswer",
         problem: "What is the primary function of goblet cells in the respiratory tract?",
         answer: "secrete mucus",
         img: "",
@@ -71,7 +71,7 @@ const allQuestions = [
     {
         _id: "6",
         topicId: "8", // Helminth
-        type: "short_answer",
+        type: "shortanswer",
         problem: "Identify the helminth",
         answer: "fasciolopsis buski",
         select: "",

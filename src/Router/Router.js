@@ -10,6 +10,7 @@ import Keyword from "../pages/Keyword";
 import Report from "../pages/Report";
 import Quiz from "../pages/Quiz";
 import QuizEdit from "../pages/QuizEdit";
+import QuizProblem from '../pages/QuizProblem';
 
 const router = createBrowserRouter([
     {
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
             { path: '/report', element: <Report /> },
             { path: '/quiz/:subjectName', element: <Quiz /> },
             { path: '/quiz/:subjectName/edit', element: <QuizEdit /> },
+            { path: '/quiz/:subjectName/problem', element: <QuizProblem /> },
         ],
     },
 ]);

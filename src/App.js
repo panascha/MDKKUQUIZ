@@ -12,6 +12,7 @@ import Report from './pages/Report';
 import Home from './pages/Home';
 import Quiz from './pages/Quiz';
 import QuizEdit from './pages/QuizEdit';
+import QuizProblem from './pages/QuizProblem';
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           <Routes>
             <Route path="/" element={isLoggedIn ? <Main /> : <Home />} />
             <Route path="/quiz/:subjectName" element={<Quiz />} />
+            <Route path="/quiz/:subjectName/problem" element={<QuizProblem />} />
             <Route path="/quiz/:subjectName/edit" element={<QuizEdit />} />
             <Route path="/subjects" element={<Subjects />} />
             <Route path="/subject/:subjectName" element={<SubjectDetail />} />
