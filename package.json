@@ -1,49 +1,28 @@
 {
-  "name": "mdkkuquiz",
+  "name": "med-quiz",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "jspdf": "^3.0.1",
-    "jspdf-autotable": "^5.0.2",
-    "localforage": "^1.10.0",
-    "match-sorter": "^8.0.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-icons": "^5.5.0",
-    "react-router-dom": "^7.5.0",
-    "react-scripts": "5.0.1",
-    "sort-by": "^1.2.0",
-    "web-vitals": "^2.1.4"
-  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "build": "next build",
+    "dev": "next dev --turbopack",
+    "lint": "next lint",
+    "lint:fix": "eslint --fix .",
+    "lint:strict": "tsc --noEmit",
+    "prettier:check": "prettier --check .",
+    "prettier:clean": "prettier --write .",
+    "start": "next start"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "next": "15.3.1"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.17"
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4"
   }
 }
