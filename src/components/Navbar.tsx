@@ -58,7 +58,7 @@ export default function Navbar() {
                         </>
                     ) : (
                         <button className="text-base font-semibold py-2 px-5 rounded hover:bg-gray-100">
-                            Sign in
+                            Sign in 101
                         </button>
                     )}
                 </div>
