@@ -1,7 +1,6 @@
 import React from 'react'
+import Image from 'next/image';
 import { useContext } from 'react'
-import logo from '../assets/logo.svg'
-import { AuthContext } from '../api/auth/AuthContext'
 import { FaBars } from "react-icons/fa";
 import { FaXmark } from 'react-icons/fa6';
 import { IoMdNotificationsOutline } from "react-icons/io";
@@ -19,7 +18,6 @@ const Navbar = () => {
         setIsProfileOpen(!isProfileOpen);
     }
 
-    const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
 
     return (
         <header className='fixed top-0 left-0 w-full z-50'>
@@ -27,7 +25,7 @@ const Navbar = () => {
             <nav className="flex items-center justify-between h-16 px-6 bg-white shadow-md">
                 <div className="flex gap-2 items-center">
                     <a href="/" className="flex items-center space-x-3 text-2xl font-semibold mx-4">
-                        <img src={logo} alt="Logo" className="h-8 w-8" />
+                        {/* <Img src={} alt="Logo" className="h-8 w-8" /> */}
                         <span>MDKKUQUIZ</span>
                     </a>
                 </div>

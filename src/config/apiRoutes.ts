@@ -6,7 +6,7 @@ export enum BackendRoutes {
   LOGOUT = `${BackendRootRoutes}/auth/logout`,
   LOGIN = `${BackendRootRoutes}/auth/login`,
   REGISTER = `${BackendRootRoutes}/auth/register`,
-  //UPDATE_USER = `${BackendRootRoutes}/auth/updateUser`,
+  UPDATE_USER = `${BackendRootRoutes}/auth/updateUser`,
   USER_INFO = `${BackendRootRoutes}/auth/me`,
   QUIZ = `${BackendRootRoutes}/quiz`,
   QUIZ_CATEGORYID = `${BackendRootRoutes}/quiz/cate/:categoryID`,
