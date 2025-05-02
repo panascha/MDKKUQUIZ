@@ -33,11 +33,13 @@ export enum FrontendRootRoutes {
   LIST = "/list",
   LOGIN = "/login",
   PROFILE = "/profile",
-  HOMEPAGE = "/home"
+  MAIN = "/main",
+  HOMEPAGE = "/home",
 }
 export enum FrontendRoutes {
   HOMEPAGE = FrontendRootRoutes.HOMEPAGE,
   DASHBOARD = FrontendRootRoutes.DASHBOARD,
+  MAIN = FrontendRootRoutes.MAIN,
   ADMIN = `${FrontendRoutes.DASHBOARD}/admin`,
   USER = `${FrontendRootRoutes.DASHBOARD}/users`,
   DENTIST_LIST = `${FrontendRootRoutes.LIST}`,

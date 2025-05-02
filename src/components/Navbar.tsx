@@ -1,3 +1,4 @@
+'use client'
 import React from 'react'
 import Image from 'next/image';
 import { FrontendRoutes } from "@/config/apiRoutes";
@@ -7,7 +8,8 @@ import { Role_type } from "@/config/role";
 import { FaBars } from "react-icons/fa";
 import { FaXmark } from 'react-icons/fa6';
 import { IoMdNotificationsOutline } from "react-icons/io";
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
+import { LogInIcon } from 'lucide-react';
 
 
 
@@ -27,9 +29,9 @@ export default function Navbar() {
 
 
     return (
-        <div className='fixed top-0 left-0 w-full z-200'>
+        <div className='flex top-0 left-0 w-full z-200'>
             {/* Navbar */}
-            <nav className="flex items-center justify-between h-16 px-6 bg-white shadow-md">
+            <nav className="flex w-full items-center justify-between h-16 px-6 bg-white shadow-md">
                 <div className="flex gap-2 items-center">
                     <a href="/" className="flex items-center space-x-3 text-2xl font-semibold mx-4">
                         {/* <Img src={} alt="Logo" className="h-8 w-8" /> */}
@@ -57,8 +59,9 @@ export default function Navbar() {
                             </div>
                         </>
                     ) : (
-                        <button className="text-base font-semibold py-2 px-5 rounded hover:bg-gray-100">
-                            Sign in 101
+                        <button className="text-base font-semibold py-2 px-5 rounded hover:bg-gray-100" onClick={() => router.push(FrontendRoutes.LOGIN)}>
+                            <LogInIcon />
+                            <>Login</>
                         </button>
                     )}
                 </div>

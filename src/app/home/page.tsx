@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-
 export default function Home() {
 
     const [headingText, setHeadingText] = React.useState('MDKKU Self-Exam Bank');
