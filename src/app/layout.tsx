@@ -36,7 +36,6 @@ export default async function RootLayout({
       >
         <TanstackQueryProvider>
           <NextAuthProvider session={session}>
-            <Navbar/>
             <Toaster position="bottom-right" />
             <main className="w-full">{children}</main>
           </NextAuthProvider>

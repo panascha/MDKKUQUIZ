@@ -23,7 +23,7 @@ const Page = () => {
   const { data: session } = useSession();
   useEffect(() => {
     if (session) {
-      router.push(FrontendRoutes.HOMEPAGE);
+      router.push(FrontendRoutes.MAIN);
     }
   }, [session, router]);
 
@@ -34,7 +34,7 @@ const Page = () => {
   // Registration state
   const [name, setName] = useState("");
   const [regEmail, setRegEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [year, setYear] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -50,8 +50,8 @@ const Page = () => {
     try {
       const result = await signIn("credentials", {
         redirect: false,
-        email,
-        password,
+        email: email,
+        password: password,
       });
 
       if (result?.error) {
@@ -82,7 +82,7 @@ const Page = () => {
       name,
       email: regEmail,
       password: newPassword,
-      tel: phone,
+      year: year,
       role: "user",
     });
 
@@ -112,7 +112,7 @@ const Page = () => {
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push(FrontendRoutes.HOMEPAGE);
+        router.push(FrontendRoutes.MAIN);
       }
     } catch (error) {
       axios.isAxiosError(error)
@@ -198,13 +198,13 @@ const Page = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone">Year</Label>
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="+660123456789"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="year"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
                   />
                 </div>
                 <div className="space-y-1">

@@ -1,9 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
 
 const Main = () => {
     return (
         <>
+            <Navbar/>
             <div className="container mx-auto flex flex-col items-center justify-center min-h-screen gap-4">
                 <div className="flex items-center justify-center m-8">
                     <h1 className="text-4xl font-bold text-center">Welcome to the Main Page</h1>

@@ -91,11 +91,11 @@ export const useUser = () => {
     },
     onSuccess: () => {
       queryClient.clear(); // Clear all query cache on logout
-      router.push(FrontendRoutes.DENTIST_LIST);
+      router.push(FrontendRoutes.HOMEPAGE);
     },
     onError: (error) => {
       console.error("Logout failed:", error);
-      router.push(FrontendRoutes.DENTIST_LIST);
+      router.push(FrontendRoutes.HOMEPAGE);
     },
   });
 

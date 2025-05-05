@@ -26,16 +26,9 @@ export default function Home() {
                     <a
                         className="inline-flex items-center gap-2 justify-center whitespace-nowrap rounded-md text-sm font-semibold transition-transform duration-300 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&>svg]:size-4 border border-input bg-primary text-primary-foreground hover:bg-primary-dark hover:scale-105 h-10 px-4 py-2 w-[100px] hover:bg-orange-600 hover:text-white"
                         type="button"
-                        href="/register"
-                    >
-                        Sign Up
-                    </a>
-                    <a
-                        className="inline-flex items-center gap-2 justify-center whitespace-nowrap rounded-md text-sm font-semibold transition-transform duration-300 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&>svg]:size-4 border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:scale-105 h-10 px-4 py-2 w-[100px] hover:bg-blue-900 hover:text-white"
-                        type="button"
                         href="/login"
                     >
-                        Sign in
+                        Get Start!
                     </a>
                 </div>
                 <div className="flex items-center justify-center pt-10">

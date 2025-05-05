@@ -10,12 +10,28 @@ import { FaXmark } from 'react-icons/fa6';
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { useRouter } from 'next/navigation';
 import { LogInIcon } from 'lucide-react';
-
-
+import toast from "react-hot-toast";
 
 export default function Navbar() {
+    const { user, logout, isLoggingOut } =
+    useUser();
+
+    const handleLogout = () => {
+        toast.promise(
+        new Promise((resolve, reject) => {
+            logout(undefined, {
+            onSuccess: () => resolve("Logged out successfully!"),
+            onError: (error) => reject(error),
+            });
+        }),
+        {
+            loading: "Logging out...",
+            success: "Logged out successfully!",
+            error: "Logout failed. Please try again.",
+        },
+        );
+    };
     const router = useRouter();
-    const { user } = useUser();
 
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const toggleMenu = () => {
@@ -51,7 +67,9 @@ export default function Navbar() {
                                 </button>
                                 {isProfileOpen && (
                                     <div className="absolute top-full mt-2 right-0 w-48 bg-white shadow-lg rounded-lg z-10 transform opacity-100 scale-100">
-                                        <button className="block w-full text-left py-2 px-4 hover:bg-gray-100">
+                                        <button className="block w-full text-left py-2 px-4 hover:bg-gray-100"
+                                        onClick={handleLogout}
+                                        disabled={isLoggingOut}>
                                             Logout
                                         </button>
                                     </div>
@@ -93,7 +111,9 @@ export default function Navbar() {
                                         <button>Profile</button>
                                     </li>
                                     <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
-                                        <button >Logout</button>
+                                        <button onClick={handleLogout}
+                                        disabled = {isLoggingOut}>
+                                            Logout</button>
                                     </li>
                                 </>
                             )
