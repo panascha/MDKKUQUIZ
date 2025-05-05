@@ -1,17 +1,21 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { FrontendRoutes } from "@/config/apiRoutes";
-import React from "react";
 
 const ProtectedPage = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status } = useSession();
+  const router = useRouter();
 
-  if (status === "loading") return <p>Loading...</p>;
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace(FrontendRoutes.HOMEPAGE);
+    }
+  }, [status, router]);
 
-  if (!session) {
-    redirect(FrontendRoutes.HOMEPAGE);
-    return null; // Prevent further rendering
+  if (status === "loading" || status === "unauthenticated") {
+    return null; // or a spinner
   }
 
   return <>{children}</>;

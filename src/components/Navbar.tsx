@@ -53,7 +53,7 @@ export default function Navbar() {
                     </button>
                     <div className="relative">
                         <button onClick={toggleProfile} className="text-base font-semibold hover:bg-gray-100 py-2 px-5 rounded transition duration-300 ease-in-out">
-                            Profile
+                            {user?.name}
                         </button>
                         {isProfileOpen && (
                             <div className="absolute top-full mt-2 right-0 w-48 bg-white shadow-lg rounded-lg z-10 transform opacity-100 scale-100">
