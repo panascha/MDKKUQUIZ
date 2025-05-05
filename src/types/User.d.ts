@@ -4,6 +4,6 @@ export interface User {
   email: string;
   name: string;
   role: string;
-  tel: string;
+  year: string;
   __v: number;
 }

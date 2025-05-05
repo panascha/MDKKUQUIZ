@@ -1,21 +1,25 @@
+"use client"
 import React from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import ProtectedPage from '@/components/ProtectPage';
+import { useUser } from '@/hooks/useUser';
 
 const Main = () => {
+    const { user } = useUser();
     return (
-        <>
+        <ProtectedPage>
             <Navbar/>
             <div className="container mx-auto flex flex-col items-center justify-center min-h-screen gap-4">
                 <div className="flex items-center justify-center m-8">
-                    <h1 className="text-4xl font-bold text-center">Welcome to the Main Page</h1>
+                    <h1 className="text-4xl font-bold text-center">Welcome!</h1>
                 </div>
                 <div className="flex items-center justify-center m-4">
-                    <p className="text-lg text-gray-600 text-center">Navigate through the sections below to explore more.</p>
+                    <p className="text-lg text-gray-600 text-center">what you want to do today?</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 w-full left-0 right-0 top-0 bottom-0 p-4">
-                    <Link href="/subjects" className="box bg-black text-white text-center text-xl p-6 rounded shadow-md hover:bg-secondary transition duration-300 ease-in-out">
+                    <Link href="/subjects" className="box bg-black text-white text-center text-xl p-6 rounded shadow-md hover:bg-blue-800 transition duration-300 ease-in-out">
                         Subject
                     </Link>
                     <Link href="/atlas" className="box bg-black text-white text-center text-xl p-6 rounded shadow-md hover:bg-green-600 transition duration-300 ease-in-out">
@@ -34,8 +38,9 @@ const Main = () => {
                     </Link>
                 </div>
             </div>
-        </>
+        </ProtectedPage>
     );
 };
 
 export default Main;
+

@@ -1,15 +1,9 @@
 'use client'
 import React from 'react'
-import Image from 'next/image';
-import { FrontendRoutes } from "@/config/apiRoutes";
-import { useContext } from 'react'
 import { useUser } from "@/hooks/useUser";
-import { Role_type } from "@/config/role";
 import { FaBars } from "react-icons/fa";
 import { FaXmark } from 'react-icons/fa6';
 import { IoMdNotificationsOutline } from "react-icons/io";
-import { useRouter } from 'next/navigation';
-import { LogInIcon } from 'lucide-react';
 import toast from "react-hot-toast";
 
 export default function Navbar() {
@@ -31,8 +25,6 @@ export default function Navbar() {
         },
         );
     };
-    const router = useRouter();
-
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -45,7 +37,7 @@ export default function Navbar() {
 
 
     return (
-        <div className='flex top-0 left-0 w-full z-200'>
+        <div className='fixed top-0 left-0 w-full z-200'>
             {/* Navbar */}
             <nav className="flex w-full items-center justify-between h-16 px-6 bg-white shadow-md">
                 <div className="flex gap-2 items-center">
@@ -56,32 +48,23 @@ export default function Navbar() {
                 </div>
 
                 <div className="hidden lg:flex gap-4 items-center">
-                    {user ? (
-                        <>
-                            <button className="text-base font-semibold py-3 px-4 hover:bg-gray-100 rounded transition duration-300 ease-in-out">
-                                <IoMdNotificationsOutline />
-                            </button>
-                            <div className="relative">
-                                <button onClick={toggleProfile} className="text-base font-semibold hover:bg-gray-100 py-2 px-5 rounded transition duration-300 ease-in-out">
-                                    Profile
-                                </button>
-                                {isProfileOpen && (
-                                    <div className="absolute top-full mt-2 right-0 w-48 bg-white shadow-lg rounded-lg z-10 transform opacity-100 scale-100">
-                                        <button className="block w-full text-left py-2 px-4 hover:bg-gray-100"
-                                        onClick={handleLogout}
-                                        disabled={isLoggingOut}>
-                                            Logout
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    ) : (
-                        <button className="text-base font-semibold py-2 px-5 rounded hover:bg-gray-100" onClick={() => router.push(FrontendRoutes.LOGIN)}>
-                            <LogInIcon />
-                            <>Login</>
+                    <button className="text-base font-semibold py-3 px-4 hover:bg-gray-100 rounded transition duration-300 ease-in-out">
+                        <IoMdNotificationsOutline />
+                    </button>
+                    <div className="relative">
+                        <button onClick={toggleProfile} className="text-base font-semibold hover:bg-gray-100 py-2 px-5 rounded transition duration-300 ease-in-out">
+                            Profile
                         </button>
-                    )}
+                        {isProfileOpen && (
+                            <div className="absolute top-full mt-2 right-0 w-48 bg-white shadow-lg rounded-lg z-10 transform opacity-100 scale-100">
+                                <button className="block w-full text-left py-2 px-4 hover:bg-gray-100"
+                                onClick={handleLogout}
+                                disabled={isLoggingOut}>
+                                    Logout
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 {/* for mobile */}
                 <div className='lg:hidden block items-center'>

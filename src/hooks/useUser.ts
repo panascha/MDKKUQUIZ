@@ -25,7 +25,7 @@ const getUserProfile = async (token: string) => {
  * Custom hook using TanStack Query to fetch and provide user information
  * @returns Query result with user data, loading state, and error
  */
-export const useUser = () => {
+export const  useUser = () => {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const router = useRouter();
