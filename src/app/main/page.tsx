@@ -15,6 +15,7 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import { PencilIcon, XIcon } from "lucide-react";
 
 const fetchSubject = async (): Promise<Array<Subject>> => {
     const response = await axios.get(BackendRoutes.SUBJECT);
@@ -35,10 +36,11 @@ const Main = () => {
       });
     const { user } = useUser();
     const queryClient = useQueryClient();
+    const [existingImg, setExistingImg] = useState<string | null>(null);
+    const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
     const { data: session } = useSession();
     const [showModal, setShowModal] = useState(false);
-    const [file, setFile] = useState(null);
-
+    const [editModal, setEditModal] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: "",
@@ -61,7 +63,46 @@ const Main = () => {
           setError(error.message);
         },
     });
+
+    const editMutation = useMutation({
+      mutationFn: async ({ id, updatedData }: { id: string; updatedData: Partial<Subject> }) => {
+        if (!session?.user.token) throw new Error("Authentication required");
     
+        const formData = new FormData();
+        if (updatedData.name) formData.append("name", updatedData.name);
+        if (updatedData.description) formData.append("description", updatedData.description);
+    
+        // Only append image if a new image is uploaded
+        if (
+          updatedData.img &&
+          typeof updatedData.img === "object" &&
+          "name" in updatedData.img
+        ) {
+          formData.append("image", updatedData.img as File);
+        } else if (updatedData.img) {
+          // If no new image is uploaded, send the existing image
+          formData.append("image", updatedData.img as string); // It could be an image URL or existing image path
+        }
+    
+        const response = await axios.put(`${BackendRoutes.SUBJECT}/${id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${session.user.token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+    
+        return response.data.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["subject"] });
+        toast.success("Subject updated successfully!");
+        setEditModal(false); // Close the modal on success
+      },
+      onError: (error: AxiosError) => {
+        toast.error(`Update failed: ${error.message}`);
+      },
+    });    
+
     const createMutation = useMutation({
       mutationFn: async (newSubject: Omit<Subject, "_id"|"createAt">) => {
         if (!session?.user.token) throw new Error("Authentication required");
@@ -170,7 +211,7 @@ const Main = () => {
         createMutation.mutate({
           name: formData.name,
           description: formData.description,
-          img: formData.image //error but it can work so dont touch it
+          img: formData.image //error but it works so dont touch it
         });
       };
       if (error)
@@ -186,6 +227,42 @@ const Main = () => {
         <LoaderIcon /> Loading...
         </p>
     );
+
+    const handleEditSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+    
+      if (!user) {
+        toast.error("Login First");
+        return;
+      }
+    
+      if (!selectedSubjectId) {
+        toast.error("No subject selected for editing.");
+        return;
+      }
+    
+      // If no new image is selected, use the existing image (existingImg)
+      editMutation.mutate({
+        id: selectedSubjectId,
+        updatedData: {
+          name: formData.name,
+          description: formData.description,
+          img: formData.image || existingImg || "" // If no new image, use the existing image
+        }
+      });
+    };    
+    
+    const handleEditClick = (subject: Subject) => {
+      setFormData({
+        name: subject.name,
+        description: subject.description,
+        image: null, // only if user uploads new one
+      });
+      setExistingImg(`http://localhost:5000${subject.img}`); // set the current image path
+      setSelectedSubjectId(subject._id); // Set the selected subject ID
+      setEditModal(true); // Open the edit modal
+    };    
+    
     return (
         <ProtectedPage>
             <Navbar/>
@@ -197,23 +274,38 @@ const Main = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-sm:mt-4">
                   {subject.map((subject) => (
-                    <Link
-                      href={`/main/${subject._id}`}
-                      key={subject._id}
-                      className="bg-white shadow-xl rounded-lg p-4 hover:bg-gray-100 hover:shadow-xl transition duration-300 ease-in-out"
-                    >
-                      <div className="relative w-full h-48"> {/* Set a fixed height or relative container */}
-                        <Image
-                          src={`http://localhost:5000${subject.img}`}
-                          alt={subject.name}
-                          layout="fill" // Fill the parent container
-                          objectFit="cover" // Make the image cover the container
-                          className="rounded-lg"
-                        />
+                    <div key={subject._id} className="relative bg-white shadow-xl rounded-lg p-4 hover:bg-gray-100 hover:shadow-xl transition duration-300 ease-in-out">
+                      <Link href={`/main/${subject._id}`}>
+                        <div className="relative w-full h-48">
+                          <Image
+                            src={`http://localhost:5000${subject.img}`}
+                            alt={subject.name}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-lg"
+                          />
+                        </div>
+                        <h2 className="text-xl font-semibold mt-2">{subject.name}</h2>
+                        <p className="text-gray-600">{subject.description}</p>
+                      </Link>
+
+                      {/* Edit/Delete Icons */}
+                      <div className="absolute bottom-2 right-2 flex gap-2">
+                        <button
+                          onClick={() => handleEditClick(subject)}
+                          className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                          <PencilIcon size={16} />
+                        </button>
+                        <button
+                          onClick={() => deleteMutation.mutate(subject._id)}
+                          disabled={deleteMutation.isPending}
+                          className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          <XIcon size={16} />
+                        </button>
                       </div>
-                      <h2 className="text-xl font-semibold mt-2">{subject.name}</h2>
-                      <p className="text-gray-600">{subject.description}</p>
-                    </Link>
+                    </div>
                   ))}
                 </div>
             </div>
@@ -270,10 +362,10 @@ const Main = () => {
                     )}
                   </div>
 
-                  {/* Image Upload */}
+                  {/* Image Upload (Optional) */}
                   <div>
                     <label htmlFor="image" className="mb-1 block text-sm font-semibold">
-                      Upload Image
+                      Upload Image (Optional)
                     </label>
                     <input
                       type="file"
@@ -286,11 +378,22 @@ const Main = () => {
                     {formData.image && (
                       <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
                     )}
+                    {!formData.image && existingImg && (
+                      <div className="mt-2">
+                        <Image
+                          src={existingImg}
+                          alt="Existing Image"
+                          width={0}
+                          height={0}
+                          className="rounded-lg"
+                        />
+                        <p className="text-sm text-gray-500 mt-2">Current Image</p>
+                      </div>
+                    )}
                     {error && error.includes('image') && (
                       <p className="text-red-500 text-sm">Please upload a valid image.</p>
                     )}
                   </div>
-
                   {/* Submit Button */}
                   <DialogFooter className="flex justify-between pt-4">
                     <Button
@@ -320,6 +423,109 @@ const Main = () => {
                 </form>
               </DialogContent>
             </Dialog>
+            <Dialog
+              open={editModal}
+              onOpenChange={(open) => {
+                setEditModal(open);
+                if (!open) {
+                  resetForm();
+                  setError(null);
+                }
+              }}
+            >
+              <DialogContent className="sm:max-w-md [&>button:last-child]:hidden">
+                <DialogHeader>
+                  <DialogTitle>Edit Subject</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={handleEditSubmit}
+                  className="w-full space-y-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Name */}
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold">Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold">Description</label>
+                    <input
+                      type="text"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  {/* Image Upload */}
+                  <div>
+                    <label htmlFor="image" className="mb-1 block text-sm font-semibold">
+                      Upload New Image (optional)
+                    </label>
+                    <input
+                      type="file"
+                      name="image"
+                      id="image"
+                      accept="image/*"
+                      onChange={handleInputChange}
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    />
+                    {formData.image instanceof File && (
+                      <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
+                    )}
+                    {!formData.image && existingImg && (
+                      <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                        <Image
+                          src={existingImg.startsWith("http") ? existingImg : `http://localhost:5000${existingImg}`}
+                          alt="Subject Image"
+                          fill
+                          style={{ objectFit: "cover" }}
+                          className="rounded-lg"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Buttons */}
+                  <DialogFooter className="flex justify-between pt-4">
+                    <Button
+                      textButton="Update"
+                      disabled={editMutation.isPending}
+                      className="bg-blue-500 hover:bg-blue-600"
+                    >
+                      {editMutation.isPending ? (
+                        <>
+                          <LoaderIcon className="mr-2 inline animate-spin" size={16} />
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Subject"
+                      )}
+                    </Button>
+
+                    <DialogClose asChild>
+                      <Button
+                        textButton="Cancel"
+                        className="bg-red-500 hover:bg-red-800"
+                        onClick={resetForm}
+                      />
+                    </DialogClose>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+
         </ProtectedPage>
     );
 };
