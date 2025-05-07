@@ -85,26 +85,17 @@ export default function Navbar() {
                 <ul>
                     <div className={`absolute top-16 right-0 w-48 bg-white shadow-lg rounded-lg z-10 transition-all duration-300 ${isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 hidden'}`}>
                         <ul>
-                            {user ? (
-                                <>
-                                    <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
-                                        <button>Notification</button>
-                                    </li>
-                                    <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
-                                        <button>Profile</button>
-                                    </li>
-                                    <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
-                                        <button onClick={handleLogout}
-                                        disabled = {isLoggingOut}>
-                                            Logout</button>
-                                    </li>
-                                </>
-                            )
-                                : (
-                                    <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
-                                        <button >Sign in</button>
-                                    </li>
-                                )}
+                            <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
+                                <button>Notification</button>
+                            </li>
+                            <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
+                                <button>Profile</button>
+                            </li>
+                            <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
+                                <button onClick={handleLogout}
+                                disabled = {isLoggingOut}>
+                                    Logout</button>
+                            </li>
                         </ul>
                     </div>
                 </ul>

@@ -8,19 +8,30 @@ export enum BackendRoutes {
   REGISTER = `${BackendRootRoutes}/auth/register`,
   UPDATE_USER = `${BackendRootRoutes}/auth/updateUser`,
   USER_INFO = `${BackendRootRoutes}/auth/me`,
+  SUBJECT = `${BackendRootRoutes}/subject`,
+  CATEGORY = `${BackendRootRoutes}/category`,
+  CATEGORY_BY_SUBJECTID = `${BackendRootRoutes}/category/subject/:subjectID`,
   QUIZ = `${BackendRootRoutes}/quiz`,
-  QUIZ_CATEGORYID = `${BackendRootRoutes}/quiz/cate/:categoryID`,
+  QUIZ_FILTER = `${BackendRootRoutes}/quiz/filter`,
   SCORE = `${BackendRootRoutes}/score`,
   SCORE_USERID = `${BackendRootRoutes}/score/user/:UserID`,
-  CATEGORY = `${BackendRootRoutes}/category`
-  
 }
 
-export const getQuizByCategoryID = (categoryID: string): string =>
-  BackendRoutes.QUIZ_CATEGORYID.replace(
-    ":categoryID",
-    categoryID,
+export const getQuizByFilter = (subjectID?: string, categoryID?: string): string => {
+  let path: string = BackendRoutes.QUIZ_FILTER;
+
+  if (subjectID) path += `/${subjectID}`;
+  if (categoryID) path += `/${categoryID}`;
+
+  return path;
+};
+
+export const getCategoryBySubjectID = (subjectID: string): string =>
+  BackendRoutes.SCORE_USERID.replace(
+    ":subjectID",
+    subjectID,
 );
+
 
 export const getScoreByUserID = (UserID: string): string =>
   BackendRoutes.SCORE_USERID.replace(
@@ -29,8 +40,6 @@ export const getScoreByUserID = (UserID: string): string =>
 );
 
 export enum FrontendRootRoutes {
-  DASHBOARD = "/dashboard",
-  LIST = "/list",
   LOGIN = "/login",
   PROFILE = "/profile",
   MAIN = "/main",
@@ -38,11 +47,7 @@ export enum FrontendRootRoutes {
 }
 export enum FrontendRoutes {
   HOMEPAGE = FrontendRootRoutes.HOMEPAGE,
-  DASHBOARD = FrontendRootRoutes.DASHBOARD,
   MAIN = FrontendRootRoutes.MAIN,
-  ADMIN = `${FrontendRoutes.DASHBOARD}/admin`,
-  USER = `${FrontendRootRoutes.DASHBOARD}/users`,
-  DENTIST_LIST = `${FrontendRootRoutes.LIST}`,
   LOGIN = `${FrontendRootRoutes.LOGIN}`,
   PROFILE = `${FrontendRootRoutes.PROFILE}`,
 }
