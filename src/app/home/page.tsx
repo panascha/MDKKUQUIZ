@@ -1,53 +1,81 @@
 "use client";
 
 import React from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import VisionCard from '@/components/VisionCard';
+
 export default function Home() {
+  const heroVariants = {
+    initial: { opacity: 0, y: 50 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
 
-    const [headingText, setHeadingText] = React.useState('MDKKU Self-Exam Bank');
-    const [isHeadingFlipped, setIsHeadingFlipped] = React.useState(false);
-    const toggleHeadingText = () => {
-        setIsHeadingFlipped(!isHeadingFlipped);
-        setHeadingText(isHeadingFlipped ? 'MSEB' : 'MDKKU Self-Exam Bank');
-    };
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <main className="flex-grow"> {/* Use flex-grow to push the footer to the bottom */}
+        {/* Hero Section */}
+        <motion.section
+          variants={heroVariants}
+          initial="initial"
+          animate="animate"
+          className="container mx-auto relative h-64 sm:h-80 md:h-96 overflow-hidden rounded-sm md:rounded-md shadow-lg mt-10"
+        >
+          <Image
+            src="/mdkkuview.jpg"
+            alt="MDKKU Self-Exam Bank"
+            layout="fill" // Use layout="fill" for responsive images
+            objectFit="cover"  // Make the image cover the container
+            className="object-cover"
+          />
+          <div className="absolute top-4 sm:top-8 right-4 sm:right-8 flex flex-col sm:flex-row items-end sm:items-center text-right cursor-pointer gap-2 sm:gap-4">
+            <h1 className="text-xl sm:text-2xl md:text-5xl font-bold text-green-800 drop-shadow-md">MDKKU</h1>
+            <h1 className="text-xl sm:text-2xl md:text-5xl font-bold text-white drop-shadow-md">Self-Exam Bank</h1>
+          </div>
+          <div className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 text-left">
+            <h2 className="text-sm sm:text-lg text-white drop-shadow-md">จากนักศึกษาแพทย์ เพื่อนักศึกษาแพทย์</h2>
+          </div>
+        </motion.section>
 
-    return (
-        <div className="mx-4 mt-10 flex justify-center items-center min-h-screen p-10">
-            <section className="flex flex-col gap-6 text-center">
-                <h1
-                    className="font-heading text-5xl lg:text-7xl font-bold tracking-tight text-balance cursor-pointer transition-transform duration-500 hover:scale-105"
-                    onClick={toggleHeadingText}
-                >
-                    {headingText}
-                </h1>
-                <p className="text-xl text-muted-foreground max-w-[900px] mx-auto leading-7">
-                Welcome to the MDKKU Self-exam Bank, your platform for collaborative medical learning. This website is designed for medical students to learn from each other and enhance their learning journey together.
-                </p>
-                <div className="flex gap-4 justify-center">
-                    <a
-                        className="inline-flex items-center gap-2 justify-center whitespace-nowrap rounded-md text-sm font-semibold transition-transform duration-300 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&>svg]:size-4 border border-input bg-primary text-primary-foreground hover:bg-primary-dark hover:scale-105 h-10 px-4 py-2 w-[100px] hover:bg-orange-600 hover:text-white"
-                        type="button"
-                        href="/login"
-                    >
-                        Get Start!
-                    </a>
-                </div>
-                <div className="flex items-center justify-center pt-10">
-                    <img
-                        alt="computer image"
-                        loading="lazy"
-                        width="519"
-                        height="200"
-                        decoding="async"
-                        data-nimg="1"
-                        style={{
-                            color: 'transparent',
-                            transform: isHeadingFlipped ? 'scaleX(-1)' : 'scaleX(1)',
-                        }}
-                        className="hover:scale-105 transition-transform duration-500"
-                        src="/window.svg"
-                    />
-                </div>
-            </section>
-        </div>
-    );
+        {/* Welcome Section */}
+        <section className="py-8 px-4 text-center mx-4 sm:mx-10 font-semibold">
+          <p className="text-sm sm:text-md">
+            Welcome to the MDKKU Self-exam Bank, your platform for collaborative medical learning. This website is designed for medical students
+            to learn from each other and enhance their learning journey together.
+          </p>
+        </section>
+
+        {/* Vision Section */}
+        <section className="py-8 px-4 text-center bg-gray-200">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-green-800 mb-4 drop-shadow-lg">
+            MSEB's Vision
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8 mx-4 sm:mx-12">
+            <VisionCard
+              imageSrc="/mdkkulogo.png"
+              altText="Vision 1"
+              title="Vision 1"
+              description="Description of vision 1."
+            />
+            <VisionCard
+              imageSrc="/mdkkulogo.png"
+              altText="Vision 2"
+              title="Vision 2"
+              description="Description of vision 2."
+            />
+            <VisionCard
+              imageSrc="/mdkkulogo.png"
+              altText="Vision 3"
+              title="Vision 3"
+              description="Description of vision 3."
+            />
+          </div>
+        </section>
+      </main>
+
+      <footer className="bg-green-700 text-white py-4 text-center text-sm sm:text-base">
+        <p>คณะแพทยศาสตร์ มหาวิทยาลัยขอนแก่น</p>
+      </footer>
+    </div>
+  );
 }
