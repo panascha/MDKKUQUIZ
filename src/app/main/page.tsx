@@ -247,7 +247,7 @@ const Main = () => {
         updatedData: {
           name: formData.name,
           description: formData.description,
-          img: formData.image || existingImg || "" // If no new image, use the existing image
+          img: formData.image || existingImg || "" // error but it works so dont touch it
         }
       });
     };    
@@ -290,21 +290,22 @@ const Main = () => {
                       </Link>
 
                       {/* Edit/Delete Icons */}
-                      <div className="absolute bottom-2 right-2 flex gap-2">
-                        <button
-                          onClick={() => handleEditClick(subject)}
-                          className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                          <PencilIcon size={16} />
-                        </button>
-                        <button
-                          onClick={() => deleteMutation.mutate(subject._id)}
-                          disabled={deleteMutation.isPending}
-                          className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          <XIcon size={16} />
-                        </button>
-                      </div>
+                      {admin? (
+                        <div className="absolute bottom-2 right-2 flex gap-2">
+                          <button
+                            onClick={() => handleEditClick(subject)}
+                            className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                          >
+                            <PencilIcon size={16} />
+                          </button>
+                          <button
+                            onClick={() => deleteMutation.mutate(subject._id)}
+                            disabled={deleteMutation.isPending}
+                            className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
+                          >
+                            <XIcon size={16} />
+                          </button>
+                        </div>) : null}
                     </div>
                   ))}
                 </div>
@@ -525,10 +526,8 @@ const Main = () => {
                 </form>
               </DialogContent>
             </Dialog>
-
         </ProtectedPage>
     );
 };
 
 export default Main;
-
