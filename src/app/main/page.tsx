@@ -379,7 +379,7 @@ const Main = () => {
                     {formData.image && (
                       <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
                     )}
-                    {!formData.image && existingImg && (
+                    {!formData.image && existingImg && ( 
                       <div className="mt-2">
                         <Image
                           src={existingImg}

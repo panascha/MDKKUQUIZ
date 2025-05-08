@@ -27,7 +27,7 @@ export const getQuizByFilter = (subjectID?: string, categoryID?: string): string
 };
 
 export const getCategoryBySubjectID = (subjectID: string): string =>
-  BackendRoutes.SCORE_USERID.replace(
+  BackendRoutes.CATEGORY_BY_SUBJECTID.replace(
     ":subjectID",
     subjectID,
 );

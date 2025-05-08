@@ -39,7 +39,7 @@ export default function Navbar() {
     return (
         <div className='fixed top-0 left-0 w-full z-200'>
             {/* Navbar */}
-            <nav className="flex w-full items-center justify-between h-16 px-6 bg-white shadow-md">
+            <nav className="flex w-full items-center justify-between h-16 px-6 bg-green-700 shadow-md">
                 <div className="flex gap-2 items-center">
                     <a href="/" className="flex items-center space-x-3 text-2xl font-semibold mx-4">
                         {/* <Img src={} alt="Logo" className="h-8 w-8" /> */}
