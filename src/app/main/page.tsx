@@ -1,7 +1,6 @@
 "use client"
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Navbar from '@/components/Navbar';
 import axios, { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ProtectedPage from '@/components/ProtectPage';
@@ -16,6 +15,7 @@ import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { PencilIcon, XIcon } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 
 const fetchSubject = async (): Promise<Array<Subject>> => {
     const response = await axios.get(BackendRoutes.SUBJECT);
@@ -42,10 +42,12 @@ const Main = () => {
     const [showModal, setShowModal] = useState(false);
     const [editModal, setEditModal] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [year, setYear] = useState(null);
     const [formData, setFormData] = useState({
         name: "",
         description: "",
         image: null as File | null, // Add image
+        year: 1
     });
     const admin = user?.role == Role_type.SADMIN;
 
@@ -71,7 +73,7 @@ const Main = () => {
         const formData = new FormData();
         if (updatedData.name) formData.append("name", updatedData.name);
         if (updatedData.description) formData.append("description", updatedData.description);
-    
+        if (updatedData.year) formData.append("year", updatedData.year.toString());
         // Only append image if a new image is uploaded
         if (
           updatedData.img &&
@@ -110,7 +112,8 @@ const Main = () => {
         const formDataPayload = new FormData();
         formDataPayload.append("name", newSubject.name);
         formDataPayload.append("description", newSubject.description);
-         // Ensure image is added correctly as file, only if it's not null
+        formDataPayload.append("year", newSubject.year.toString());
+        // Ensure image is added correctly as file, only if it's not null
         if (newSubject.img) {
           formDataPayload.append("image", newSubject.img); // img is now a File
         }
@@ -139,11 +142,12 @@ const Main = () => {
         name: "",
         description: "",
         image: null,
+        year: 1,
       });
     };
       
     const handleInputChange = (
-      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
       const { name, value, type } = e.target;
     
@@ -151,13 +155,11 @@ const Main = () => {
         const fileInput = e.target as HTMLInputElement;
         const selectedFile = fileInput.files?.[0];
     
-        // Optional: Validate the file type (for example, only allow image files)
         if (selectedFile && !selectedFile.type.startsWith("image/")) {
           setError("Please upload a valid image file.");
           return;
         }
     
-        // If validation passes, set the file
         setFormData((prev) => ({
           ...prev,
           image: selectedFile || null,
@@ -165,10 +167,11 @@ const Main = () => {
       } else {
         setFormData((prev) => ({
           ...prev,
-          [name]: value,
+          [name]: name === "year" ? Math.max(1, Math.min(6, parseInt(value, 10))) : value,
         }));
       }
-    };    
+    };
+    
     
     const validateForm = () => {
       setError("");
@@ -183,6 +186,11 @@ const Main = () => {
         return false;
       }
     
+      if (!formData.year || formData.year < 1 || formData.year > 6) {
+        setError("Year must be between 1 and 6");
+        return false;
+      }
+    
       if (!formData.image) {
         setError("Image is required");
         return false;
@@ -190,6 +198,7 @@ const Main = () => {
     
       return true;
     };
+    
       
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -211,6 +220,7 @@ const Main = () => {
         createMutation.mutate({
           name: formData.name,
           description: formData.description,
+          year: formData.year,
           img: formData.image //error but it works so dont touch it
         });
       };
@@ -247,7 +257,8 @@ const Main = () => {
         updatedData: {
           name: formData.name,
           description: formData.description,
-          img: formData.image || existingImg || "" // error but it works so dont touch it
+          year: formData.year,
+          img: formData.image || existingImg || "", // error but it works so dont touch it
         }
       });
     };    
@@ -256,6 +267,7 @@ const Main = () => {
       setFormData({
         name: subject.name,
         description: subject.description,
+        year: subject.year,
         image: null, // only if user uploads new one
       });
       setExistingImg(`http://localhost:5000${subject.img}`); // set the current image path
@@ -263,270 +275,373 @@ const Main = () => {
       setEditModal(true); // Open the edit modal
     };    
     
+    const filterSubject = subject.filter((item) => {
+      if (year === null || year === undefined) return true;
+      return item.year === year;
+    });
+
     return (
-        <ProtectedPage>
-            <Navbar/>
-            <div className="container mx-auto p-4 pt-20 mt-8">
-                <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Subjects</h1>
-                    {admin? (<Button textButton="Add subject" className='bg-red-500 hover:bg-red-800' onClick={() => setShowModal(true)}/>):null}
-                    
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-sm:mt-4">
-                  {subject.map((subject) => (
-                    <div key={subject._id} className="relative bg-white shadow-xl rounded-lg p-4 hover:bg-gray-100 hover:shadow-xl transition duration-300 ease-in-out">
-                      <Link href={`/main/${subject._id}`}>
-                        <div className="relative w-full h-48">
-                          <Image
-                            src={`http://localhost:5000${subject.img}`}
-                            alt={subject.name}
-                            layout="fill"
-                            objectFit="cover"
-                            className="rounded-lg"
-                          />
-                        </div>
-                        <h2 className="text-xl font-semibold mt-2">{subject.name}</h2>
-                        <p className="text-gray-600">{subject.description}</p>
-                      </Link>
+      <ProtectedPage>
+        <div className="container mx-auto px-4 py-8 pt-24">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+            <h1 className="text-4xl font-extrabold text-sky-800">Subjects</h1>
 
-                      {/* Edit/Delete Icons */}
-                      {admin? (
-                        <div className="absolute bottom-2 right-2 flex gap-2">
-                          <button
-                            onClick={() => handleEditClick(subject)}
-                            className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                          >
-                            <PencilIcon size={16} />
-                          </button>
-                          <button
-                            onClick={() => deleteMutation.mutate(subject._id)}
-                            disabled={deleteMutation.isPending}
-                            className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
-                          >
-                            <XIcon size={16} />
-                          </button>
-                        </div>) : null}
-                    </div>
-                  ))}
-                </div>
-            </div>
-            <Dialog
-              open={showModal}
-              onOpenChange={(open) => {
-                setShowModal(open);
-                if (!open) {
-                  resetForm();
-                  setError(null); // Reset error state when closing modal
-                }
-              }}
-            >
-              <DialogContent className="sm:max-w-md [&>button:last-child]:hidden">
-                <DialogHeader>
-                  <DialogTitle>Subject</DialogTitle>
-                </DialogHeader>
-                <form
-                  onSubmit={handleSubmit}
-                  className="w-full space-y-4"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {/* Name Input */}
-                  <div>
-                    <label className="mb-1 block text-sm font-semibold">Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                      placeholder="Biology"
-                    />
-                    {error && error.includes('name') && (
-                      <p className="text-red-500 text-sm">Name is required.</p>
-                    )}
-                  </div>
-
-                  {/* Description Input */}
-                  <div>
-                    <label className="mb-1 block text-sm font-semibold">Description</label>
-                    <input
-                      type="text"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                      placeholder="Everything about Biology"
-                    />
-                    {error && error.includes('description') && (
-                      <p className="text-red-500 text-sm">Description is required.</p>
-                    )}
-                  </div>
-
-                  {/* Image Upload (Optional) */}
-                  <div>
-                    <label htmlFor="image" className="mb-1 block text-sm font-semibold">
-                      Upload Image (Optional)
-                    </label>
-                    <input
-                      type="file"
-                      name="image"
-                      id="image"
-                      accept="image/*"
-                      onChange={handleInputChange}
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                    />
-                    {formData.image && (
-                      <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
-                    )}
-                    {!formData.image && existingImg && ( 
-                      <div className="mt-2">
-                        <Image
-                          src={existingImg}
-                          alt="Existing Image"
-                          width={0}
-                          height={0}
-                          className="rounded-lg"
-                        />
-                        <p className="text-sm text-gray-500 mt-2">Current Image</p>
-                      </div>
-                    )}
-                    {error && error.includes('image') && (
-                      <p className="text-red-500 text-sm">Please upload a valid image.</p>
-                    )}
-                  </div>
-                  {/* Submit Button */}
-                  <DialogFooter className="flex justify-between pt-4">
-                    <Button
-                      textButton="Submit"
-                      disabled={createMutation.isPending}
-                      className="bg-green-500 hover:bg-green-600"
+            {admin ? (
+              <Button
+                textButton="Add Subject"
+                className="bg-sky-600 hover:bg-sky-800 py-2 px-5 rounded-xl text-white font-semibold shadow-md transition-all"
+                onClick={() => setShowModal(true)}
+              />
+            ) : null}
+            {/* Push the dropdown to the far right */}
+            <div className="ml-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="hover:bg-sky-100 text-gray-700 font-medium rounded-lg p-2 transition-transform hover:scale-105 border border-gray-300 shadow-sm">
+                  Year
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-white w-48">
+                  <DropdownMenuItem
+                    onClick={() => setYear(null)}
+                    className="hover:bg-gray-100 cursor-pointer"
+                  >
+                    All Years
+                  </DropdownMenuItem>
+                  {[1, 2, 3, 4, 5, 6].map((year) => (
+                    <DropdownMenuItem
+                      key={year}
+                      onClick={() => setYear(year)}
+                      className="hover:bg-gray-100 cursor-pointer"
                     >
-                      {createMutation.isPending ? (
-                        <>
-                          <LoaderIcon className="mr-2 inline animate-spin" size={16} />
-                          Saving...
-                        </>
-                      ) : (
-                        "Save Subject"
-                      )}
-                    </Button>
-
-                    {/* Cancel Button */}
-                    <DialogClose asChild>
-                      <Button
-                        textButton="Cancel"
-                        className="bg-red-500 hover:bg-red-800"
-                        onClick={resetForm}
-                      />
-                    </DialogClose>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-            <Dialog
-              open={editModal}
-              onOpenChange={(open) => {
-                setEditModal(open);
-                if (!open) {
-                  resetForm();
-                  setError(null);
-                }
-              }}
-            >
-              <DialogContent className="sm:max-w-md [&>button:last-child]:hidden">
-                <DialogHeader>
-                  <DialogTitle>Edit Subject</DialogTitle>
-                </DialogHeader>
-                <form
-                  onSubmit={handleEditSubmit}
-                  className="w-full space-y-4"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {/* Name */}
-                  <div>
-                    <label className="mb-1 block text-sm font-semibold">Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                      Year {year}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {filterSubject.map((subject) => (
+              <div
+                key={subject._id}
+                className="relative bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.01] overflow-hidden"
+              >
+                <Link href={`/main/${subject._id}`} className="block p-4 pb-10">
+                  {/* Image */}
+                  <div className="relative w-full h-48 rounded-xl overflow-hidden">
+                    <Image
+                      src={`http://localhost:5000${subject.img}`}
+                      alt={subject.name}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-xl transition-transform duration-300 hover:scale-105"
                     />
                   </div>
+
+                  {/* Name */}
+                  <h2 className="text-lg font-semibold mt-4 text-sky-700 truncate">
+                    {subject.name}
+                  </h2>
 
                   {/* Description */}
-                  <div>
-                    <label className="mb-1 block text-sm font-semibold">Description</label>
-                    <input
-                      type="text"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                    />
-                  </div>
+                  <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                    {subject.description}
+                  </p>
+                </Link>
 
-                  {/* Image Upload */}
-                  <div>
-                    <label htmlFor="image" className="mb-1 block text-sm font-semibold">
-                      Upload New Image (optional)
-                    </label>
-                    <input
-                      type="file"
-                      name="image"
-                      id="image"
-                      accept="image/*"
-                      onChange={handleInputChange}
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                    />
-                    {formData.image instanceof File && (
-                      <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
-                    )}
-                    {!formData.image && existingImg && (
-                      <div className="relative w-full h-48 rounded-lg overflow-hidden">
-                        <Image
-                          src={existingImg.startsWith("http") ? existingImg : `http://localhost:5000${existingImg}`}
-                          alt="Subject Image"
-                          fill
-                          style={{ objectFit: "cover" }}
-                          className="rounded-lg"
-                        />
-                      </div>
-                    )}
-                  </div>
+                {/* Footer Left - Year */}
+                <div className="absolute bottom-4 left-4 text-gray-500 text-sm font-medium">
+                  Year {subject.year}
+                </div>
 
-                  {/* Buttons */}
-                  <DialogFooter className="flex justify-between pt-4">
-                    <Button
-                      textButton="Update"
-                      disabled={editMutation.isPending}
-                      className="bg-blue-500 hover:bg-blue-600"
+                {/* Footer Right - Admin Buttons */}
+                {admin && (
+                  <div className="absolute bottom-4 right-4 flex gap-2">
+                    <button
+                      onClick={() => handleEditClick(subject)}
+                      className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                     >
-                      {editMutation.isPending ? (
-                        <>
-                          <LoaderIcon className="mr-2 inline animate-spin" size={16} />
-                          Updating...
-                        </>
-                      ) : (
-                        "Update Subject"
-                      )}
-                    </Button>
+                      <PencilIcon size={16} />
+                    </button>
+                    <button
+                      onClick={() => deleteMutation.mutate(subject._id)}
+                      disabled={deleteMutation.isPending}
+                      className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      <XIcon size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
 
-                    <DialogClose asChild>
-                      <Button
-                        textButton="Cancel"
-                        className="bg-red-500 hover:bg-red-800"
-                        onClick={resetForm}
-                      />
-                    </DialogClose>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-        </ProtectedPage>
+        </div>
+        
+        {/* Subject Dialogs */}
+        <Dialog
+          open={showModal}
+          onOpenChange={(open) => {
+            setShowModal(open);
+            if (!open) {
+              resetForm();
+              setError(null); // Reset error state when closing modal
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
+            <DialogHeader>
+              <DialogTitle>Subject</DialogTitle>
+            </DialogHeader>
+            <form
+              onSubmit={handleSubmit}
+              className="w-full space-y-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Name Input */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  placeholder="Biology"
+                />
+                {error && error.includes('name') && (
+                  <p className="text-red-500 text-sm">Name is required.</p>
+                )}
+              </div>
+      
+              {/* Description Input */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold">Description</label>
+                <input
+                  type="text"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  placeholder="Everything about Biology"
+                />
+                {error && error.includes('description') && (
+                  <p className="text-red-500 text-sm">Description is required.</p>
+                )}
+              </div>
+                
+              {/* Year Dropdown */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold">Year</label>
+                <select
+                  name="year"
+                  value={formData.year}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="" disabled>Select a year</option>
+                  {[1, 2, 3, 4, 5, 6].map((year) => (
+                    <option key={year} value={year}>
+                      Year {year}
+                    </option>
+                  ))}
+                </select>
+                {error && error.includes('year') && (
+                  <p className="text-red-500 text-sm">Year is required.</p>
+                )}
+              </div>
+
+              {/* Image Upload (Optional) */}
+              <div>
+                <label htmlFor="image" className="mb-1 block text-sm font-semibold">
+                  Upload Image (Optional)
+                </label>
+                <input
+                  type="file"
+                  name="image"
+                  id="image"
+                  accept="image/*"
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
+                />
+                {formData.image && (
+                  <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
+                )}
+                {!formData.image && existingImg && (
+                  <div className="mt-2">
+                    <Image
+                      src={existingImg}
+                      alt="Existing Image"
+                      width={0}
+                      height={0}
+                      className="rounded-lg"
+                    />
+                    <p className="text-sm text-gray-500 mt-2">Current Image</p>
+                  </div>
+                )}
+                {error && error.includes('image') && (
+                  <p className="text-red-500 text-sm">Please upload a valid image.</p>
+                )}
+              </div>
+              {/* Submit Button */}
+              <DialogFooter className="flex justify-between pt-4">
+                <Button
+                  textButton="Submit"
+                  disabled={createMutation.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                >
+                  {createMutation.isPending ? (
+                    <>
+                      <LoaderIcon className="mr-2 inline animate-spin" size={16} />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Subject"
+                  )}
+                </Button>
+      
+                {/* Cancel Button */}
+                <DialogClose asChild>
+                  <Button
+                    textButton="Cancel"
+                    className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                    onClick={resetForm}
+                  />
+                </DialogClose>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      
+        {/* Edit Dialog */}
+        <Dialog
+          open={editModal}
+          onOpenChange={(open) => {
+            setEditModal(open);
+            if (!open) {
+              resetForm();
+              setError(null);
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
+            <DialogHeader>
+              <DialogTitle>Edit Subject</DialogTitle>
+            </DialogHeader>
+            <form
+              onSubmit={handleEditSubmit}
+              className="w-full space-y-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Name */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+      
+              {/* Description */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold">Description</label>
+                <input
+                  type="text"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+
+              {/* Year Dropdown */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold">Year</label>
+                <select
+                  name="year"
+                  value={formData.year}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                >
+                  <option value="" >Select a year</option>
+                  {[1, 2, 3, 4, 5, 6].map((year) => (
+                    <option key={year} value={year}>
+                      Year {year}
+                    </option>
+                  ))}
+                </select>
+                {error && error.includes('year') && (
+                  <p className="text-red-500 text-sm">Year is required.</p>
+                )}
+              </div>
+              
+              {/* Image Upload */}
+              <div>
+                <label htmlFor="image" className="mb-1 block text-sm font-semibold">
+                  Upload New Image (optional)
+                </label>
+                <input
+                  type="file"
+                  name="image"
+                  id="image"
+                  accept="image/*"
+                  onChange={handleInputChange}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+                {formData.image instanceof File && (
+                  <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
+                )}
+                {!formData.image && existingImg && (
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                    <Image
+                      src={existingImg.startsWith("http") ? existingImg : `http://localhost:5000${existingImg}`}
+                      alt="Subject Image"
+                      fill
+                      style={{ objectFit: "cover" }}
+                      className="rounded-lg"
+                    />
+                  </div>
+                )}
+              </div>
+      
+              {/* Buttons */}
+              <DialogFooter className="flex justify-between pt-4">
+                <Button
+                  textButton="Update"
+                  disabled={editMutation.isPending}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  {editMutation.isPending ? (
+                    <>
+                      <LoaderIcon className="mr-2 inline animate-spin" size={16} />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Subject"
+                  )}
+                </Button>
+      
+                <DialogClose asChild>
+                  <Button
+                    textButton="Cancel"
+                    className="bg-red-500 hover:bg-red-800"
+                    onClick={resetForm}
+                  />
+                </DialogClose>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </ProtectedPage>
     );
 };
 

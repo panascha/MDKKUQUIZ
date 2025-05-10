@@ -72,7 +72,6 @@ const SubjectDetail = () => {
 
     return (
         <ProtectedPage>
-            <Navbar/>
             <div className="container mx-auto p-4 pt-20 mt-10">
                 <Link
                     href="/main"

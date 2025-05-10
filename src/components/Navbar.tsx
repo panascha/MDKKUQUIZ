@@ -1,105 +1,140 @@
-'use client'
-import React from 'react'
+'use client';
+import React from 'react';
 import { useUser } from "@/hooks/useUser";
 import { FaBars } from "react-icons/fa";
 import { FaXmark } from 'react-icons/fa6';
 import { IoMdNotificationsOutline } from "react-icons/io";
 import toast from "react-hot-toast";
+import { FrontendRoutes } from '@/config/apiRoutes';
+import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
-    const { user, logout, isLoggingOut } =
-    useUser();
+    const { user, logout } = useUser();
+    const router = useRouter();
 
     const handleLogout = () => {
         toast.promise(
-        new Promise((resolve, reject) => {
-            logout(undefined, {
-            onSuccess: () => resolve("Logged out successfully!"),
-            onError: (error) => reject(error),
-            });
-        }),
-        {
-            loading: "Logging out...",
-            success: "Logged out successfully!",
-            error: "Logout failed. Please try again.",
-        },
+            new Promise((resolve, reject) => {
+                logout(undefined, {
+                    onSuccess: () => resolve("Logged out successfully!"),
+                    onError: (error) => reject(error),
+                });
+            }),
+            {
+                loading: "Logging out...",
+                success: "Logged out successfully!",
+                error: "Logout failed. Please try again.",
+            }
         );
     };
+
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-    }
-
     const [isProfileOpen, setIsProfileOpen] = React.useState(false);
-    const toggleProfile = () => {
-        setIsProfileOpen(!isProfileOpen);
-    }
 
+    const toggleMenu = () => setIsMenuOpen(prev => !prev);
+    const toggleProfile = () => setIsProfileOpen(prev => !prev);
 
     return (
-        <div className='fixed top-0 left-0 w-full z-200'>
-            {/* Navbar */}
-            <nav className="flex w-full items-center justify-between h-16 px-6 bg-green-700 shadow-md">
-                <div className="flex gap-2 items-center">
-                    <a href="/" className="flex items-center space-x-3 text-2xl font-semibold mx-4">
-                        {/* <Img src={} alt="Logo" className="h-8 w-8" /> */}
-                        <span>MDKKUQUIZ</span>
+        <div className="fixed top-0 left-0 w-full z-[200]">
+            <nav className="flex items-center justify-between h-16 px-6 bg-green-700 text-white shadow-md">
+                {/* Logo and Home */}
+                <div className="flex items-center gap-4">
+                    <a href="/" className="text-2xl font-bold tracking-tight hover:text-gray-200 transition">
+                        MDKKUQUIZ
                     </a>
+                    {user && (
+                        <div className="hidden lg:flex gap-3 ml-4">
+                            <button
+                                onClick={() => router.push('/main')}
+                                className="px-4 py-1.5 rounded-md hover:bg-green-600 transition text-base font-medium"
+                            >
+                                Home
+                            </button>
+                        </div>
+                    )}
                 </div>
 
-                <div className="hidden lg:flex gap-4 items-center">
-                    <button className="text-base font-semibold py-3 px-4 hover:bg-gray-100 rounded transition duration-300 ease-in-out">
-                        <IoMdNotificationsOutline />
-                    </button>
-                    <div className="relative">
-                        <button onClick={toggleProfile} className="text-base font-semibold hover:bg-gray-100 py-2 px-5 rounded transition duration-300 ease-in-out">
-                            {user?.name}
-                        </button>
-                        {isProfileOpen && (
-                            <div className="absolute top-full mt-2 right-0 w-48 bg-white shadow-lg rounded-lg z-10 transform opacity-100 scale-100">
-                                <button className="block w-full text-left py-2 px-4 hover:bg-gray-100"
-                                onClick={handleLogout}
-                                disabled={isLoggingOut}>
-                                    Logout
+                {/* Desktop Right Menu */}
+                <div className="hidden lg:flex items-center gap-4">
+                    {user ? (
+                        <>
+                            <button className="p-2 hover:bg-green-600 rounded-full transition">
+                                <IoMdNotificationsOutline size={22} />
+                            </button>
+                            <div className="relative">
+                                <button
+                                    onClick={toggleProfile}
+                                    className="px-4 py-1.5 bg-green-600 hover:bg-green-500 rounded-md transition font-medium"
+                                >
+                                    {user.name}
                                 </button>
+                                <div
+                                    className={`absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md overflow-hidden transition-all duration-300 transform ${
+                                        isProfileOpen ? 'scale-y-100 opacity-100' : 'scale-y-95 opacity-0 pointer-events-none'
+                                    } origin-top`}
+                                >
+                                    <button
+                                        onClick={handleLogout}
+                                        className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
                             </div>
-                        )}
-                    </div>
-                </div>
-                {/* for mobile */}
-                <div className='lg:hidden block items-center'>
-                    {isMenuOpen ? (
-                        <button onClick={toggleMenu} className="text-2xl">
-                            <FaXmark />
-                        </button>
+                        </>
                     ) : (
-                        <button onClick={toggleMenu} className="text-2xl">
-                            <FaBars />
+                        <button
+                            onClick={() => router.push(FrontendRoutes.LOGIN)}
+                            className="px-4 py-1.5 bg-white text-green-700 font-medium rounded-md hover:bg-gray-100 transition"
+                        >
+                            Sign in
                         </button>
                     )}
                 </div>
+
+                {/* Mobile Menu Icon */}
+                <div className="lg:hidden">
+                    <button onClick={toggleMenu} className="text-2xl hover:text-gray-200 transition">
+                        {isMenuOpen ? <FaXmark /> : <FaBars />}
+                    </button>
+                </div>
             </nav>
 
-            {/* For mobile menu */}
-            <div>
-                <ul>
-                    <div className={`absolute top-16 right-0 w-48 bg-white shadow-lg rounded-lg z-10 transition-all duration-300 ${isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 hidden'}`}>
-                        <ul>
-                            <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
-                                <button>Notification</button>
-                            </li>
-                            <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
-                                <button>Profile</button>
-                            </li>
-                            <li className="py-2 px-4 hover:bg-gray-100 cursor-pointer">
-                                <button onClick={handleLogout}
-                                disabled = {isLoggingOut}>
-                                    Logout</button>
-                            </li>
-                        </ul>
-                    </div>
-                </ul>
+            {/* Mobile Dropdown */}
+            <div
+                className={`lg:hidden transition-all duration-300 ease-in-out origin-top bg-white text-black shadow-md rounded-b-md overflow-hidden ${
+                    isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+                }`}
+            >
+                <div className="flex flex-col divide-y divide-gray-200">
+                    {user ? (
+                        <>
+                            <button className="w-full text-left px-4 py-3 hover:bg-gray-100">
+                                Notification
+                            </button>
+                            <button className="w-full text-left px-4 py-3 hover:bg-gray-100">
+                                Profile
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="w-full text-left px-4 py-3 hover:bg-gray-100"
+                            >
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            onClick={() => {
+                                setIsMenuOpen(false);
+                                router.push(FrontendRoutes.LOGIN);
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-100"
+                        >
+                            Sign in
+                        </button>
+                    )}
+                </div>
             </div>
-        </div >
+        </div>
     );
 }

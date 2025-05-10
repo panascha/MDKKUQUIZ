@@ -5,6 +5,7 @@ export interface Subject {
     name: string;
     description: string;
     img: string;
+    year:number;
     Category?: Category[];
 }
   

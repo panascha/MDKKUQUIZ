@@ -122,7 +122,7 @@ const Page = () => {
   };
 
   return (
-    <main className="mx-auto my-10 flex w-full max-w-screen-xl items-center justify-center justify-self-center px-8">
+    <main className="mx-auto pt-20 my-10 flex w-full max-w-screen-xl items-center justify-center justify-self-center px-8">
       <Tabs defaultValue="login" className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">Login</TabsTrigger>
