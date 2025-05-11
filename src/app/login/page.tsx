@@ -1,4 +1,5 @@
 "use client";
+import { ButtonWithLogo } from "@/components/magicui/Buttonwithlogo";
 import { InteractiveHoverButton } from "@/components/magicui/InteractiveHoverButton";
 import {
   Card,
@@ -123,15 +124,23 @@ const Page = () => {
 
   return (
     <main className="mx-auto pt-20 my-10 flex w-full max-w-screen-xl items-center justify-center justify-self-center px-8">
-      <Tabs defaultValue="login" className="w-[400px]">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="login">Login</TabsTrigger>
-          <TabsTrigger value="register">Register</TabsTrigger>
+      <Card>
+        <div className="flex items-center justify-center text-4xl">
+          MSEB
+        </div>
+      <Tabs defaultValue="login" className="w-[400px] px-3">
+        <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-md transition-all duration-300 ease-in-out">
+          <TabsTrigger value="login" className="transition-colors duration-300 ease-in-out cursor-pointer">
+            Login
+          </TabsTrigger>
+          <TabsTrigger value="register" className="transition-colors duration-300 ease-in-out cursor-pointer">
+            Register
+          </TabsTrigger>
         </TabsList>
 
         {/* Login Form */}
         <TabsContent value="login">
-          <Card>
+          <Card className="border-0 shadow-none">
             <CardHeader>
               <CardTitle>Login</CardTitle>
               <CardDescription>Enter your email and password.</CardDescription>
@@ -143,7 +152,7 @@ const Page = () => {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="user@email.com"
+                    placeholder="user@kkumail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -153,17 +162,30 @@ const Page = () => {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="********"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
                 {error && <p className="text-red-500">{error}</p>}
               </CardContent>
-              <CardFooter className="py-3">
-                <InteractiveHoverButton type="submit">
+              <CardFooter className="py-3 flex flex-col items-center gap-3">
+                {/* <InteractiveHoverButton type="submit">
                   Log in
-                </InteractiveHoverButton>
+                  </InteractiveHoverButton> */}
+                <ButtonWithLogo type="submit"> 
+                    Login
+                  </ButtonWithLogo>
+                  <div className="flex items-center justify-center">
+                    <div className="h-px bg-gray-300 w-16"></div>
+                    <span className="mx-2 text-gray-500">OR</span>
+                    <div className="h-px bg-gray-300 w-16"></div>
+                  </div>
+
+                  <ButtonWithLogo logo={<img src="/kkulogo.svg" alt="Logo" />} type="submit"
+                    className="bg-[#302E7A] hover:bg-[#302E7A]/90">
+                    KKU Single Sign On
+                  </ButtonWithLogo>
               </CardFooter>
             </form>
           </Card>
@@ -171,7 +193,7 @@ const Page = () => {
 
         {/* Register Form */}
         <TabsContent value="register">
-          <Card>
+          <Card className="border-0 shadow-none">
             <CardHeader>
               <CardTitle>Register</CardTitle>
               <CardDescription>Create your account.</CardDescription>
@@ -179,10 +201,10 @@ const Page = () => {
             <form onSubmit={handleRegister}>
               <CardContent className="space-y-2">
                 <div className="space-y-1">
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">Username</Label>
                   <Input
                     id="name"
-                    placeholder="Firstname Lastname"
+                    placeholder="Enter your username"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
@@ -192,7 +214,7 @@ const Page = () => {
                   <Input
                     id="reg-email"
                     type="email"
-                    placeholder="zeng@example.com"
+                    placeholder="user@kkumail.com"
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                   />
@@ -208,11 +230,11 @@ const Page = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="new-password">New Password</Label>
+                  <Label htmlFor="new-password">Password</Label>
                   <Input
                     id="new-password"
                     type="password"
-                    placeholder="********"
+                    placeholder="Enter your password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                   />
@@ -222,7 +244,7 @@ const Page = () => {
                   <Input
                     id="confirm-password"
                     type="password"
-                    placeholder="********"
+                    placeholder="Confirm your password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
@@ -230,14 +252,18 @@ const Page = () => {
                 {error && <p className="text-red-500">{error}</p>}
               </CardContent>
               <CardFooter className="py-3">
-                <InteractiveHoverButton type="submit">
+                {/* <InteractiveHoverButton type="submit">
                   Register
-                </InteractiveHoverButton>
+                </InteractiveHoverButton> */}
+                  <ButtonWithLogo type="submit"> 
+                    Register
+                  </ButtonWithLogo>
               </CardFooter>
             </form>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+        </Card>
     </main>
   );
 };
