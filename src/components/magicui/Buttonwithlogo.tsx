@@ -19,12 +19,13 @@ export const ButtonWithLogo = React.forwardRef<
             {...props}
         >
             {logo && (
-            <div className="w-8 h-7 me-4 flex items-center justify-center transition-all duration-300 group-hover:-translate-x-14">
+            <div className="w-8 h-7 me-4 flex items-center justify-center transition-all duration-300 group-hover:-translate-x-14 group-hover:opacity-0">
+                {/* Render logo only if provided */}
                 {logo}
             </div>
             )} {/* Render logo only if provided */}
             <span
-            className="text-sm text-center text-white transition-all duration-300 group-hover:translate-x-12 group-hover:opacity-0"
+            className="text-sm text-center text-white transition-all duration-300 group-hover:translate-x-8 group-hover:opacity-0"
             >
             {children}
             </span>
