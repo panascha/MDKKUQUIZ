@@ -39,8 +39,8 @@ export default function Navbar() {
             <nav className="flex items-center justify-between h-16 px-6 bg-green-700 text-white shadow-md">
                 {/* Logo and Home */}
                 <div className="flex items-center gap-4">
-                    <a href="/" className="text-2xl font-bold tracking-tight hover:text-gray-200 transition">
-                        MDKKUQUIZ
+                    <a href="/" className="text-2xl md:text-3xl font-bold tracking-tight hover:text-gray-200 transition duration-300 ease-in-out">
+                        MSEB
                     </a>
                     {user && (
                         <div className="hidden lg:flex gap-3 ml-4">
@@ -85,7 +85,7 @@ export default function Navbar() {
                     ) : (
                         <button
                             onClick={() => router.push(FrontendRoutes.LOGIN)}
-                            className="px-4 py-1.5 bg-white text-green-700 font-medium rounded-md hover:bg-gray-100 transition"
+                            className="px-4 py-1.5 bg-white text-green-700 font-medium rounded-md hover:bg-gray-100 cursor-pointer transition duration-300 ease-in-out hover:text-orange-500"
                         >
                             Sign in
                         </button>
@@ -94,7 +94,7 @@ export default function Navbar() {
 
                 {/* Mobile Menu Icon */}
                 <div className="lg:hidden">
-                    <button onClick={toggleMenu} className="text-2xl hover:text-gray-200 transition">
+                    <button onClick={toggleMenu} className="text-xl md:text-2xl hover:text-gray-200 transition">
                         {isMenuOpen ? <FaXmark /> : <FaBars />}
                     </button>
                 </div>
