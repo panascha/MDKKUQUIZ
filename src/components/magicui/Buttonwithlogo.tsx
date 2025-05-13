@@ -13,7 +13,7 @@ export const ButtonWithLogo = React.forwardRef<
         <button
             ref={ref}
             className={cn(
-            "justify-center cursor-pointer w-full text-white bg-[#525355] hover:bg-[#525355]/90 focus:ring-4 focus:outline-none focus:ring-[#24292F]/50 font-medium rounded-sm text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 dark:hover:bg-[#050708]/30 dark:bg-[#050708] transition-all duration-300 ease-in-out group",
+            "justify-center cursor-pointer w-full text-white bg-[#525355] hover:bg-[#525355]/90 focus:ring-2 focus:outline-none focus:ring-[#24292F]/50 font-medium rounded-sm text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 dark:hover:bg-[#050708]/30 dark:bg-[#050708] transition-all duration-300 ease-in-out group",
             className
             )}
             {...props}

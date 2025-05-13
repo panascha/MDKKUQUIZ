@@ -102,22 +102,22 @@ export default function Navbar() {
 
             {/* Mobile Dropdown */}
             <div
-                className={`lg:hidden transition-all duration-300 ease-in-out origin-top bg-white text-black shadow-md rounded-b-md overflow-hidden ${
+                className={`lg:hidden transition-all duration-300 ease-in-out origin-top bg-white text-black shadow-md rounded-b-sm overflow-hidden ${
                     isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
                 }`}
             >
                 <div className="flex flex-col divide-y divide-gray-200">
                     {user ? (
                         <>
-                            <button className="w-full text-left px-4 py-3 hover:bg-gray-100">
+                            <button className="w-full text-center px-4 py-3 hover:bg-gray-100">
                                 Notification
                             </button>
-                            <button className="w-full text-left px-4 py-3 hover:bg-gray-100">
+                            <button className="w-full text-center px-4 py-3 hover:bg-gray-100">
                                 Profile
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className="w-full text-left px-4 py-3 hover:bg-gray-100"
+                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
                             >
                                 Logout
                             </button>
@@ -128,7 +128,7 @@ export default function Navbar() {
                                 setIsMenuOpen(false);
                                 router.push(FrontendRoutes.LOGIN);
                             }}
-                            className="w-full text-left px-4 py-3 hover:bg-gray-100"
+                            className="w-full text-center px-4 py-3 hover:bg-gray-100"
                         >
                             Sign in
                         </button>
