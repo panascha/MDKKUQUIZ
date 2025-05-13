@@ -1,4 +1,5 @@
 "use client";
+import { Table } from "@/components/ui/Table";
 import { ButtonWithLogo } from "@/components/magicui/Buttonwithlogo";
 import { InteractiveHoverButton } from "@/components/magicui/InteractiveHoverButton";
 import {
@@ -263,7 +264,8 @@ const Page = () => {
           </Card>
         </TabsContent>
         </Tabs>
-        </Card>
+      </Card>
+
     </main>
   );
 };
