@@ -12,6 +12,8 @@ export interface Quiz {
     choice: Array<string>;
     correctAnswer: Array<string>;
     img: Array<string>;
+    img_citation: Array<string>;
+    explaination: string;
     approved: Boolean;
   }
   
