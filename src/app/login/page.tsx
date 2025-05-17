@@ -25,7 +25,7 @@ const Page = () => {
   const { data: session } = useSession();
   useEffect(() => {
     if (session) {
-      router.push(FrontendRoutes.MAIN);
+      router.push(FrontendRoutes.HOMEPAGE);
     }
   }, [session, router]);
 
@@ -61,7 +61,7 @@ const Page = () => {
         setError(result.error);
       } else {
         toast.success("Logged in successfully!", { id: toastId });
-        router.push(FrontendRoutes.MAIN);
+        router.push(FrontendRoutes.HOMEPAGE);
       }
     } catch {
       toast.error("Login failed. Please try again.", { id: toastId });
@@ -114,7 +114,7 @@ const Page = () => {
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push(FrontendRoutes.MAIN);
+        router.push(FrontendRoutes.HOMEPAGE);
       }
     } catch (error) {
       axios.isAxiosError(error)

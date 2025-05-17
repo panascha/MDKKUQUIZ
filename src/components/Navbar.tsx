@@ -45,8 +45,8 @@ export default function Navbar() {
                     {user && (
                         <div className="hidden lg:flex gap-3 ml-4">
                             <button
-                                onClick={() => router.push('/main')}
-                                className="px-4 py-1.5 rounded-md hover:bg-green-600 transition duration-300 ease-in-out font-medium cursor-pointer"
+                                onClick={() => router.push('/home')}
+                                className="px-4 py-1.5 rounded-md hover:bg-green-600 transition text-base font-medium"
                             >
                                 Home
                             </button>

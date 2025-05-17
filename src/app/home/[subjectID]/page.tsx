@@ -10,7 +10,6 @@ import axios from 'axios';
 import { BackendRoutes } from '@/config/apiRoutes';
 import Image from 'next/image';
 import ProtectedPage from '@/components/ProtectPage';
-import Navbar from '@/components/Navbar';
 
 
 const SubjectDetail = () => {
@@ -62,19 +61,12 @@ const SubjectDetail = () => {
             <div className="text-red-500 pt-4">Subject not found</div>
           );          
     }
-    const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
-        const image = e.target as HTMLImageElement;  // Type the target as an HTMLImageElement
-        image.classList.add('shake');
-        setTimeout(() => {
-            image.classList.remove('shake');
-        }, 500); // Duration of the shake animation
-    };    
 
     return (
         <ProtectedPage>
             <div className="container mx-auto p-4 pt-20 mt-10">
                 <Link
-                    href="/main"
+                    href="/home"
                     className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition duration-300 ease-in-out w-[40%] md:w-[30%] lg:w-[15%]"
                 >
                     <IoIosArrowBack className="text-xl" />
@@ -84,14 +76,12 @@ const SubjectDetail = () => {
                     <h1 className="text-4xl font-extrabold mb-6">{subject.name}</h1>
 
                     <div
-                        className="w-48 h-48 md:w-64 md:h-64 relative mx-auto rounded-full shadow-lg hover:scale-105 transition-transform duration-300 overflow-hidden cursor-pointer"
-                        onClick={handleImageClick}>
+                        className="w-48 h-48 md:w-64 md:h-64 relative mx-auto rounded-full shadow-lg hover:scale-105 transition-transform duration-300 overflow-hidden cursor-pointer">
                         <Image
                         src={`http://localhost:5000${subject.img}`}
                         alt={subject.name}
                         fill
                         className="object-cover rounded-full"
-                        onClick={handleImageClick}
                         />
                     </div>
 
@@ -99,7 +89,7 @@ const SubjectDetail = () => {
                 </div>
                 <div className="flex justify-center mt-8 gap-6">
                     <Link
-                        href={`/quiz/${subject.name}`}
+                        href={`${subjectID}/quiz`}
                         className="px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out"
                     >
                         Take Quiz

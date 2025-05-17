@@ -6,6 +6,5 @@ export interface Subject {
     description: string;
     img: string;
     year:number;
-    Category?: Category[];
 }
   
