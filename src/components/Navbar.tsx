@@ -46,7 +46,7 @@ export default function Navbar() {
                         <div className="hidden lg:flex gap-3 ml-4">
                             <button
                                 onClick={() => router.push('/main')}
-                                className="px-4 py-1.5 rounded-md hover:bg-green-600 transition text-base font-medium"
+                                className="px-4 py-1.5 rounded-md hover:bg-green-600 transition duration-300 ease-in-out font-medium cursor-pointer"
                             >
                                 Home
                             </button>
@@ -58,13 +58,13 @@ export default function Navbar() {
                 <div className="hidden lg:flex items-center gap-4">
                     {user ? (
                         <>
-                            <button className="p-2 hover:bg-green-600 rounded-full transition">
+                            <button className="p-2 hover:bg-green-600 rounded-full transition duration-300 ease-in-out cursor-pointer">
                                 <IoMdNotificationsOutline size={22} />
                             </button>
                             <div className="relative">
                                 <button
                                     onClick={toggleProfile}
-                                    className="px-4 py-1.5 bg-green-600 hover:bg-green-500 rounded-md transition font-medium"
+                                    className="px-4 py-1.5 bg-green-700 hover:bg-green-600 rounded-md transition duration-300 ease-in-out font-medium cursor-pointer"
                                 >
                                     {user.name}
                                 </button>

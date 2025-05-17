@@ -296,13 +296,13 @@ const Main = () => {
             {/* Push the dropdown to the far right */}
             <div className="ml-auto">
               <DropdownMenu>
-                <DropdownMenuTrigger className="hover:bg-sky-100 text-gray-700 font-medium rounded-lg p-2 transition-transform hover:scale-105 border border-gray-300 shadow-sm">
-                  Year
+                <DropdownMenuTrigger className="text-gray-700 hover:text-orange-500 font-medium rounded-lg p-2 border border-gray-300 shadow-sm cursor-pointer transition duration-300">
+                  {year ? `Year ${year}` : "All Years"}
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-white w-48">
+                <DropdownMenuContent className="bg-white w-48 shadow-lg rounded-lg p-1">
                   <DropdownMenuItem
                     onClick={() => setYear(null)}
-                    className="hover:bg-gray-100 cursor-pointer"
+                    className="hover:bg-gray-100 cursor-pointer transition-all"
                   >
                     All Years
                   </DropdownMenuItem>
@@ -310,7 +310,7 @@ const Main = () => {
                     <DropdownMenuItem
                       key={year}
                       onClick={() => setYear(year)}
-                      className="hover:bg-gray-100 cursor-pointer"
+                      className="hover:bg-gray-100 cursor-pointer transition-all"
                     >
                       Year {year}
                     </DropdownMenuItem>
