@@ -8,7 +8,7 @@ export interface Quiz {
     question: string;
     subject: Subject;
     category: Category;
-    type: Array<string>;
+    type: string;
     choice: Array<string>;
     correctAnswer: Array<string>;
     img: Array<string>;
