@@ -47,6 +47,7 @@ export enum FrontendRootRoutes {
   QUIZ = "/quiz",
   QUESTION = "/question",
   KEYWORD = "/keyword",
+  QUESTION_CREATE = "/question/create",
 }
 export enum FrontendRoutes {
   HOMEPAGE = FrontendRootRoutes.HOMEPAGE,
@@ -56,4 +57,5 @@ export enum FrontendRoutes {
   QUIZ = `${FrontendRootRoutes.QUIZ}`,
   QUESTION = `${FrontendRootRoutes.QUESTION}`,
   KEYWORD = `${FrontendRootRoutes.KEYWORD}`,
+  QUESTION_CREATE = `${FrontendRootRoutes.QUESTION_CREATE}`
 }

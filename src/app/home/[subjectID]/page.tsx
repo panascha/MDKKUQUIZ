@@ -98,25 +98,25 @@ const SubjectDetail = () => {
 
                     <p className="text-lg text-gray-600 mt-4">{subject.description}</p>
                 </div>
-                <div className="flex justify-center mt-8 gap-6">
+                <div className="flex flex-col sm:flex-row justify-center mt-8 gap-4 sm:gap-6">
                     <Link
                         href={`${subjectID}/quiz`}
-                        className="px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out"
+                        className="px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out text-center"
                     >
                         Take Quiz
-                        </Link>
-                    <button
-                        onClick={() => {router.push(FrontendRoutes.QUESTION)}}
-                        className="cursor-pointer px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out"
+                    </Link>
+                    <Link
+                        href={`${subjectID}/question`}
+                        className="cursor-pointer px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out text-center"
                     >
                         Explore Question
-                    </button>
-                    <button
-                        onClick={() => {router.push(FrontendRoutes.KEYWORD)}}
-                        className="cursor-pointer px-6 py-3 bg-yellow-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-yellow-700 transition duration-300 ease-in-out"
+                    </Link>
+                    <Link
+                        href={`${subjectID}/keyword`}
+                        className="cursor-pointer px-6 py-3 bg-yellow-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-yellow-700 transition duration-300 ease-in-out text-center"
                     >
                         Explore Keyword
-                    </button>
+                    </Link>
                 </div>
                 <div className="mt-10">
                     <h2 className="text-2xl font-bold mb-4">Topics Covered</h2>
