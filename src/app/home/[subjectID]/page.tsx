@@ -7,12 +7,18 @@ import { useSession } from 'next-auth/react';
 import { Subject } from '@/types/api/Subject';
 import { LoaderIcon } from 'react-hot-toast';
 import axios from 'axios';
-import { BackendRoutes } from '@/config/apiRoutes';
+import { BackendRoutes, FrontendRoutes } from '@/config/apiRoutes';
 import Image from 'next/image';
 import ProtectedPage from '@/components/ProtectPage';
+import Navbar from '@/components/Navbar';
+import Router from 'next/router';
+import { useRouter } from "next/navigation";
 
 
 const SubjectDetail = () => {
+
+    const router = useRouter();
+
     const [subject, setSubject] = useState<Subject | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -65,13 +71,18 @@ const SubjectDetail = () => {
     return (
         <ProtectedPage>
             <div className="container mx-auto p-4 pt-20 mt-10">
-                <Link
+                {/* <Link
                     href="/home"
                     className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition duration-300 ease-in-out w-[40%] md:w-[30%] lg:w-[15%]"
                 >
                     <IoIosArrowBack className="text-xl" />
                     <span className="text-lg font-medium">Back to Subjects</span>
-                </Link>
+                </Link> */}
+                <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
+                    <button onClick={() => router.push(FrontendRoutes.HOMEPAGE)} className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
+                        <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
+                    </button>
+                </div>
                 <div className="text-center mt-6">
                     <h1 className="text-4xl font-extrabold mb-6">{subject.name}</h1>
 
@@ -93,13 +104,19 @@ const SubjectDetail = () => {
                         className="px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out"
                     >
                         Take Quiz
-                    </Link>
-                    <Link
-                        href={`/atlas/${subject.name}`}
-                        className="px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out"
+                        </Link>
+                    <button
+                        onClick={() => {router.push(FrontendRoutes.QUESTION)}}
+                        className="cursor-pointer px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out"
                     >
-                        Explore Atlas
-                    </Link>
+                        Explore Question
+                    </button>
+                    <button
+                        onClick={() => {router.push(FrontendRoutes.KEYWORD)}}
+                        className="cursor-pointer px-6 py-3 bg-yellow-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-yellow-700 transition duration-300 ease-in-out"
+                    >
+                        Explore Keyword
+                    </button>
                 </div>
                 <div className="mt-10">
                     <h2 className="text-2xl font-bold mb-4">Topics Covered</h2>

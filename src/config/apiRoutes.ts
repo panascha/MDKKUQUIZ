@@ -44,10 +44,16 @@ export enum FrontendRootRoutes {
   PROFILE = "/profile",
   MAIN = "/main",
   HOMEPAGE = "/home",
+  QUIZ = "/quiz",
+  QUESTION = "/question",
+  KEYWORD = "/keyword",
 }
 export enum FrontendRoutes {
   HOMEPAGE = FrontendRootRoutes.HOMEPAGE,
   MAIN = FrontendRootRoutes.MAIN,
   LOGIN = `${FrontendRootRoutes.LOGIN}`,
   PROFILE = `${FrontendRootRoutes.PROFILE}`,
+  QUIZ = `${FrontendRootRoutes.QUIZ}`,
+  QUESTION = `${FrontendRootRoutes.QUESTION}`,
+  KEYWORD = `${FrontendRootRoutes.KEYWORD}`,
 }

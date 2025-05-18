@@ -74,8 +74,8 @@ export default function quiz(){
     }), [maxQuestions]);
 
     const defaultValues_AnswerMode = useMemo(() => ({
-        chillquiz: answerModes[0],
-        realtest: answerModes[1],
+        chillquiz: answerModes[1],
+        realtest: answerModes[0],
         custom: answerModes[0],
     }), [answerModes]);
 
@@ -186,8 +186,8 @@ export default function quiz(){
     return(
         <ProtectedPage>
             <div className="container max-w-5xl p-8 md:p-16 rounded-lg mt-6 mx-auto bg-white shadow-lg animate-fade-in pt-24">
-                <Link href="/subjects" className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition duration-300 ease-in-out mb-6">
-                <h1 className="text-4xl font-extrabold text-center w-full animate-slide-down">
+                <Link href="/subjects" className="flex items-center gap-2 text-black hover:text-orange-800 transition duration-300 ease-in-out mb-6">
+                <h1 className="text-4xl font-bold text-center animate-slide-down">
                     Quiz for {subject?.name}
                 </h1>
                 </Link>
@@ -197,12 +197,12 @@ export default function quiz(){
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-2xl font-semibold text-gray-800">Select Topics</h2>
                     <button
-                    className="px-5 py-2 rounded-lg text-lg font-semibold bg-teal-500 text-white shadow-md hover:bg-teal-600 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    className="cursor-pointer px-5 py-2 rounded-lg text-lg font-semibold bg-yellow-500 text-white shadow-md hover:bg-orange-600 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:bg-orange-400"
                     onClick={() => {
                         if (selectCategory.length === category.length) {
                         setSelectCategory([]);
                         } else {
-                        setSelectCategory(category.map(cat => cat.category));
+                        setSelectCategory(category.map(cat => cat._id));
                         }
                     }}
                     aria-label="Toggle select all topics"

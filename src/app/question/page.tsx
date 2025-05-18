@@ -20,6 +20,9 @@ const fetchQuestion = async (): Promise<Array<Quiz>> => {
 
 const Questions = () => {
     const router = useRouter();
+    const [questions, setQuestions] = useState<Quiz[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
 
     return (
