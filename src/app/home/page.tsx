@@ -296,8 +296,8 @@ const Main = () => {
             {/* Push the dropdown to the far right */}
             <div className="ml-auto">
               <DropdownMenu>
-                <DropdownMenuTrigger className="hover:bg-sky-100 text-gray-700 font-medium rounded-lg p-2 transition-transform hover:scale-105 border border-gray-300 shadow-sm">
-                  Year
+                <DropdownMenuTrigger className="cursor-pointer hover:bg-sky-100 text-gray-700 font-medium rounded-lg p-2 transition-transform hover:scale-105 border border-gray-300 shadow-sm">
+                  {year ? `Year ${year}` : "All Year"}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-white w-48">
                   <DropdownMenuItem
