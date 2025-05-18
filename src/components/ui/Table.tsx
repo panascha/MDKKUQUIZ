@@ -79,6 +79,8 @@ export const Table: React.FC<TableProps> = ({ headers, data }) => {
     );
 };
 
+export default Table;
+
 // Usage Example
       {/* <Table
         headers={["Name", "Email", "Year", "Action"]}
