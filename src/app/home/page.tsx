@@ -42,7 +42,7 @@ const Main = () => {
     const [showModal, setShowModal] = useState(false);
     const [editModal, setEditModal] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [year, setYear] = useState(null);
+    const [year, setYear] = useState<number | null>(null);
     const [formData, setFormData] = useState({
         name: "",
         description: "",
