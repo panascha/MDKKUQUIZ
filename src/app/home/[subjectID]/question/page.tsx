@@ -14,21 +14,27 @@ import { useEffect } from 'react';
 import { LoaderIcon } from 'react-hot-toast';
 import { useParams } from 'next/navigation';
 import { Category } from '@/types/api/Category';
+import Link from 'next/link';
 
 const Question = () => {
-
+    const router = useRouter();
     const params = useParams();
     const subjectID = params.subjectID;
-    const router = useRouter();
+    const quizID = params.quizID;
 
-    useSession();
+    const { data: session } = useSession();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
-    // Fetching questions
     const [questions, setQuestions] = useState<Quiz[]>([]);
 
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+
     useEffect(() => {
+        if (!subjectID) return;
+        if (!session) return;
+
         const fetchQuestions = async () => {
             try {
                 setIsLoading(true);
@@ -42,34 +48,27 @@ const Question = () => {
             }
         };
         fetchQuestions();
-    }, []);
 
-    // Fetch subjects
-    const [subjects, setSubjects] = useState<Subject[]>([]);
-    useEffect(() => {
         const fetchSubjects = async () => {
             try {
                 const response = await axios.get(BackendRoutes.SUBJECT);
                 setSubjects(response.data.data);
             } catch (err) {
-                console.error("Failed to fetch subjects:", err);
+                setError("Failed to fetch subjects.");
             }
         };
         fetchSubjects();
-    }, []);
 
-    const [categories, setCategories] = useState<Category[]>([]);
-    useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const response = await axios.get(BackendRoutes.CATEGORY);
                 setCategories(response.data.data);
             } catch (err) {
-                console.error("Failed to fetch categories:", err);
+                setError("Failed to fetch categories.");
             }
         };
         fetchCategories();
-    }, []);
+    }, [subjectID, session]);
 
     
     // Search and filter
@@ -105,7 +104,7 @@ const Question = () => {
                     currentSearchTerm
                         .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
                         ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
-
+                // it works for some reason do to fix
                 const subjectFilter = (q: Quiz) =>
                     !currentSubject || (q.subject && q.subject === currentSubject);
                 const categoryFilter = (q: Quiz) =>
@@ -192,9 +191,11 @@ const Question = () => {
         <ProtectedPage>
             <div className="container mx-auto p-4 mt-20 justify-center items-center flex flex-col">
                 <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
-                    <button onClick={() => router.push(FrontendRoutes.HOMEPAGE)} className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
+                    <Link href={`${FrontendRoutes.HOMEPAGE}/${subjectID}`}>
+                    <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
                         <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
                     </button>
+                    </Link>
                 </div>
                 <div className='absolute top-22 md:top-25 right-4 md:right-15'>
                     <button onClick={() => router.push(FrontendRoutes.QUESTION_CREATE)} className="border-1 mb-4 hover:bg-green-600 hover:text-white pl-2 p-3 rounded-sm transition duration-300 ease-in-out hover:opacity-60 cursor-pointer">
@@ -215,7 +216,7 @@ const Question = () => {
                         <input
                             id="search"
                             type="text"
-                            placeholder="Search from Name of Keyword, Keyword"
+                            placeholder="Search from Question, Choice, Answer"
                             className="border border-gray-300 rounded-md p-2 w-full"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
@@ -264,7 +265,7 @@ const Question = () => {
                                                 {categories.find((category) => category._id === selectedCategory)?.category}
                                             </span>
                                         )
-                                        : <span className="text-base sm:text-sm">All Topics</span>
+                                        : <span className="md:text-base text-sm">All Topics</span>
                                     }
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-48 sm:w-56 bg-white">
@@ -304,15 +305,19 @@ const Question = () => {
                         </div>
                     </div>
                 </section>
-                <Table headers={["id", "problem", "answer"]} data={filteredQuestions.map((question, index) => ({
-                    id: index + 1,
-                    problem: (
-                        <a
-                            href={`${FrontendRoutes.QUESTION}/${question._id}`}
-                            className="text-blue-600 hover:underline"
+                <Table headers={["#", "question", "answer"]} data={filteredQuestions.map((question, index) => ({
+                    "#": index + 1,
+                    question: (
+                        <button
+                            // href={`${FrontendRoutes.HOMEPAGE}/${subjectID}/question/${question._id}`}
+                            className="text-blue-600 cursor-pointer transition duration-300 ease-in-out hover:underline hover:text-blue-800"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                router.push(`${FrontendRoutes.HOMEPAGE}/${subjectID}/question/${question._id}`);
+                            }}
                         >
                             {question.question}
-                        </a>
+                        </button>
                     ),
                     answer: Array.isArray(question.correctAnswer)
                         ? question.correctAnswer.join(", ")
