@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState,useCallback } from 'react';
 import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { BackendRoutes, FrontendRoutes } from '@/config/apiRoutes';
@@ -34,7 +34,6 @@ const Question = () => {
                 setIsLoading(true);
                 const response = await axios.get(BackendRoutes.QUIZ);
                 setQuestions(response.data.data);
-                console.log(response.data.data);
                 setIsLoading(false);
             }
             catch (err) {
@@ -78,35 +77,60 @@ const Question = () => {
     const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectID as string | null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-    const [filteredQuestions, setFilteredQuestions] = useState<Quiz[]>([]);
+    type FilterOptions = {
+        searchTerm: string;
+        selectedSubject: string | null;
+        selectedCategory: string | null;
+    };
 
-    useEffect(() => {
-        const filterQuestions = () => {
-            const operators = ['and', 'or', 'not'];
-            const terms = searchTerm
-                .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
-                ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
+    const useFilteredQuestions = (
+        questions: Quiz[] | null,
+        { searchTerm, selectedSubject, selectedCategory }: FilterOptions
+    ) => {
+        const [filteredQuestions, setFilteredQuestions] = useState<Quiz[]>([]);
 
-            const result = questions.filter((q) => {
-                // If no search terms, include all
-                if (!terms.length) return (
-                    (selectedSubject ? q.subject === selectedSubject : true) &&
-                    (selectedCategory ? q.category === selectedCategory : true)
-                );
+        const filterQuestions = useCallback(
+            (
+                currentQuestions: Quiz[] | null,
+                currentSearchTerm: string,
+                currentSubject: string | null,
+                currentCategory: string | null
+            ) => {
+                if (!currentQuestions || currentQuestions.length === 0) {
+                    return [];
+                }
 
-                let includeQuestion = operators.includes(terms[0]) ? false : null;
-                let currentOperator = 'or';
+                const operators = ['and', 'or', 'not'];
+                const searchTerms =
+                    currentSearchTerm
+                        .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
+                        ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
 
-                for (let i = 0; i < terms.length; i++) {
-                    const term = terms[i];
+                const subjectFilter = (q: Quiz) =>
+                    !currentSubject || (q.subject && q.subject === currentSubject);
+                const categoryFilter = (q: Quiz) =>
+                    !currentCategory || (q.category && q.category === currentCategory);
 
-                    if (operators.includes(term)) {
-                        currentOperator = term;
-                    } else {
+                if (!searchTerms.length) {
+                    return currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q));
+                }
+
+                return currentQuestions.filter(q => {
+                    let includeQuestion: boolean | null = null;
+                    let currentOperator = 'or';
+
+                    for (let i = 0; i < searchTerms.length; i++) {
+                        const term = searchTerms[i];
+
+                        if (operators.includes(term)) {
+                            currentOperator = term;
+                            continue;
+                        }
+
                         const termInQuestion =
                             (q.question && q.question.toLowerCase().includes(term)) ||
-                            (Array.isArray(q.choice) && q.choice.join(' ').toLowerCase().includes(term)) ||
-                            (Array.isArray(q.correctAnswer) && q.correctAnswer.join(' ').toLowerCase().includes(term));
+                            (Array.isArray(q.choice) && q.choice.some(c => c.toLowerCase().includes(term))) ||
+                            (Array.isArray(q.correctAnswer) && q.correctAnswer.some(a => a.toLowerCase().includes(term)));
 
                         if (includeQuestion === null) {
                             includeQuestion = termInQuestion;
@@ -118,19 +142,26 @@ const Question = () => {
                             includeQuestion = includeQuestion && !termInQuestion;
                         }
                     }
-                }
+                    return !!includeQuestion && subjectFilter(q) && categoryFilter(q);
+                });
+            },
+            []
+        );
 
-                const matchesSubject = !selectedSubject || (q.subject && q.subject === selectedSubject);
-                const matchesCategory = !selectedCategory || (q.category && q.category === selectedCategory);
+        useEffect(() => {
+            setFilteredQuestions(
+                filterQuestions(questions, searchTerm, selectedSubject, selectedCategory)
+            );
+        }, [questions, searchTerm, selectedSubject, selectedCategory, filterQuestions]);
 
-                return !!includeQuestion && matchesSubject && matchesCategory;
-            });
+        return filteredQuestions;
+    };
 
-            setFilteredQuestions(result);
-        };
-
-        filterQuestions();
-    }, [questions, searchTerm, selectedSubject, selectedCategory]);
+    const filteredQuestions = useFilteredQuestions(questions, {
+        searchTerm,
+        selectedSubject,
+        selectedCategory,
+    });
 
     
 
@@ -178,7 +209,7 @@ const Question = () => {
                         <label htmlFor="search" className="text-sm md:text-md text-center md:text-left">
                             Search:
                             <small className="ml-2 text-gray-500">
-                                Try Pubmed search e.g. "strongyloides stercoralis" and/or/not "hookworm"
+                                Try Pubmed search e.g. "strongyloides" and/or/not "hookworm"
                             </small>
                         </label>
                         <input
