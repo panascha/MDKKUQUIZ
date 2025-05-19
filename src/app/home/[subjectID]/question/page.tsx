@@ -34,6 +34,7 @@ const Question = () => {
                 setIsLoading(true);
                 const response = await axios.get(BackendRoutes.QUIZ);
                 setQuestions(response.data.data);
+                console.log(response.data.data);
                 setIsLoading(false);
             }
             catch (err) {
@@ -71,76 +72,65 @@ const Question = () => {
         fetchCategories();
     }, []);
 
-    const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
-    const [categoriesBySubject, setCategoriesBySubject] = useState<Category[]>([]);
-    useEffect(() => {
-        const fetchCategoriesBySubject = async () => {
-            try {
-                if (params.subjectID) {
-                    const response = await axios.get(`${BackendRoutes.CATEGORY_BY_SUBJECTID}/${subjectID}`);
-                    setCategoriesBySubject(response.data.data);
-                }
-                else if (selectedSubject) {
-                    const response = await axios.get(`${BackendRoutes.CATEGORY_BY_SUBJECTID}/${selectedSubject}`);
-                    setCategoriesBySubject(response.data.data);
-                }
-                else {
-                    setCategoriesBySubject(categories)
-                }
-            } catch (err) {
-                console.error("Failed to fetch categories by subject:", err);
-            }
-        };
-        fetchCategoriesBySubject();
-    }, [subjectID, selectedSubject]);
-
+    
     // Search and filter
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-    const filteredQuestions = questions.filter((q) => {
-        const operators = ['and', 'or', 'not'];
-        const terms = searchTerm
-            .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
-            ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
+    const [filteredQuestions, setFilteredQuestions] = useState<Quiz[]>([]);
 
-        // If no search terms, include all
-        if (!terms.length) return (
-            (selectedSubject ? q.subject?._id === selectedSubject : true) &&
-            (selectedCategory ? q.category?._id === selectedCategory : true)
-        );
+    useEffect(() => {
+        const filterQuestions = () => {
+            const operators = ['and', 'or', 'not'];
+            const terms = searchTerm
+                .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
+                ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
 
-        let includeQuestion = operators.includes(terms[0]) ? false : null;
-        let currentOperator = 'or';
+            const result = questions.filter((q) => {
+                // If no search terms, include all
+                if (!terms.length) return (
+                    (selectedSubject ? q.subject === selectedSubject : true) &&
+                    (selectedCategory ? q.category === selectedCategory : true)
+                );
 
-        for (let i = 0; i < terms.length; i++) {
-            const term = terms[i];
+                let includeQuestion = operators.includes(terms[0]) ? false : null;
+                let currentOperator = 'or';
 
-            if (operators.includes(term)) {
-                currentOperator = term;
-            } else {
-                const termInQuestion =
-                    (q.question && q.question.toLowerCase().includes(term)) ||
-                    (Array.isArray(q.choice) && q.choice.join(' ').toLowerCase().includes(term)) ||
-                    (Array.isArray(q.correctAnswer) && q.correctAnswer.join(' ').toLowerCase().includes(term));
+                for (let i = 0; i < terms.length; i++) {
+                    const term = terms[i];
 
-                if (includeQuestion === null) {
-                    includeQuestion = termInQuestion;
-                } else if (currentOperator === 'and') {
-                    includeQuestion = includeQuestion && termInQuestion;
-                } else if (currentOperator === 'or') {
-                    includeQuestion = includeQuestion || termInQuestion;
-                } else if (currentOperator === 'not') {
-                    includeQuestion = includeQuestion && !termInQuestion;
+                    if (operators.includes(term)) {
+                        currentOperator = term;
+                    } else {
+                        const termInQuestion =
+                            (q.question && q.question.toLowerCase().includes(term)) ||
+                            (Array.isArray(q.choice) && q.choice.join(' ').toLowerCase().includes(term)) ||
+                            (Array.isArray(q.correctAnswer) && q.correctAnswer.join(' ').toLowerCase().includes(term));
+
+                        if (includeQuestion === null) {
+                            includeQuestion = termInQuestion;
+                        } else if (currentOperator === 'and') {
+                            includeQuestion = includeQuestion && termInQuestion;
+                        } else if (currentOperator === 'or') {
+                            includeQuestion = includeQuestion || termInQuestion;
+                        } else if (currentOperator === 'not') {
+                            includeQuestion = includeQuestion && !termInQuestion;
+                        }
+                    }
                 }
-            }
-        }
 
-        const matchesSubject = !selectedSubject || (q.subject && q.subject._id === selectedSubject);
-        const matchesCategory = !selectedCategory || (q.category && q.category._id === selectedCategory);
+                const matchesSubject = !selectedSubject || (q.subject && q.subject === selectedSubject);
+                const matchesCategory = !selectedCategory || (q.category && q.category === selectedCategory);
 
-        return !!includeQuestion && matchesSubject && matchesCategory;
-    });
+                return !!includeQuestion && matchesSubject && matchesCategory;
+            });
+
+            setFilteredQuestions(result);
+        };
+
+        filterQuestions();
+    }, [questions, searchTerm, selectedSubject, selectedCategory]);
 
     
 
@@ -254,8 +244,8 @@ const Question = () => {
                                         All Topics
                                     </DropdownMenuItem>
                                     {(
-                                        (selectedSubject && categoriesBySubject.length > 0)
-                                            ? categoriesBySubject
+                                        selectedSubject
+                                            ? (subjects.find(subject => subject._id === selectedSubject)?.Category ?? [])
                                             : categories
                                     ).map(category => (
                                         <DropdownMenuItem
