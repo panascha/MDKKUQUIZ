@@ -75,7 +75,7 @@ const Question = () => {
     
     // Search and filter
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+    const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectID as string | null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
     const [filteredQuestions, setFilteredQuestions] = useState<Quiz[]>([]);
