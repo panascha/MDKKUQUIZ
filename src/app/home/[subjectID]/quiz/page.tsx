@@ -1,4 +1,5 @@
 'use client'
+import { ButtonWithLogo } from "@/components/magicui/Buttonwithlogo";
 import ProtectedPage from "@/components/ProtectPage";
 import { BackendRoutes, FrontendRoutes, getCategoryBySubjectID, getQuizByFilter } from "@/config/apiRoutes";
 import { Category } from "@/types/api/Category";
@@ -197,7 +198,7 @@ export default function quiz(){
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-2xl font-semibold text-gray-800">Select Topics</h2>
                     <button
-                    className="cursor-pointer px-5 py-2 rounded-lg text-lg font-semibold bg-yellow-500 text-white shadow-md hover:bg-orange-600 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:bg-orange-400"
+                    className="cursor-pointer px-5 py-2 rounded-lg text-lg bg-yellow-600 text-white shadow-md hover:bg-orange-500 transition transform hover:scale-105 duration-300"
                     onClick={() => {
                         if (selectCategory.length === category.length) {
                         setSelectCategory([]);
@@ -214,11 +215,12 @@ export default function quiz(){
                     {category.map((cat) => (
                     <button
                         key={cat._id}
-                        className={`
-                        px-5 py-2 rounded-lg text-lg font-medium transition-colors duration-300 transform hover:scale-105
-                        bg-gray-200 text-gray-700
-                        focus:outline-none focus:ring-2 focus:ring-teal-400
-                        ${selectCategory.includes(String(cat._id)) ? 'ring-4 ring-amber-400 text-gray-900 shadow-inner' : ''}
+                            className={`
+                        cursor-pointer px-4 py-2 rounded-lg text-lg bg-gray-200 text-gray-800 shadow-md hover:bg-gray-300 hover:text-gray-900 transition transform hover:scale-105 duration-300
+                        focus:outline-none
+                        ${selectCategory.includes(String(cat._id)) ? 'bg-orange-500 text-white' : ''}
+                        ${selectCategory.includes(String(cat._id)) ? 'text-black shadow-inner' : ''}
+
                         `}
                         onClick={() => handleTopicToggle(cat._id)}
                         aria-pressed={selectCategory.includes(String(cat._id))}
@@ -234,19 +236,18 @@ export default function quiz(){
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Choose Quiz Type</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     {quizTypes.map((type) => (
-                    <button
+                    <ButtonWithLogo
                         key={type}
                         className={`
-                        px-4 py-2 rounded-lg text-lg font-medium transition-transform duration-300 transform hover:scale-105
-                        bg-gray-200 text-gray-700
-                        focus:outline-none focus:ring-4 focus:ring-teal-400
-                        ${quizType === type ? 'ring-4 ring-indigo-600 text-gray-900' : ''}
+                        px-2 py-4 transition-transform duration-300 transform hover:scale-105
+                        focus:outline-none focus:ring-2 focus:ring-orange-400
+                        ${quizType === type ? 'ring-3 ring-orange-600 text-gray-900' : ''}
                         `}
                         onClick={() => handleQuizTypeChange(type)}
                         aria-pressed={quizType === type}
                     >
-                        {type.charAt(0).toUpperCase() + type.slice(1).replace('quiz', ' Quiz')}
-                    </button>
+                        {type === 'chillquiz' ? 'Chill Quiz' : type === 'realtest' ? 'Real Test' : 'Custom Quiz'}
+                    </ButtonWithLogo>
                     ))}
                 </div>
                 </section>
@@ -254,21 +255,24 @@ export default function quiz(){
                 {/* Answer Mode */}
                 <section className="mb-8 animate-fade-in">
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Answer Mode</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-6">
                     {answerModes.map((mode) => (
-                    <button
+                    <ButtonWithLogo
                         key={mode}
                         className={`
-                        px-6 py-3 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105
-                        bg-gray-200 text-gray-700
-                        focus:outline-none focus:ring-2 focus:ring-teal-400
-                        ${answerMode === mode ? 'ring-4 ring-indigo-600 text-gray-900 shadow-lg' : ''}
+                        px-6 py-3 transition-transform duration-300 transform hover:scale-105
+                        
+                        focus:outline-none focus:ring-2 focus:ring-orange-400
+                        ${answerMode === mode ? 'ring-3 ring-orange-600 text-gray-900 shadow-lg' : ''}
                         `}
                         onClick={() => handleAnswerModeChange(mode)}
                         aria-pressed={answerMode === mode}
-                    >
+                        >
+                        <span className="block md:inline">
                         {mode.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-                    </button>
+                            <span className="inline md:hidden">{'\n'}</span>
+                        </span>
+                    </ButtonWithLogo>
                     ))}
                 </div>
                 </section>
@@ -276,21 +280,23 @@ export default function quiz(){
                 {/* Question Type */}
                 <section className="mb-8 animate-fade-in">
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Question Type</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-6">
                     {questionTypes.map((type) => (
-                    <button
+                    <ButtonWithLogo
                         key={type}
                         className={`
-                        px-6 py-3 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105
-                        bg-gray-200 text-gray-700
-                        focus:outline-none focus:ring-2 focus:ring-teal-400
-                        ${selectedQuestionTypes === type ? 'ring-4 ring-indigo-600 text-gray-900 shadow-lg' : ''}
+                            px-6 py-6 md:py-3 transition-transform duration-300 transform hover:scale-105
+                            focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm md:text-lg
+                            ${selectedQuestionTypes === type ? 'ring-3 ring-orange-600 text-gray-900 shadow-lg' : ''}
                         `}
                         onClick={() => handleQuestionTypeChange(type)}
                         aria-pressed={selectedQuestionTypes === type}
                     >
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </button>
+                        <span className="block md:inline">
+                            {type === 'mcq' ? 'MCQ' : type === 'shortanswer' ? 'Short answer' : type}
+                            <span className="inline md:hidden">{'\n'}</span>
+                        </span>
+                    </ButtonWithLogo>
                     ))}
                 </div>
                 </section>
@@ -298,17 +304,17 @@ export default function quiz(){
                 {/* Number of Questions */}
                 <section className="mb-8 animate-fade-in">
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Number of Questions</h2>
-                <div className="flex items-center gap-6 max-w-xs mx-auto">
+                <div className="flex items-center justify-center gap-4">
                     <button
-                        className="px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                        className="cursor-pointer px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105"
                         onClick={() => setQuestionCount((prev) => Math.max(0, prev - 5))}
                         aria-label="Decrease number of questions"
                         >
                         -
                     </button>
                     <input
-                        type="number"
-                        className="border border-gray-300 rounded-lg px-5 py-2 w-24 text-lg text-center focus:outline-none focus:ring-2 focus:ring-teal-400"
+                        type="input"
+                        className="border border-gray-300 rounded-lg px-5 py-2 w-24 text-lg text-center focus:outline-none focus:ring-2 focus:ring-orange-400"
                         value={questionCount}
                         onChange={handleQuestionCountChange}
                         placeholder={`Max: ${quiz.length}`}
@@ -317,7 +323,7 @@ export default function quiz(){
                         aria-label="Number of questions"
                     />
                     <button
-                        className="px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                        className="cursor-pointer px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105"
                         onClick={() => setQuestionCount((prev) => Math.min(quiz.length, prev + 5))}
                         aria-label="Increase number of questions">
                         +
@@ -328,24 +334,25 @@ export default function quiz(){
                     {selectedQuestionTypes.includes('shortanswer') && `Short Answer Questions Available: ${quiz.filter(q => q.type === "written").length}`}
                 </p>
                 </section>
-                <button
+                <ButtonWithLogo
                     onClick={handleStartQuiz}
                     className="
                         w-full
                         px-6 py-3
-                        text-lg font-bold
+                        text-lg font-semibold
                         text-white text-center
                         rounded-2xl
-                        bg-gradient-to-r from-teal-500 to-indigo-600
+                        bg-gradient-to-r from-cyan-500 to-blue-600
                         shadow-lg hover:shadow-xl
                         transition-all duration-300 ease-in-out
-                        hover:scale-105 hover:brightness-110
-                        focus:outline-none focus:ring-4 focus:ring-indigo-400
+                        hover:scale-102 hover:brightness-110
+                        focus:outline-none focus:ring-2 focus:ring-orange-400
                         animate-fade-in
                     "
-                    >
+                    emoji={<span role="img" aria-label="emoji">৻(  •̀ ᗜ •́  ৻)</span>}
+                >
                     🚀 Start Quiz
-                </button>
+                </ButtonWithLogo>
 
             </div>
         </ProtectedPage>

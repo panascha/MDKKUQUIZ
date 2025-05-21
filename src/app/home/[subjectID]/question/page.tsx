@@ -20,7 +20,6 @@ const Question = () => {
     const router = useRouter();
     const params = useParams();
     const subjectID = params.subjectID;
-    const quizID = params.quizID;
 
     const { data: session } = useSession();
     const [isLoading, setIsLoading] = useState(true);
@@ -106,9 +105,9 @@ const Question = () => {
                         ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
                 // it works for some reason do to fix
                 const subjectFilter = (q: Quiz) =>
-                    !currentSubject || (q.subject && q.subject === currentSubject);
+                    !currentSubject || (q.subject === currentSubject);
                 const categoryFilter = (q: Quiz) =>
-                    !currentCategory || (q.category && q.category === currentCategory);
+                    !currentCategory || (q.category === currentCategory);
 
                 if (!searchTerms.length) {
                     return currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q));

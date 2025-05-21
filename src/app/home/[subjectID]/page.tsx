@@ -13,6 +13,7 @@ import ProtectedPage from '@/components/ProtectPage';
 import Navbar from '@/components/Navbar';
 import Router from 'next/router';
 import { useRouter } from "next/navigation";
+import { ButtonWithLogo } from '@/components/magicui/Buttonwithlogo';
 
 
 const SubjectDetail = () => {
