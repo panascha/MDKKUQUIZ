@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { BackendRoutes } from '@/config/apiRoutes';
@@ -22,7 +22,9 @@ export default function Problem(){
     const answerMode = searchParams.get('answerMode');
     const questionCount = Number(searchParams.get('questionCount'));
     const selectedQuestionTypes = searchParams.get('questionType');
-    const selectCategory = (searchParams.get('categories') || '').split('%2C').filter(Boolean);
+    const selectCategory = useMemo(() => (
+    (searchParams.get('categories') || '').split(',').filter(Boolean)
+    ), [searchParams]);
     const [question, setQuestion] = useState<Question[]>([]);
     const [showQuestion, setShowQuestion] = useState<Question[]>([])
 
@@ -53,20 +55,31 @@ export default function Problem(){
                 console.error("Error fetching question:", error);
             }
         };
-        const filterQuestions = question.filter((item) => {
-            return selectCategory.includes(item.quiz.category._id);
-        });
-
-        function getRandomQuestion(array:Question[], count:number) {
-            const shuffled = [...array].sort(() => 0.5 - Math.random()); // Shuffle the array
-            return shuffled.slice(0, count); // Get first `count` items
-        }
         fetchQuestion();
-        setShowQuestion(getRandomQuestion(filterQuestions, questionCount));
 
     }, [subjectID, session?.data?.user.token]);
 
-    return (
+
+    const getRandomQuestion = useCallback((array: Question[], count: number) => {
+        const shuffled = [...array].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+    }, []);
+
+    useEffect(() => {
+        if (question.length === 0) return;
+
+        const filtered = question.filter((item) =>
+            selectCategory.includes(item.quiz.category)
+        );
+
+        console.log("Questions:", question.slice(0, 3));
+        console.log("Category IDs from questions:", question.map(q => q.quiz.category));
+        console.log("selectCategory:", selectCategory);
+        console.log("filtered", filtered);
+        const selected = getRandomQuestion(filtered, questionCount);
+        setShowQuestion(selected);
+    }, [question, questionCount, selectCategory]);
+    return(
         <ProtectedPage>
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 mx-auto">
             <h1>Problem</h1>
@@ -77,7 +90,7 @@ export default function Problem(){
             <p>Selected Question Types: {selectedQuestionTypes}</p>
             <p>Selected Categories: {selectCategory.join(', ')}</p>
             <Card className="px-10 py-2 bg-white shadow-md rounded-lg w-1/2">
-                {question.map((item, index) => (
+                {showQuestion.map((item, index) => (
                     <div key={index} className="mb-4">
                         <h2 className="font-semibold">{item.quiz?.question}</h2>
                         <p className="text-gray-600">Correct Answer: {item.quiz?.correctAnswer}</p>
