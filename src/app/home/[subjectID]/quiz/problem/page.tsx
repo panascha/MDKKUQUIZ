@@ -22,27 +22,18 @@ export default function Problem(){
     const answerMode = searchParams.get('answerMode');
     const questionCount = Number(searchParams.get('questionCount'));
     const selectedQuestionTypes = searchParams.get('questionType');
-    const selectCategory = (searchParams.get('categories') || '').split(',').filter(Boolean);
-    
-    // Fetch question filter by searchParams
-
+    const selectCategory = (searchParams.get('categories') || '').split('%2C').filter(Boolean);
     const [question, setQuestion] = useState<Question[]>([]);
+    const [showQuestion, setShowQuestion] = useState<Question[]>([])
 
-    // Helper to map API data to Question interface with quiz property
     useEffect(() => {
         const fetchQuestion = async () => {
+            if (!subjectID) return;
             try {
                 const response = await axios.get(
                     BackendRoutes.QUIZ_FILTER.replace(":subjectID", String(subjectID)),
                     {
-                        params: {
-                            quizType,
-                            answerMode,
-                            questionCount,
-                            questionType: selectedQuestionTypes,
-                            categories: selectCategory,
-                        },
-                        headers: {
+                        headers: {  
                             Authorization: `Bearer ${session?.data?.user.token}`,
                         },
                     }
@@ -62,9 +53,18 @@ export default function Problem(){
                 console.error("Error fetching question:", error);
             }
         };
+        const filterQuestions = question.filter((item) => {
+            return selectCategory.includes(item.quiz.category._id);
+        });
 
+        function getRandomQuestion(array:Question[], count:number) {
+            const shuffled = [...array].sort(() => 0.5 - Math.random()); // Shuffle the array
+            return shuffled.slice(0, count); // Get first `count` items
+        }
         fetchQuestion();
-    }, [subjectID, quizType, answerMode, questionCount, selectedQuestionTypes, selectCategory, session?.data?.user.token]);
+        setShowQuestion(getRandomQuestion(filterQuestions, questionCount));
+
+    }, [subjectID, session?.data?.user.token]);
 
     return (
         <ProtectedPage>
@@ -82,7 +82,7 @@ export default function Problem(){
                         <h2 className="font-semibold">{item.quiz?.question}</h2>
                         <p className="text-gray-600">Correct Answer: {item.quiz?.correctAnswer}</p>
                         <p className="text-gray-600">Your Answer: {item.select}</p>
-                        <p className="text-gray-600">Is Bookmarked: {item.isBookmarked ? 'Yes' : 'No'}</p>
+                        {/* <p className="text-gray-600">Is Bookmarked: {item.isBookmarked ? 'Yes' : 'No'}</p> */}
                         <p className="text-gray-600">Is Answered: {item.isAnswered ? 'Yes' : 'No'}</p>
                         <p className="text-gray-600">Is Submitted: {item.isSubmitted ? 'Yes' : 'No'}</p>
                         <p className="text-gray-600">Is Correct: {item.isCorrect ? 'Yes' : 'No'}</p>
