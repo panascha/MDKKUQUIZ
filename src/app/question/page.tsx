@@ -1,34 +1,200 @@
 "use client";
-import React, { useState } from 'react';
-import axios, { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
+import React, { useState,useCallback } from 'react';
+import axios from "axios";
+import { useRouter } from 'next/navigation';
 import { BackendRoutes, FrontendRoutes } from '@/config/apiRoutes';
 import { Quiz } from '@/types/api/Quiz';
+import { Subject } from '@/types/api/Subject';
 import ProtectedPage from '@/components/ProtectPage';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { Table } from '@/components/ui/Table';
+import Table from '@/components/ui/Table';
 import { IoIosArrowBack } from "react-icons/io";
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+import { LoaderIcon } from 'react-hot-toast';
+import { useParams } from 'next/navigation';
+import { Category } from '@/types/api/Category';
+import Link from 'next/link';
 
-
-const fetchQuestion = async (): Promise<Array<Quiz>> => {
-    const response = await axios.get(BackendRoutes.QUIZ);
-    if (Array.isArray(response.data)) {
-        return response.data;
-    }
-    throw new Error("Failed to fetch questions");
-};
-
-const Questions = () => {
+const Question = () => {
     const router = useRouter();
+    const params = useParams();
+    const subjectID = params.subjectID;
+
+    const { data: session } = useSession();
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    
+    const [questions, setQuestions] = useState<Quiz[]>([]);
+
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    useEffect(() => {
+        if (!subjectID) return;
+        if (!session) return;
+
+        const fetchQuestions = async () => {
+            try {
+                setIsLoading(true);
+                const response = await axios.get(BackendRoutes.QUIZ);
+                setQuestions(response.data.data);
+                setIsLoading(false);
+            }
+            catch (err) {
+                setError("Failed to fetch questions.");
+                setIsLoading(false);
+            }
+        };
+        fetchQuestions();
+
+        const fetchSubjects = async () => {
+            try {
+                const response = await axios.get(BackendRoutes.SUBJECT);
+                setSubjects(response.data.data);
+            } catch (err) {
+                setError("Failed to fetch subjects.");
+            }
+        };
+        fetchSubjects();
+
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get(BackendRoutes.CATEGORY);
+                setCategories(response.data.data);
+            } catch (err) {
+                setError("Failed to fetch categories.");
+            }
+        };
+        fetchCategories();
+    }, [subjectID, session]);
+
+    
+    // Search and filter
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectID as string | null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+    type FilterOptions = {
+        searchTerm: string;
+        selectedSubject: string | null;
+        selectedCategory: string | null;
+    };
+
+    const useFilteredQuestions = (
+        questions: Quiz[] | null,
+        { searchTerm, selectedSubject, selectedCategory }: FilterOptions
+    ) => {
+        const [filteredQuestions, setFilteredQuestions] = useState<Quiz[]>([]);
+
+        const filterQuestions = useCallback(
+            (
+                currentQuestions: Quiz[] | null,
+                currentSearchTerm: string,
+                currentSubject: string | null,
+                currentCategory: string | null
+            ) => {
+                if (!currentQuestions || currentQuestions.length === 0) {
+                    return [];
+                }
+
+                const operators = ['and', 'or', 'not'];
+                const searchTerms =
+                    currentSearchTerm
+                        .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
+                        ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
+                // it works for some reason do to fix
+                const subjectFilter = (q: Quiz) =>
+                    !currentSubject || (q.subject === currentSubject);
+                const categoryFilter = (q: Quiz) =>
+                    !currentCategory || (q.category === currentCategory);
+
+                if (!searchTerms.length) {
+                    return currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q));
+                }
+
+                return currentQuestions.filter(q => {
+                    let includeQuestion: boolean | null = null;
+                    let currentOperator = 'or';
+
+                    for (let i = 0; i < searchTerms.length; i++) {
+                        const term = searchTerms[i];
+
+                        if (operators.includes(term)) {
+                            currentOperator = term;
+                            continue;
+                        }
+
+                        const termInQuestion =
+                            (q.question && q.question.toLowerCase().includes(term)) ||
+                            (Array.isArray(q.choice) && q.choice.some(c => c.toLowerCase().includes(term))) ||
+                            (Array.isArray(q.correctAnswer) && q.correctAnswer.some(a => a.toLowerCase().includes(term)));
+
+                        if (includeQuestion === null) {
+                            includeQuestion = termInQuestion;
+                        } else if (currentOperator === 'and') {
+                            includeQuestion = includeQuestion && termInQuestion;
+                        } else if (currentOperator === 'or') {
+                            includeQuestion = includeQuestion || termInQuestion;
+                        } else if (currentOperator === 'not') {
+                            includeQuestion = includeQuestion && !termInQuestion;
+                        }
+                    }
+                    return !!includeQuestion && subjectFilter(q) && categoryFilter(q);
+                });
+            },
+            []
+        );
+
+        useEffect(() => {
+            setFilteredQuestions(
+                filterQuestions(questions, searchTerm, selectedSubject, selectedCategory)
+            );
+        }, [questions, searchTerm, selectedSubject, selectedCategory, filterQuestions]);
+
+        return filteredQuestions;
+    };
+
+    const filteredQuestions = useFilteredQuestions(questions, {
+        searchTerm,
+        selectedSubject,
+        selectedCategory,
+    });
+
+    
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center gap-3 pt-10">
+              <LoaderIcon /> Loading...
+            </div>
+          );          
+    }
+    
+    if (error) {
+        return (
+            <div className="text-red-500 flex items-center gap-2 pt-4">
+              <span>Error:</span> {error}
+            </div>
+          );          
+    }
+
+    if (!questions) {
+        return (
+            <div className="text-red-500 pt-4">Questions not found</div>
+          );          
+    }
 
 
     return (
         <ProtectedPage>
             <div className="container mx-auto p-4 mt-20 justify-center items-center flex flex-col">
                 <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
-                    <button onClick={() => router.push(FrontendRoutes.MAIN)} className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
+                    <Link href={`${FrontendRoutes.HOMEPAGE}/${subjectID}`}>
+                    <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
                         <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
                     </button>
+                    </Link>
                 </div>
                 <div className='absolute top-22 md:top-25 right-4 md:right-15'>
                     <button onClick={() => router.push(FrontendRoutes.QUESTION_CREATE)} className="border-1 mb-4 hover:bg-green-600 hover:text-white pl-2 p-3 rounded-sm transition duration-300 ease-in-out hover:opacity-60 cursor-pointer">
@@ -43,14 +209,16 @@ const Questions = () => {
                         <label htmlFor="search" className="text-sm md:text-md text-center md:text-left">
                             Search:
                             <small className="ml-2 text-gray-500">
-                                Try Pubmed search e.g. "strongyloides stercoralis" and/or/not "hookworm"
+                                Try Pubmed search e.g. "strongyloides" and/or/not "hookworm"
                             </small>
                         </label>
                         <input
                             id="search"
                             type="text"
-                            placeholder="Search from Name of Keyword, Keyword"
+                            placeholder="Search from Question, Choice, Answer"
                             className="border border-gray-300 rounded-md p-2 w-full"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <div className="flex flex-col gap-2 w-full md:w-5/12 md:flex-row md:gap-4">
@@ -60,12 +228,27 @@ const Questions = () => {
                             </label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger className="hover:bg-gray-200 border border-gray-300 rounded-md p-2 w-full transition duration-300 ease-in-out cursor-pointer">
-                                    All Subjects
+                                    {selectedSubject
+                                        ? (
+                                            <span className="md:text-base text-sm">
+                                                {subjects.find((subject) => subject._id === selectedSubject)?.name}
+                                            </span>
+                                        )
+                                        : <span className="md:text-base text-sm">All Subjects</span>
+                                    }
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-48 sm:w-56">
-                                    <DropdownMenuItem>Subject 1</DropdownMenuItem>
-                                    <DropdownMenuItem>Subject 2</DropdownMenuItem>
-                                    <DropdownMenuItem>Subject 3</DropdownMenuItem>
+                                <DropdownMenuContent className="w-48 sm:w-56 bg-white">
+                                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out">
+                                        <span onClick={() => setSelectedSubject(null)}>All Subjects</span>
+                                    </DropdownMenuItem>
+                                    {subjects.map((subject) => (
+                                        <DropdownMenuItem className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
+                                            key={subject._id}
+                                            onClick={() => setSelectedSubject(subject._id)}
+                                        >
+                                            {subject.name}
+                                        </DropdownMenuItem>
+                                    ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -75,42 +258,73 @@ const Questions = () => {
                             </label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger className="hover:bg-gray-200 border border-gray-300 rounded-md p-2 w-full transition duration-300 ease-in-out cursor-pointer">
-                                    All Topics
+                                    {selectedCategory
+                                        ? (
+                                            <span className="md:text-base text-sm">
+                                                {categories.find((category) => category._id === selectedCategory)?.category}
+                                            </span>
+                                        )
+                                        : <span className="md:text-base text-sm">All Topics</span>
+                                    }
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-48 sm:w-56">
-                                    <DropdownMenuItem>Topic 1</DropdownMenuItem>
-                                    <DropdownMenuItem>Topic 2</DropdownMenuItem>
-                                    <DropdownMenuItem>Topic 3</DropdownMenuItem>
+                                <DropdownMenuContent className="w-48 sm:w-56 bg-white">
+                                    <DropdownMenuItem
+                                        className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
+                                        onClick={() => setSelectedCategory(null)}
+                                    >
+                                        All Topics
+                                    </DropdownMenuItem>
+                                    {(
+                                        selectedSubject
+                                            ? (subjects.find(subject => subject._id === selectedSubject)?.Category ?? [])
+                                            : categories
+                                    ).map(category => (
+                                        <DropdownMenuItem
+                                            className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
+                                            key={category._id}
+                                            onClick={() => setSelectedCategory(category._id)}
+                                        >
+                                            {category.category}
+                                        </DropdownMenuItem>
+                                    ))}
+                                    {/* {(selectedSubject
+                                        ? categories.filter(category => category.subject?._id === selectedSubject)
+                                        : categories
+                                    ).map(category => (
+                                        <DropdownMenuItem
+                                            className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
+                                            key={category._id}
+                                            onClick={() => setSelectedCategory(category._id)}
+                                        >
+                                            {category.category}
+                                        </DropdownMenuItem>
+                                    ))} */}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
                     </div>
                 </section>
-                <Table headers={["#", "question", "answer", "status"]} data={[
-                    {
-                        "#": 1,
-                        question: { path: "/question/1", label: "What is the capital of France?" },
-                        answer: "Paris",
-                        status: "active"
-                    },
-                    {
-                        "#": 2,
-                        question: { path: "/question/2", label: "What is the capital of Germany?" },
-                        answer: "Berlin",
-                        status: "inactive"
-                    },
-                    {
-                        "#": 3,
-                        question: { path: "/question/3", label: "What is the capital of Italy?" },
-                        answer: "Rome",
-                        status: "active"
-                    }
-                ]} />
-
-
+                <Table headers={["#", "question", "answer"]} data={filteredQuestions.map((question, index) => ({
+                    "#": index + 1,
+                    question: (
+                        <button
+                            // href={`${FrontendRoutes.HOMEPAGE}/${subjectID}/question/${question._id}`}
+                            className="text-blue-600 cursor-pointer transition duration-300 ease-in-out hover:underline hover:text-blue-800"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                router.push(`${FrontendRoutes.HOMEPAGE}/${subjectID}/question/${question._id}`);
+                            }}
+                        >
+                            {question.question}
+                        </button>
+                    ),
+                    answer: Array.isArray(question.correctAnswer)
+                        ? question.correctAnswer.join(", ")
+                        : question.correctAnswer
+                }))} />
             </div>
         </ProtectedPage>
     );
 };
 
-export default Questions;
+export default Question;

@@ -178,7 +178,7 @@ useEffect(() => {
                     Report
                 </button>
             </Card>
-                <Card className="mt-4 p-4 bg-white shadow-md rounded-lg shadow-lg border-1 border-gray-200 w-6/10 flex-col md:flex-row md:space-x-6">
+                <Card className="mt-4 p-4 bg-white rounded-lg shadow-lg border-1 border-gray-200 w-6/10 flex-col md:flex-row md:space-x-6">
                     {/* Question text */}
                     <div className="md:w-1/2 flex flex-col justify-start">
                         <span className="text-base md:text-lg">Question: {question.question}</span>
