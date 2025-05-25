@@ -97,17 +97,17 @@ const Question = () => {
                 if (!currentQuestions || currentQuestions.length === 0) {
                     return [];
                 }
-
                 const operators = ['and', 'or', 'not'];
                 const searchTerms =
                     currentSearchTerm
                         .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
                         ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
-                // it works for some reason do to fix
-                const subjectFilter = (q: Quiz) =>
-                    !currentSubject || (q.subject === currentSubject);
-                const categoryFilter = (q: Quiz) =>
-                    !currentCategory || (q.category === currentCategory);
+                const subjectFilter = (q: Quiz) => {
+                    return !currentSubject || (q.subject === currentSubject);
+                };
+                const categoryFilter = (q: Quiz) => {
+                    return !currentCategory || (q.category === currentCategory);
+                };
 
                 if (!searchTerms.length) {
                     return currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q));

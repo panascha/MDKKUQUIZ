@@ -6,7 +6,7 @@ export interface Quiz {
     _id: string;
     user: UserProps;
     question: string;
-    subject: Subject;
+    subject: string;
     category: string;
     type: string;
     choice: Array<string>;
