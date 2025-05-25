@@ -7,6 +7,7 @@ import { Quiz } from '@/types/api/Quiz';
 import { Subject } from '@/types/api/Subject';
 import ProtectedPage from '@/components/ProtectPage';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import Table from '@/components/ui/Table';
 import { IoIosArrowBack } from "react-icons/io";
 import { useSession } from 'next-auth/react';
@@ -159,6 +160,8 @@ const Question = () => {
         selectedSubject,
         selectedCategory,
     });
+
+    const [showModal, setShowModal] = useState(false);
 
     
 
@@ -321,6 +324,227 @@ const Question = () => {
                         ? question.correctAnswer.join(", ")
                         : question.correctAnswer
                 }))} />
+
+                {/* Create Question Dialog */}
+                <Dialog
+          open={showModal}
+          onOpenChange={(open) => {
+            setShowModal(open);
+            if (!open) {
+            //   resetForm();
+              setError(null); // Reset error state when closing modal
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
+            <DialogHeader>
+              <DialogTitle>Create Question</DialogTitle>
+            </DialogHeader>
+            <form
+            //   onSubmit={handleSubmit}
+              className="w-full space-y-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Name Input */}
+              <div>
+                <label className="mb-1 block text-sm font-semibold">Question</label>
+                <input
+                  type="text"
+                  name="name"
+                //   value={formData.name}
+                //   onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  placeholder="Biology"
+                />
+                {error && error.includes('name') && (
+                  <p className="text-red-500 text-sm">Question is required.</p>
+                )}
+              </div>
+                
+              {/* Subject Dropdown */}
+            <div>
+                <label className="mb-1 block text-sm font-semibold">Subject</label>
+                <select
+                  name="subject"
+                //   value={formData.subject}
+                //   onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="" disabled>Select a subject</option>
+                  {subjects
+                    .sort((a, b) => a.year - b.year) // Sort subjects by year
+                    .map((subject) => (
+                      <option key={subject._id} value={subject._id}>
+                        {subject.name} ({subject.year})
+                      </option>
+                    ))}
+                </select>
+                {error && error.includes('subject') && (
+                  <p className="text-red-500 text-sm">Subject is required.</p>
+                )}
+            </div>
+
+            {/* Category Dropdown */}
+            <div>
+                <label className="mb-1 block text-sm font-semibold">Category</label>
+                <select
+                  name="category"
+                //   value={formData.category}
+                //   onChange={handleInputChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="" disabled>Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.category}
+                    </option>
+                  ))}
+                </select>
+                {error && error.includes('category') && (
+                  <p className="text-red-500 text-sm">Category is required.</p>
+                )}
+            </div>
+                            
+                            {/* Question Type (mcq,written) */}
+                            <div>
+                                <label className="mb-1 block text-sm font-semibold">Question Type</label>
+                                <select
+                                    name="type"
+                                    // value={formData.type}
+                                    // onChange={handleInputChange}
+                                    required
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                >
+                                    <option value="" disabled>Select a question type</option>
+                                    <option value="mcq">Multiple Choice</option>
+                                    <option value="written">Written</option>
+                                    <option value="both">Both</option>
+                                </select>
+                                {error && error.includes('type') && (
+                                    <p className="text-red-500 text-sm">Question type is required.</p>
+                                )}
+                            </div>
+
+                            {/* If Question Type === mcq show choice input and add + button to add more choices like google form */}
+                            {/* {(formData.type === 'mcq' && (
+                                <div>
+                                    <label className="mb-1 block text-sm font-semibold">Choices</label>
+                                    <div className="space-y-2">
+                                        {formData.choice.map((choice, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    name={`choice-${index}`}
+                                                    value={choice}
+                                                    onChange={(e) => handleChoiceChange(index, e.target.value)}
+                                                    required
+                                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                                    placeholder={`Choice ${index + 1}`}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeChoice(index)}
+                                                    className="text-red-500 hover:text-red-700"
+                                                >
+                                                    &times;
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            onClick={addChoice}
+                                            className="text-blue-600 hover:text-blue-800"
+                                        >
+                                            + Add Choice
+                                        </button>
+                                    </div>
+                                    {error && error.includes('choice') && (
+                                        <p className="text-red-500 text-sm">At least two choices are required.</p>
+                                    )}
+                                </div>
+                            )} */}
+
+                            {/* Correct Answer Input */}
+                            <div>
+                                <label className="mb-1 block text-sm font-semibold">Correct Answer</label>
+                                <input
+                                    type="text"
+                                    name="correctAnswer"
+                                    // value={formData.correctAnswer}
+                                    // onChange={handleInputChange}
+                                    required
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                    placeholder="Enter correct answer"
+                                />
+                                {error && error.includes('correctAnswer') && (
+                                    <p className="text-red-500 text-sm">Correct answer is required.</p>
+                                )}
+                </div>
+
+              {/* Image Upload (Optional) */}
+              {/* <div>
+                <label htmlFor="image" className="mb-1 block text-sm font-semibold">
+                  Upload Image (Optional)
+                </label>
+                <input
+                  type="file"
+                  name="image"
+                  id="image"
+                  accept="image/*"
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
+                />
+                {formData.image && (
+                  <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
+                )}
+                {!formData.image && existingImg && (
+                  <div className="mt-2">
+                    <Image
+                      src={existingImg}
+                      alt="Existing Image"
+                      width={0}
+                      height={0}
+                      className="rounded-lg"
+                    />
+                    <p className="text-sm text-gray-500 mt-2">Current Image</p>
+                  </div>
+                )}
+                {error && error.includes('image') && (
+                  <p className="text-red-500 text-sm">Please upload a valid image.</p>
+                )}
+              </div> */}
+              {/* Submit Button */}
+              <DialogFooter className="flex justify-between pt-4">
+                {/* <Button
+                  textButton="Submit"
+                  disabled={createMutation.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                >
+                  {createMutation.isPending ? (
+                    <>
+                      <LoaderIcon className="mr-2 inline animate-spin" size={16} />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Subject"
+                  )}
+                </Button> */}
+      
+                {/* Cancel Button */}
+                <DialogClose asChild>
+                  {/* <Button
+                    textButton="Cancel"
+                    className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                    onClick={resetForm}
+                  /> */}
+                </DialogClose>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
             </div>
         </ProtectedPage>
     );

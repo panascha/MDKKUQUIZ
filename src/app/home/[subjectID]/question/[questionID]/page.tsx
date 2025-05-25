@@ -157,69 +157,68 @@ useEffect(() => {
 
     return (
         <ProtectedPage>
-        <div className="flex flex-col items-center justify-center p-4 mt-20">
+        <div className="flex flex-col items-center justify-center p-4 mt-20 min-h-screen">
             <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
-                <Link href={`${FrontendRoutes.HOMEPAGE}/${subjectID}/question`}>
-                    <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
-                        <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
-                    </button>
-                </Link>
-            </div>
-            <h1 className="text-2xl font-bold">Question Detail</h1>
-            <Card className="mt-6 p-5 bg-white shadow-md rounded-lg relative w-full max-w-3xl gap-2">
-                <p className="mt-2 text-base md:text-lg">Subject: {subject?.name}</p>
-                <p className="mt-2 text-base md:text-lg">Category: {category?.category}</p>
-                {/* <p className="mt-2">Created by: {question.user}</p> */}
-                {/* <p className="mt-2">Last updated: {new Date(question.updatedAt).toLocaleDateString()}</p> */}
-                <button
-                    className="absolute cursor-pointer bottom-3 right-3 bg-orange-500 hover:bg-orange-600 text-white px-2 md:px-3 py-2 rounded shadow transition"
-                    onClick={() => alert('Report functionality coming soon!')}
-                >
-                    Report
+            <Link href={`${FrontendRoutes.HOMEPAGE}/${subjectID}/question`}>
+                <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
+                <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
                 </button>
+            </Link>
+            </div>
+            <h1 className="text-2xl font-bold mb-4 md:text-3xl">Question Detail</h1>
+            <Card className="mt-6 p-5 bg-white shadow-md rounded-lg relative w-full max-w-3xl gap-2">
+            <p className="mt-2 text-base md:text-lg">Subject: {subject?.name}</p>
+            <p className="mt-2 text-base md:text-lg">Category: {category?.category}</p>
+            <button
+                className="absolute cursor-pointer bottom-3 right-3 bg-orange-500 hover:bg-orange-600 text-white px-2 md:px-3 py-2 rounded shadow transition"
+                onClick={() => alert('Report functionality coming soon!')}
+            >
+                Report
+            </button>
             </Card>
-                <Card className="mt-4 p-4 bg-white rounded-lg shadow-lg border-1 border-gray-200 w-6/10 flex-col md:flex-row md:space-x-6">
-                    {/* Question text */}
-                    <div className="md:w-1/2 flex flex-col justify-start">
-                        <span className="text-base md:text-lg">Question: {question.question}</span>
-                        {/* Images */}
-                        {question.img && question.img.length > 0 && (
-                            <div className="flex flex-col items-center space-y-2 mt-4">
-                                <span className="text-base md:text-lg self-start">Image:</span>
-                                <div className="flex flex-wrap justify-center gap-2">
+            <Card className="mt-4 p-4 bg-white rounded-lg shadow-lg border-1 border-gray-200 w-full max-w-3xl flex-col md:flex-row md:space-x-6">
+                {/* Question text */}
+                <div className="md:w-1/2 flex flex-col justify-start">
+                <span className="text-base md:text-lg">Question: {question.question}</span>
+                {/* Images */}
+                {question.img && question.img.length > 0 && (
+                    <div className="flex flex-col items-center space-y-2 mt-4">
+                    <span className="text-base md:text-lg self-start">Image:</span>
+                    <div className="flex flex-wrap justify-center gap-2">
                                     <ImageGallery images={Array.isArray(question.img) ? question.img : [question.img]} />
-                                </div>
-                            </div>
-                        )}
+                                    {/* {<ImageGallery images={images} />} */}
                     </div>
-                    {/* Choices and Answers */}
-                    <div className="md:w-1/2 flex flex-col justify-start mt-4 md:mt-0">
-                        {question.choice && question.choice.length > 0 && (
-                            <div className="flex flex-col items-start">
-                                <span className="text-base md:text-lg">Choices:</span>
-                                <ul className="list-disc list-inside ml-4">
-                                    {question.choice.map((choice: string, idx: number) => (
-                                        <li key={idx} className="text-base md:text-lg">
-                                            {choice}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                        <div className="mt-4 flex flex-col items-start">
-                            <span className="text-base md:text-lg">
-                                Correct Answer{question.correctAnswer.length > 1 ? 's' : ''}:
-                            </span>
-                            <ul className="list-disc list-inside ml-4">
-                                {question.correctAnswer.map((ans: string, idx: number) => (
-                                    <li key={idx} className="text-base md:text-lg">
-                                        {ans}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
                     </div>
-                </Card>
+                )}
+                </div>
+                {/* Choices and Answers */}
+                <div className="md:w-1/2 flex flex-col justify-start mt-4 md:mt-0">
+                {question.choice && question.choice.length > 0 && (
+                    <div className="flex flex-col items-start">
+                    <span className="text-base md:text-lg">Choices:</span>
+                    <ul className="list-disc list-inside ml-4">
+                        {question.choice.map((choice: string, idx: number) => (
+                        <li key={idx} className="text-base md:text-lg">
+                            {choice}
+                        </li>
+                        ))}
+                    </ul>
+                    </div>
+                )}
+                <div className="mt-4 flex flex-col items-start">
+                    <span className="text-base md:text-lg">
+                    Correct Answer{question.correctAnswer.length > 1 ? 's' : ''}:
+                    </span>
+                    <ul className="list-disc list-inside ml-4">
+                    {question.correctAnswer.map((ans: string, idx: number) => (
+                        <li key={idx} className="text-base md:text-lg">
+                        {ans}
+                        </li>
+                    ))}
+                    </ul>
+                </div>
+                </div>
+            </Card>
 
         </div>
         </ProtectedPage>
