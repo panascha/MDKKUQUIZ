@@ -55,8 +55,6 @@ export default function quiz(){
             setCategory(Category.data.data);
             setSubject(Category.data.data[0]?.subject); 
             setQuiz(Quiz.data.data);
-            setMaxQuestions(Quiz.data.data.length);
-
             setIsLoading(false);
           } catch (err) {
             setError(`Failed to fetch category as : ${err}`);
@@ -66,6 +64,11 @@ export default function quiz(){
 
         fetchCategoryAndQuiz();
     }, [subjectID]);
+
+    const filteredQuiz = quiz.filter((item) => {
+        if(!selectCategory) return;
+        return selectCategory.includes(item.category);
+    })
 
     // Default Values
     const defaultValues_Question = useMemo(() => ({
@@ -100,17 +103,62 @@ export default function quiz(){
     
     // Event Handlers
     const handleQuizTypeChange = useCallback((type: QuizType) => {
+        // Update maxQuestions based on selected categories and quiz type
+        const filteredQuizzes = quiz.filter((item) => 
+            selectCategory.includes(item.category) && 
+            (defaultValues_QuestionType[type] === 'mcq' || 
+             (defaultValues_QuestionType[type] === 'shortanswer' && item.type === "written"))
+        );
+        const maxAvailable = filteredQuizzes.length;
+        setMaxQuestions(maxAvailable);
+
+        // Calculate default question count based on the type and available questions
+        let defaultCount = 0;
+        if (type === 'chillquiz') {
+            defaultCount = Math.min(10, Math.ceil(maxAvailable * 0.3));
+        } else if (type === 'realtest') {
+            defaultCount = Math.min(30, Math.ceil(maxAvailable * 0.8));
+        } else if (type === 'custom') {
+            defaultCount = maxAvailable;
+        }
+        
         setQuizType(type);
-        setQuestionCount(defaultValues_Question[type] || 0);
+        setQuestionCount(defaultCount);
         setAnswerMode(defaultValues_AnswerMode[type] || answerModes[0]);
         setSelectedQuestionTypes(defaultValues_QuestionType[type] || '');
-    }, [defaultValues_Question, defaultValues_AnswerMode, defaultValues_QuestionType, defaultValues_TimerEnabled, defaultValues_RandomizedQuestions, answerModes]);
+    }, [defaultValues_Question, defaultValues_AnswerMode, defaultValues_QuestionType, answerModes, quiz, selectCategory]);
 
     const handleTopicToggle = useCallback((category:string) => {
-        setSelectCategory((prev) =>
-            prev.includes(String(category)) ? prev.filter((t) => t !== String(category)) : [...prev, String(category)]
-        );
-    }, []);
+        setSelectCategory((prev) => {
+            const newSelection = prev.includes(String(category)) 
+                ? prev.filter((t) => t !== String(category)) 
+                : [...prev, String(category)];
+            
+            // Update maxQuestions based on the new selection
+            const filteredQuizzes = quiz.filter((item) => 
+                newSelection.includes(item.category) && 
+                (selectedQuestionTypes === 'mcq' || 
+                 (selectedQuestionTypes === 'shortanswer' && item.type === "written"))
+            );
+            const newMaxQuestions = filteredQuizzes.length;
+            setMaxQuestions(newMaxQuestions);
+
+            // Update questionCount if it exceeds the new max
+            if (questionCount > newMaxQuestions) {
+                let newCount = 0;
+                if (quizType === 'chillquiz') {
+                    newCount = Math.min(10, Math.ceil(newMaxQuestions * 0.3));
+                } else if (quizType === 'realtest') {
+                    newCount = Math.min(30, Math.ceil(newMaxQuestions * 0.8));
+                } else if (quizType === 'custom') {
+                    newCount = newMaxQuestions;
+                }
+                setQuestionCount(newCount);
+            }
+            
+            return newSelection;
+        });
+    }, [quiz, selectedQuestionTypes, questionCount, quizType]);
 
     const handleAnswerModeChange = useCallback((mode: AnswerModes) => {
         setAnswerMode(mode);
@@ -120,12 +168,12 @@ export default function quiz(){
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = Number(e.target.value);
             const maxAvailableQuestions = selectedQuestionTypes.includes('mcq')
-            ? quiz.length
-            : quiz.filter(q => q.type === "written").length;
+            ? filteredQuiz.length
+            : filteredQuiz.filter(q => q.type === "written").length;
 
             setQuestionCount(value > 0 ? Math.min(value, maxAvailableQuestions) : 0);
         },
-        [selectedQuestionTypes, quiz]
+        [selectedQuestionTypes, filteredQuiz]
     );
 
     const handleQuestionTypeChange = useCallback((type:string) => {
@@ -133,15 +181,43 @@ export default function quiz(){
     }, []);
 
     const handleStartQuiz = useCallback(() => {
-    if (!quizType || selectCategory.length === 0 || !answerMode || questionCount <= 0 || selectedQuestionTypes.length === 0 || questionCount > maxQuestions) {
-        alert('Please complete all quiz settings before starting.');
-        return;
-    }
-    else {
+        console.log('Quiz Settings:', {
+            quizType,
+            selectCategoryLength: selectCategory.length,
+            answerMode,
+            questionCount,
+            selectedQuestionTypes,
+            maxQuestions
+        });
+
+        if (!quizType) {
+            alert('Please select a quiz type');
+            return;
+        }
+        if (selectCategory.length === 0) {
+            alert('Please select at least one category');
+            return;
+        }
+        if (!answerMode) {
+            alert('Please select an answer mode');
+            return;
+        }
+        if (questionCount <= 0) {
+            alert('Please select at least one question');
+            return;
+        }
+        if (selectedQuestionTypes.length === 0) {
+            alert('Please select a question type');
+            return;
+        }
+        if (questionCount > maxQuestions) {
+            alert(`You can only select up to ${maxQuestions} questions`);
+            return;
+        }
+
         router.push(`${FrontendRoutes.HOMEPAGE}/${subjectID}/quiz/problem?${queryParams}`);
-    }
-    // No need to do anything else here if you handle sending via Link href
     }, [quizType, selectCategory, answerMode, questionCount, selectedQuestionTypes, maxQuestions]);
+
 
     const queryParams = new URLSearchParams({
     quizType,
@@ -198,17 +274,26 @@ export default function quiz(){
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-2xl font-semibold text-gray-800">Select Topics</h2>
                     <button
-                    className="cursor-pointer px-5 py-2 rounded-lg text-lg bg-yellow-600 text-white shadow-md hover:bg-orange-500 transition transform hover:scale-105 duration-300"
-                    onClick={() => {
-                        if (selectCategory.length === category.length) {
-                        setSelectCategory([]);
-                        } else {
-                        setSelectCategory(category.map(cat => cat._id));
-                        }
-                    }}
-                    aria-label="Toggle select all topics"
+                        className="cursor-pointer px-5 py-2 rounded-lg text-lg bg-yellow-600 text-white shadow-md hover:bg-orange-500 transition transform hover:scale-105 duration-300"
+                        onClick={() => {
+                            if (selectCategory.length === category.length) {
+                                setSelectCategory([]);
+                                setMaxQuestions(0);
+                            } else {
+                                // Select all categories
+                                const allCategoryIds = category.map(cat => cat._id);
+                                setSelectCategory(allCategoryIds);
+                                const filteredQuizzes = quiz.filter((item) => 
+                                    allCategoryIds.includes(item.category) && 
+                                    (selectedQuestionTypes === 'mcq' || 
+                                     (selectedQuestionTypes === 'shortanswer' && item.type === "written"))
+                                );
+                                setMaxQuestions(filteredQuizzes.length);
+                            }
+                        }}
+                        aria-label="Toggle select all topics"
                     >
-                    {selectCategory.length === category.length ? 'Deselect All' : 'Select All'}
+                        {selectCategory.length === category.length ? 'Deselect All' : 'Select All'}
                     </button>
                 </div>
                 <div className="flex flex-wrap gap-4">
@@ -232,28 +317,30 @@ export default function quiz(){
                 </section>
 
                 {/* Quiz Type Selection */}
-                <section className="mb-8 animate-fade-in">
+                <section className={`mb-8 animate-fade-in ${selectCategory.length === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Choose Quiz Type</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     {quizTypes.map((type) => (
-                    <ButtonWithLogo
-                        key={type}
-                        className={`
-                        px-2 py-4 transition-transform duration-300 transform hover:scale-105
-                        focus:outline-none focus:ring-2 focus:ring-orange-400
-                        ${quizType === type ? 'ring-3 ring-orange-600 text-gray-900' : ''}
-                        `}
-                        onClick={() => handleQuizTypeChange(type)}
-                        aria-pressed={quizType === type}
-                    >
-                        {type === 'chillquiz' ? 'Chill Quiz' : type === 'realtest' ? 'Real Test' : 'Custom Quiz'}
-                    </ButtonWithLogo>
+                        <ButtonWithLogo
+                            key={type}
+                            className={`
+                            px-2 py-4 transition-transform duration-300 transform hover:scale-105
+                            focus:outline-none focus:ring-2 focus:ring-orange-400
+                            ${quizType === type ? 'ring-3 ring-orange-600 text-gray-900' : ''}
+                            ${selectCategory.length === 0 ? 'cursor-not-allowed' : ''}
+                            `}
+                            onClick={() => handleQuizTypeChange(type)}
+                            aria-pressed={quizType === type}
+                            disabled={selectCategory.length === 0}
+                        >
+                            {type === 'chillquiz' ? 'Chill Quiz' : type === 'realtest' ? 'Real Test' : 'Custom Quiz'}
+                        </ButtonWithLogo>
                     ))}
                 </div>
                 </section>
 
                 {/* Answer Mode */}
-                <section className="mb-8 animate-fade-in">
+                <section className={`mb-8 animate-fade-in ${selectCategory.length === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Answer Mode</h2>
                 <div className="grid grid-cols-2 gap-6">
                     {answerModes.map((mode) => (
@@ -261,13 +348,14 @@ export default function quiz(){
                         key={mode}
                         className={`
                         px-6 py-3 transition-transform duration-300 transform hover:scale-105
-                        
                         focus:outline-none focus:ring-2 focus:ring-orange-400
                         ${answerMode === mode ? 'ring-3 ring-orange-600 text-gray-900 shadow-lg' : ''}
+                        ${selectCategory.length === 0 ? 'cursor-not-allowed' : ''}
                         `}
                         onClick={() => handleAnswerModeChange(mode)}
                         aria-pressed={answerMode === mode}
-                        >
+                        disabled={selectCategory.length === 0}
+                    >
                         <span className="block md:inline">
                         {mode.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                             <span className="inline md:hidden">{'\n'}</span>
@@ -278,7 +366,7 @@ export default function quiz(){
                 </section>
 
                 {/* Question Type */}
-                <section className="mb-8 animate-fade-in">
+                <section className={`mb-8 animate-fade-in ${selectCategory.length === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Question Type</h2>
                 <div className="grid grid-cols-2 gap-6">
                     {questionTypes.map((type) => (
@@ -288,9 +376,11 @@ export default function quiz(){
                             px-6 py-6 md:py-3 transition-transform duration-300 transform hover:scale-105
                             focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm md:text-lg
                             ${selectedQuestionTypes === type ? 'ring-3 ring-orange-600 text-gray-900 shadow-lg' : ''}
+                            ${selectCategory.length === 0 ? 'cursor-not-allowed' : ''}
                         `}
                         onClick={() => handleQuestionTypeChange(type)}
                         aria-pressed={selectedQuestionTypes === type}
+                        disabled={selectCategory.length === 0}
                     >
                         <span className="block md:inline">
                             {type === 'mcq' ? 'MCQ' : type === 'shortanswer' ? 'Short answer' : type}
@@ -302,36 +392,43 @@ export default function quiz(){
                 </section>
 
                 {/* Number of Questions */}
-                <section className="mb-8 animate-fade-in">
+                <section className={`mb-8 animate-fade-in ${selectCategory.length === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Number of Questions</h2>
                 <div className="flex items-center justify-center gap-4">
                     <button
-                        className="cursor-pointer px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105"
+                        className={`cursor-pointer px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105
+                            ${selectCategory.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
                         onClick={() => setQuestionCount((prev) => Math.max(0, prev - 5))}
                         aria-label="Decrease number of questions"
-                        >
+                        disabled={selectCategory.length === 0}
+                    >
                         -
                     </button>
                     <input
                         type="input"
-                        className="border border-gray-300 rounded-lg px-5 py-2 w-24 text-lg text-center focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className={`border border-gray-300 rounded-lg px-5 py-2 w-24 text-lg text-center focus:outline-none focus:ring-2 focus:ring-orange-400
+                            ${selectCategory.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
                         value={questionCount}
                         onChange={handleQuestionCountChange}
-                        placeholder={`Max: ${quiz.length}`}
+                        placeholder={`Max: ${filteredQuiz.length}`}
                         min={0}
-                        max={quiz.length}
+                        max={filteredQuiz.length}
                         aria-label="Number of questions"
+                        disabled={selectCategory.length === 0}
                     />
                     <button
-                        className="cursor-pointer px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105"
-                        onClick={() => setQuestionCount((prev) => Math.min(quiz.length, prev + 5))}
-                        aria-label="Increase number of questions">
+                        className={`cursor-pointer px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105
+                            ${selectCategory.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
+                        onClick={() => setQuestionCount((prev) => Math.min(filteredQuiz.length, prev + 5))}
+                        aria-label="Increase number of questions"
+                        disabled={selectCategory.length === 0}
+                    >
                         +
                     </button>
                 </div>
                 <p className="text-sm text-gray-600 mt-2 max-w-md mx-auto text-center">
-                    {selectedQuestionTypes.includes('mcq') && `MCQ Questions Available: ${quiz.length}`}
-                    {selectedQuestionTypes.includes('shortanswer') && `Short Answer Questions Available: ${quiz.filter(q => q.type === "written").length}`}
+                    {selectedQuestionTypes.includes('mcq') && `MCQ Questions Available: ${maxQuestions}`}
+                    {selectedQuestionTypes.includes('shortanswer') && `Short Answer Questions Available: ${filteredQuiz.filter(q => q.type === "written").length}`}
                 </p>
                 </section>
                 <ButtonWithLogo

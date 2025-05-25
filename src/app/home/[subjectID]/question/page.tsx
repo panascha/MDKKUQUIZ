@@ -102,12 +102,11 @@ const Question = () => {
                     currentSearchTerm
                         .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
                         ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
-                const subjectFilter = (q: Quiz) => {
-                    return !currentSubject || (q.subject === currentSubject);
-                };
-                const categoryFilter = (q: Quiz) => {
-                    return !currentCategory || (q.category === currentCategory);
-                };
+                // it works for some reason do to fix
+                const subjectFilter = (q: Quiz) =>
+                    !currentSubject || (q._id === currentSubject);
+                const categoryFilter = (q: Quiz) =>
+                    !currentCategory || (q.category === currentCategory);
 
                 if (!searchTerms.length) {
                     return currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q));
