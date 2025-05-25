@@ -323,7 +323,7 @@ export default function Problem(){
                                     </div>
                                 ) : null}
                                 <div className="flex flex-col gap-3 mt-6 w-full">
-                                    {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'one-by-one' && !showQuestion[currentQuestionIndex].isSubmitted && (
+                                    {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-after-each' && !showQuestion[currentQuestionIndex].isSubmitted && (
                                         <div className="flex gap-3">
                                             <button
                                                 className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2"
@@ -370,7 +370,7 @@ export default function Problem(){
                     >
                         View All Questions
                     </button>
-                    {answerMode === 'all-at-once' && allQuestionsAnswered && (
+                    {answerMode === 'reveal-at-end' && allQuestionsAnswered && (
                         <button
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                             //onClick={goToSummary}
@@ -378,7 +378,7 @@ export default function Problem(){
                             Submit All & Go to Summary
                         </button>
                     )}
-                    {answerMode === 'one-by-one' && allQuestionsSubmitted && (
+                    {answerMode === 'reveal-after-each' && allQuestionsSubmitted && (
                         <button
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                             //onClick={goToSummary}
@@ -429,6 +429,7 @@ export default function Problem(){
                                         onClick={() => navigateToQuestion(index)}
                                     >
                                         {/* {index + 1}. {q.problem.substring(0, 50)}{q.problem.length > 50 ? '...' : ''} */}
+                                        {index + 1}. {q.quiz.question.substring(0, 25)}{q.quiz.question.length > 25 ? '...' : ''}
                                     </button>
                                 ))}
                             </div>
