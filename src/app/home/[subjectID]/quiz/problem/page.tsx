@@ -2,24 +2,27 @@
 import React, { useCallback, useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { BackendRoutes } from '@/config/apiRoutes';
+import { BackendRoutes, FrontendRoutes } from '@/config/apiRoutes';
 import { useSession } from 'next-auth/react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Question } from '@/types/api/Question';
 import ProtectedPage from '@/components/ProtectPage';
-import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule } from '@mui/icons-material';
+import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule, Category } from '@mui/icons-material';
 import { Quiz } from '@/types/api/Quiz';
 import { Subject } from '@/types/api/Subject';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@/hooks/useUser';
 
 export default function Problem(){
     const session = useSession();
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
+    const queryClient = useQueryClient();
+    const { user } = useUser();
 
     const subjectID = params.subjectID;
 
-    const quizType = searchParams.get('quizType');
     const answerMode = searchParams.get('answerMode');
     const questionCount = Number(searchParams.get('questionCount'));
     const selectedQuestionTypes = searchParams.get('questionType');
@@ -27,6 +30,8 @@ export default function Problem(){
     (searchParams.get('categories') || '').split(',').filter(Boolean)
     ), [searchParams]);
 
+    const [seconds, setSeconds] = useState(0);
+    const [scoreID, setScoreID] = useState("");
     const [question, setQuestion] = useState<Question[]>([]);
     const [subject, setSubject] = useState<Subject>();
     const [showQuestion, setShowQuestion] = useState<Question[]>([])
@@ -36,10 +41,43 @@ export default function Problem(){
     const [zoomLevel] = useState(1);
     const [isQuestionTableOpen, setIsQuestionTableOpen] = useState(false);
     const [questionViewMode, setQuestionViewMode] = useState<'grid' | 'list'>('grid');
-    const [isInitialized, setIsInitialized] = useState(false);
 
     const allQuestionsAnswered = showQuestion.every(q => q.isAnswered);
     const allQuestionsSubmitted = showQuestion.every(q => q.isSubmitted);
+
+    const scoreMutation = useMutation({
+        mutationFn: async (scoreData: {
+            user: string;
+            Subject: string;
+            Category: string[];
+            Score: number;
+            FullScore: number;
+            Question: Array<{
+                Quiz: string;
+                Answer: string;
+                isCorrect: boolean;
+            }>;
+            timeTaken: number;
+        }) => {
+            if (!session?.data?.user.token) throw new Error("Authentication required");
+            
+            const response = await axios.post(BackendRoutes.SCORE, scoreData, {
+                headers: {
+                    Authorization: `Bearer ${session?.data?.user.token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            setScoreID(response.data.data._id)
+            return response.data.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["scores"] });
+        },
+        onError: (error: AxiosError<{ message: string }>) => {
+            console.error("Failed to submit score:", error);
+            alert(`Failed to submit score: ${error.response?.data?.message || error.message}`);
+        },
+    });
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -73,7 +111,6 @@ export default function Problem(){
                 };
                 setQuestion(mapToQuestion(response.data.data));
                 setSubject(subject.data.data);
-                console.log(response.data.data[0].subject);
             } catch (error) {
                 console.error("Error fetching question:", error);
             }
@@ -111,6 +148,20 @@ export default function Problem(){
         setShowQuestion(filtered.slice(0, questionCount));
     }, [question, questionCount, selectCategory]);
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+        setSeconds((prev) => prev + 1);
+        }, 1000);
+
+        return () => clearInterval(interval); // Cleanup on unmount
+    }, []);
+
+    const formatTime = (s: number) => {
+        const mins = Math.floor(s / 60);
+        const secs = s % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
+
     const currentQuestion = showQuestion[currentQuestionIndex];
 
     const handleQuestionNavigation = (direction: 'next' | 'previous') => {
@@ -123,10 +174,40 @@ export default function Problem(){
         }
     };
     
+    const submitScore = (totalScore: number) => {
+        // Get user ID from session
+        const userId = user._id;
+
+        if (!userId) {
+            alert("No user ID available in session");
+            return;
+        }
+
+        const scoreData = {
+            user: userId,
+            Subject: String(subjectID),
+            Category: selectCategory,
+            Score: totalScore,
+            FullScore: showQuestion.length,
+            Question: showQuestion.map(q => ({
+                Quiz: q.quiz._id,
+                Answer: q.select || '',
+                isCorrect: q.isCorrect || false
+            })),
+            timeTaken: seconds
+        };
+
+        try {
+            scoreMutation.mutate(scoreData);
+        } catch (error) {
+            alert("An unexpected error occurred while submitting the score");
+        }
+    };
+
     const handleSubmit = () => {
-        let totalScore = 0;
         if (answerMode === "reveal-at-end"){
             const updatedQuestions = [...showQuestion];
+            let totalScore = 0;
 
             updatedQuestions.forEach((question) => {
                 let isCorrect = false;
@@ -146,14 +227,16 @@ export default function Problem(){
                 question.isSubmitted = true;
                 if (isCorrect) totalScore++;
             });
+
             setShowQuestion(updatedQuestions);
+            submitScore(totalScore);
         }
         else {
             const checkAnswer = showQuestion.filter((q) => q.isCorrect);
-            totalScore = checkAnswer.length;
+            const totalScore = checkAnswer.length;
+            submitScore(totalScore);
         }
-
-        alert(`your score is : ${totalScore}`);
+        //router.push(FrontendRoutes.HOMEPAGE);
     }
 
     // const toggleBookmark = (index: number) => {
@@ -223,18 +306,21 @@ export default function Problem(){
         setQuestionViewMode(prevMode => (prevMode === 'grid' ? 'list' : 'grid'));
     };
 
-    // const goToSummary = () => {
-    // const currentQuestion = questions[currentQuestionIndex];
-    // };
+
     return(
         <ProtectedPage>
             <div className="container mt-20 p-4 sm:p-8 sm:border-2 sm:border-gray-300 rounded-xl shadow-lg bg-white mx-auto max-w-7xl"
                 onClick={() => isImageModalOpen && setIsImageModalOpen(false)}>
                 <div className="text-center mb-8">
                     <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{subject?.name}</h1>
-                    <p className="text-base sm:text-lg text-gray-600 mt-2 sm:mt-4 font-medium">
-                        Question {currentQuestionIndex + 1} of {showQuestion.length}
-                    </p>
+                    <div className="flex justify-between items-center">
+                        <p className="text-base sm:text-lg text-gray-600 mt-2 sm:mt-4 font-medium">
+                            Question {currentQuestionIndex + 1} of {showQuestion.length}
+                        </p>
+                        <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-semibold shadow-sm">
+                            Time: {formatTime(seconds)}
+                        </div>
+                    </div>
                 </div>
                 <div className="flex justify-between items-center gap-3 sm:gap-4 mt-6 mb-8">
                     <button
