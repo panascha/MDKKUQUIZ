@@ -410,7 +410,7 @@ export default function Problem(){
                                         {currentQuestion.quiz.choice.map((choice: string, index: number) => (
                                             <button
                                                 key={index}
-                                                className={`px-4 sm:px-6 py-3 rounded-lg transition-all duration-300 text-left w-full font-medium
+                                                className={`px-4 sm:px-6 py-3 rounded-lg text-left w-full font-medium
                                                     ${showQuestion[currentQuestionIndex].select === choice
                                                         ? 'bg-blue-600 text-white shadow-md'
                                                         : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}
@@ -442,7 +442,7 @@ export default function Problem(){
                                     </div>
                                 ) : null}
                                 <div className="flex flex-col gap-3 mt-6 w-full">
-                                    {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-after-each' && !showQuestion[currentQuestionIndex].isSubmitted && (
+                                    {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-after-each' && !showQuestion[currentQuestionIndex].isSubmitted && showQuestion[currentQuestionIndex].isAnswered && (
                                         <div className="flex gap-3">
                                             <button
                                                 className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2"
@@ -452,7 +452,9 @@ export default function Problem(){
                                                 Submit
                                             </button>
                                             <button
-                                                className="px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2"
+                                                className={`
+                                                px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2
+                                                ${showQuestion[currentQuestionIndex].isAnswered ? 'opacity-75 cursor-not-allowed' : ''}`}
                                                 onClick={clearAnswer}
                                             >
                                                 <Cancel className="mr-2" />
@@ -460,6 +462,19 @@ export default function Problem(){
                                             </button>
                                         </div>
                                     )}
+                                                                        {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-at-end' &&  showQuestion[currentQuestionIndex].isAnswered && (
+                                        <div className="flex w-full justify-end gap-3">
+                                            
+                                            <button
+                                                className="px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                                onClick={clearAnswer}
+                                            >
+                                                <Cancel className="mr-2" />
+                                                Clear Answer
+                                            </button>
+                                        </div>
+                                    )}
+                                    
                                     {showQuestion[currentQuestionIndex].isSubmitted && (
                                         <div className={`px-4 py-3 rounded-lg text-sm sm:text-base flex items-center font-medium
                                             ${showQuestion[currentQuestionIndex].isCorrect === true ? 'bg-green-100 text-green-700 border border-green-200'
