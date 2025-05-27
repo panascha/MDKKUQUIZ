@@ -38,8 +38,8 @@ export default function Problem(){
     const [questionViewMode, setQuestionViewMode] = useState<'grid' | 'list'>('grid');
     const [isInitialized, setIsInitialized] = useState(false);
 
-    const allQuestionsAnswered = question.every(q => q.isAnswered);
-    const allQuestionsSubmitted = question.every(q => q.isSubmitted);
+    const allQuestionsAnswered = showQuestion.every(q => q.isAnswered);
+    const allQuestionsSubmitted = showQuestion.every(q => q.isSubmitted);
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -122,6 +122,39 @@ export default function Problem(){
             setCurrentImageIndex(0);
         }
     };
+    
+    const handleSubmit = () => {
+        let totalScore = 0;
+        if (answerMode === "reveal-at-end"){
+            const updatedQuestions = [...showQuestion];
+
+            updatedQuestions.forEach((question) => {
+                let isCorrect = false;
+                if (selectedQuestionTypes === 'mcq') {
+                    const userAnswer = question.select || '';
+                    const correctAnswers = question.quiz.correctAnswer || [];
+                    isCorrect = userAnswer !== '' && correctAnswers.includes(userAnswer);
+                } else if (selectedQuestionTypes === 'shortanswer') {
+                    const userAnswer = question.select || '';
+                    const correctAnswers = question.quiz.correctAnswer || [];
+                    isCorrect = correctAnswers.some(correctAnswer => 
+                        userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()
+                    );
+                }
+                
+                question.isCorrect = isCorrect;
+                question.isSubmitted = true;
+                if (isCorrect) totalScore++;
+            });
+            setShowQuestion(updatedQuestions);
+        }
+        else {
+            const checkAnswer = showQuestion.filter((q) => q.isCorrect);
+            totalScore = checkAnswer.length;
+        }
+
+        alert(`your score is : ${totalScore}`);
+    }
 
     // const toggleBookmark = (index: number) => {
     //     setQuestions(prevQuestions =>
@@ -137,7 +170,7 @@ export default function Problem(){
             updatedQuestions[currentQuestionIndex].select = null;
             updatedQuestions[currentQuestionIndex].isAnswered = false;
             updatedQuestions[currentQuestionIndex].isCorrect = null;
-            setQuestion(updatedQuestions);
+            setShowQuestion(updatedQuestions);
         }
     };
 
@@ -146,7 +179,7 @@ export default function Problem(){
             const updatedQuestions = [...showQuestion];
             updatedQuestions[currentQuestionIndex].select = answer;
             updatedQuestions[currentQuestionIndex].isAnswered = true;
-            setQuestion(updatedQuestions);
+            setShowQuestion(updatedQuestions);
         }
     };
 
@@ -155,7 +188,7 @@ export default function Problem(){
             const updatedQuestions = [...showQuestion];
             updatedQuestions[currentQuestionIndex].select = value;
             updatedQuestions[currentQuestionIndex].isAnswered = value !== '';
-            setQuestion(updatedQuestions);
+            setShowQuestion(updatedQuestions);
         }
     };
 
@@ -373,7 +406,7 @@ export default function Problem(){
                     {answerMode === 'reveal-at-end' && allQuestionsAnswered && (
                         <button
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                            //onClick={goToSummary}
+                            onClick={handleSubmit}
                         >
                             Submit All & Go to Summary
                         </button>
@@ -381,7 +414,7 @@ export default function Problem(){
                     {answerMode === 'reveal-after-each' && allQuestionsSubmitted && (
                         <button
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                            //onClick={goToSummary}
+                            onClick={handleSubmit}
                         >
                             Go to Summary
                         </button>

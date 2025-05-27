@@ -112,8 +112,13 @@ export default function Navbar() {
                             <button className="w-full text-center px-4 py-3 hover:bg-gray-100">
                                 Notification
                             </button>
-                            <button className="w-full text-center px-4 py-3 hover:bg-gray-100">
-                                Profile
+                            <button
+                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    router.push(FrontendRoutes.HOMEPAGE);
+                                }}>
+                                Home
                             </button>
                             <button
                                 onClick={handleLogout}
