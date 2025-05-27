@@ -153,7 +153,7 @@ useEffect(() => {
     }
 
     // sample images for the image gallery
-    const images = ['/mdkkuview.jpg', '/mdkkulogo.png'];
+    // const images = ['/mdkkuview.jpg', '/mdkkulogo.png'];
 
     return (
         <ProtectedPage>

@@ -38,7 +38,14 @@ const Question = () => {
         const fetchQuestions = async () => {
             try {
                 setIsLoading(true);
-                const response = await axios.get(BackendRoutes.QUIZ);
+                const response = await axios.get(BackendRoutes.QUIZ, {
+                    headers: {
+                        Authorization: `Bearer ${session.user.token}`,
+                    },
+                    params: {
+                        subjectID: subjectID,
+                    },
+                });
                 setQuestions(response.data.data);
                 setIsLoading(false);
             }
@@ -51,7 +58,11 @@ const Question = () => {
 
         const fetchSubjects = async () => {
             try {
-                const response = await axios.get(BackendRoutes.SUBJECT);
+                const response = await axios.get(BackendRoutes.SUBJECT, {
+                    headers: {
+                        Authorization: `Bearer ${session.user.token}`,
+                    },
+                });
                 setSubjects(response.data.data);
             } catch (err) {
                 setError("Failed to fetch subjects.");
@@ -61,7 +72,11 @@ const Question = () => {
 
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(BackendRoutes.CATEGORY);
+                const response = await axios.get(BackendRoutes.CATEGORY, {
+                    headers: {
+                        Authorization: `Bearer ${session.user.token}`,
+                    },
+                });
                 setCategories(response.data.data);
             } catch (err) {
                 setError("Failed to fetch categories.");
@@ -104,12 +119,17 @@ const Question = () => {
                         .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
                         ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
                 // it works for some reason do to fix
-                const subjectFilter = (q: Quiz) =>
-                    !currentSubject || (q._id === currentSubject);
-                const categoryFilter = (q: Quiz) =>
-                    !currentCategory || (q.category === currentCategory);
+                const subjectFilter = (q: Quiz) => {
+                    // console.log(q.subject, currentSubject);
+                    return !currentSubject || (q.subject._id === currentSubject);
+                };
+                const categoryFilter = (q: Quiz) => {
+                    // console.log(q.category, currentCategory);
+                    return !currentCategory || (q.category._id === currentCategory);
+                };
 
                 if (!searchTerms.length) {
+                    // console.log("No search terms provided, returning all questions", currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q)));
                     return currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q));
                 }
 

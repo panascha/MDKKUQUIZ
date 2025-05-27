@@ -12,6 +12,7 @@ import { Quiz } from '@/types/api/Quiz';
 import { Subject } from '@/types/api/Subject';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@/hooks/useUser';
+import ImageGallery from '@/components/magicui/ImageGallery';
 
 export default function Problem(){
     const session = useSession();
@@ -306,7 +307,6 @@ export default function Problem(){
         setQuestionViewMode(prevMode => (prevMode === 'grid' ? 'list' : 'grid'));
     };
 
-
     return(
         <ProtectedPage>
             <div className="container mt-20 p-4 sm:p-8 sm:border-2 sm:border-gray-300 rounded-xl shadow-lg bg-white mx-auto max-w-7xl"
@@ -347,46 +347,48 @@ export default function Problem(){
                     {currentQuestion && (
                         <div className="mb-8 sm:mb-12 flex flex-col md:flex-row justify-center items-center gap-6 w-full">
                             {currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 && (
-                                <div className="mb-6 md:mb-0 md:w-1/2 flex flex-col items-center justify-center relative">
-                                    <button
-                                        className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white text-gray-700 px-3 py-2 rounded-full hover:bg-gray-100 z-10 shadow-md transition-all duration-300 hover:shadow-lg"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setCurrentImageIndex((prevIndex) => (prevIndex - 1 + currentQuestion.quiz.img.length) % currentQuestion.quiz.img.length);
-                                        }}
-                                    >
-                                        &#8249;
-                                    </button>
-                                    <div
-                                        className="w-full h-72 sm:h-80 md:h-96 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setIsImageModalOpen(true);
-                                        }}
-                                    >
-                                        <div className="w-full flex items-center justify-center h-full bg-gray-50">
-                                            <img
-                                                //src={transformUrl(currentQuestion.img[currentImageIndex])}
-                                                alt={`Question ${currentImageIndex + 1}`}
-                                                className="object-contain max-w-full max-h-full transition-transform duration-300 ease-in-out"
-                                            />
-                                        </div>
-                                    </div>
-                                    <button
-                                        className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white text-gray-700 px-3 py-2 rounded-full hover:bg-gray-100 z-10 shadow-md transition-all duration-300 hover:shadow-lg"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setCurrentImageIndex((prevIndex) => (prevIndex + 1) % currentQuestion.quiz.img.length);
-                                        }}
-                                    >
-                                        &#8250;
-                                    </button>
-                                    <div className="text-sm text-gray-500 text-center mt-3 font-medium">
-                                        {currentImageIndex + 1} / {currentQuestion.quiz.img.length}
-                                    </div>
-                                </div>
+                                // <div className="mb-6 md:mb-0 md:w-1/2 flex flex-col items-center justify-center relative">
+                                //     <button
+                                //         className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white text-gray-700 px-3 py-2 rounded-full hover:bg-gray-100 z-10 shadow-md transition-all duration-300 hover:shadow-lg"
+                                //         onClick={(e) => {
+                                //             e.stopPropagation();
+                                //             setCurrentImageIndex((prevIndex) => (prevIndex - 1 + currentQuestion.quiz.img.length) % currentQuestion.quiz.img.length);
+                                //         }}
+                                //     >
+                                //         &#8249;
+                                //     </button>
+                                //     <div
+                                //         className="w-full h-72 sm:h-80 md:h-96 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
+                                //         onClick={(e) => {
+                                //             e.stopPropagation();
+                                //             setIsImageModalOpen(true);
+                                //         }}
+                                //     >
+                                //         <div className="w-full flex items-center justify-center h-full bg-gray-50">
+                                //             <img
+                                //                 //src={transformUrl(currentQuestion.img[currentImageIndex])}
+                                //                 alt={`Question ${currentImageIndex + 1}`}
+                                //                 className="object-contain max-w-full max-h-full transition-transform duration-300 ease-in-out"
+                                //             />
+                                //         </div>
+                                //     </div>
+                                //     <button
+                                //         className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white text-gray-700 px-3 py-2 rounded-full hover:bg-gray-100 z-10 shadow-md transition-all duration-300 hover:shadow-lg"
+                                //         onClick={(e) => {
+                                //             e.stopPropagation();
+                                //             setCurrentImageIndex((prevIndex) => (prevIndex + 1) % currentQuestion.quiz.img.length);
+                                //         }}
+                                //     >
+                                //         &#8250;
+                                //     </button>
+                                //     <div className="text-sm text-gray-500 text-center mt-3 font-medium">
+                                //         {currentImageIndex + 1} / {currentQuestion.quiz.img.length}
+                                //     </div>
+                                // </div>
+                                
+                                <ImageGallery images={currentQuestion.quiz.img} />
                             )}
-                            <div className={`md:w-1/2 ${currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 ? 'md:pl-8' : ''} flex flex-col items-center justify-center`}>
+                            <div className={`w-full md:w-1/2 ${currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 ? 'md:pl-8' : ''} flex flex-col items-center justify-center px-6`}>
                                 <div className="flex justify-between w-full items-center mb-4">
                                     <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
                                         {currentQuestion.quiz.question}
@@ -406,7 +408,7 @@ export default function Problem(){
                                     </button>
                                 </div>
                                 {selectedQuestionTypes === 'mcq' ? (
-                                    <div className="flex flex-col items-center gap-3 sm:gap-4 w-full">
+                                    <div className="flex flex-col items-center gap-4 w-full">
                                         {currentQuestion.quiz.choice.map((choice: string, index: number) => (
                                             <button
                                                 key={index}
