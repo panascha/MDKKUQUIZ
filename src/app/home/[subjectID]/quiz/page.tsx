@@ -66,7 +66,8 @@ export default function quiz(){
     }, [subjectID]);
 
     const filteredQuiz = quiz.filter((item) => {
-        if(!selectCategory) return;
+        if (!selectCategory) return;
+        console.log
         return selectCategory.includes(item.category);
     })
 

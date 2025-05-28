@@ -36,7 +36,7 @@ export default function Navbar() {
 
     return (
         <div className="fixed top-0 left-0 w-full z-[200]">
-            <nav className="flex items-center justify-between h-16 px-6 bg-green-700 text-white shadow-md">
+            <nav className="flex items-center justify-between h-16 px-6 bg-blue-950 text-white shadow-md">
                 {/* Logo and Home */}
                 <div className="flex items-center gap-4">
                     <a href="/" className="text-2xl md:text-3xl font-bold tracking-tight hover:text-gray-200 transition duration-300 ease-in-out">
@@ -46,7 +46,7 @@ export default function Navbar() {
                         <div className="hidden lg:flex gap-3 ml-4">
                             <button
                                 onClick={() => router.push('/home')}
-                                className="px-4 py-1.5 rounded-md hover:bg-green-600 transition text-base font-medium"
+                                className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
                             >
                                 Home
                             </button>
@@ -58,13 +58,13 @@ export default function Navbar() {
                 <div className="hidden lg:flex items-center gap-4">
                     {user ? (
                         <>
-                            <button className="p-2 hover:bg-green-600 rounded-full transition duration-300 ease-in-out cursor-pointer">
+                            <button className="p-2 hover:bg-gray-100 hover:text-blue-950 rounded-full transition duration-300 ease-in-out cursor-pointer">
                                 <IoMdNotificationsOutline size={22} />
                             </button>
                             <div className="relative">
                                 <button
                                     onClick={toggleProfile}
-                                    className="px-4 py-1.5 bg-green-700 hover:bg-green-600 rounded-md transition duration-300 ease-in-out font-medium cursor-pointer"
+                                    className="px-4 py-1.5 hover:bg-gray-100 hover:text-blue-950 rounded-md transition duration-300 ease-in-out font-medium cursor-pointer"
                                 >
                                     {user.name}
                                 </button>
@@ -85,7 +85,7 @@ export default function Navbar() {
                     ) : (
                         <button
                             onClick={() => router.push(FrontendRoutes.LOGIN)}
-                            className="px-4 py-1.5 bg-white text-green-700 font-medium rounded-md hover:bg-gray-100 cursor-pointer transition duration-300 ease-in-out hover:text-orange-500"
+                            className="px-4 py-1.5 bg-gray-100 hover:bg-gray-300 text-blue-950 hover:text-blue-900 font-medium rounded-md transition duration-300 ease-in-out cursor-pointer"
                         >
                             Sign in
                         </button>

@@ -120,7 +120,7 @@ const Question = () => {
                         ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
                 // it works for some reason do to fix
                 const subjectFilter = (q: Quiz) => {
-                    // console.log(q.subject, currentSubject);
+                    console.log(q.subject, currentSubject);
                     return !currentSubject || (q.subject._id === currentSubject);
                 };
                 const categoryFilter = (q: Quiz) => {
