@@ -87,8 +87,10 @@ export default function Problem(){
                 const response = await axios.get(
                     BackendRoutes.QUIZ_FILTER.replace(":subjectID", String(subjectID)),
                     {
-                        headers: {  
-                            Authorization: `Bearer ${session?.data?.user.token}`,
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${session.data?.user.token}`,
                         },
                     }
                 );
@@ -112,6 +114,7 @@ export default function Problem(){
                 };
                 setQuestion(mapToQuestion(response.data.data));
                 setSubject(subject.data.data);
+                console.log(response.data.data);
             } catch (error) {
                 console.error("Error fetching question:", error);
             }
@@ -131,7 +134,7 @@ export default function Problem(){
         if (question.length === 0) return;
 
         const filtered = question.filter((item) =>
-            selectCategory.includes(item.quiz.category)
+            selectCategory.includes(item.quiz.category._id)
         );
 
         const selected = getRandomQuestion(filtered, questionCount);
@@ -143,7 +146,7 @@ export default function Problem(){
         if (question.length === 0) return;
 
         const filtered = question.filter((item) =>
-            selectCategory.includes(item.quiz.category)
+            selectCategory.includes(item.quiz.category._id)
         );
 
         setShowQuestion(filtered.slice(0, questionCount));

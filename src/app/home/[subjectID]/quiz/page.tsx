@@ -68,7 +68,7 @@ export default function quiz(){
     const filteredQuiz = quiz.filter((item) => {
         if (!selectCategory) return;
         console.log
-        return selectCategory.includes(item.category);
+        return selectCategory.includes(item.category._id);
     })
 
     // Default Values
@@ -106,7 +106,7 @@ export default function quiz(){
     const handleQuizTypeChange = useCallback((type: QuizType) => {
         // Update maxQuestions based on selected categories and quiz type
         const filteredQuizzes = quiz.filter((item) => 
-            selectCategory.includes(item.category) && 
+            selectCategory.includes(item.category._id) && 
             (defaultValues_QuestionType[type] === 'mcq' || 
              (defaultValues_QuestionType[type] === 'shortanswer' && item.type === "written"))
         );
@@ -137,7 +137,7 @@ export default function quiz(){
             
             // Update maxQuestions based on the new selection
             const filteredQuizzes = quiz.filter((item) => 
-                newSelection.includes(item.category) && 
+                newSelection.includes(item.category._id) && 
                 (selectedQuestionTypes === 'mcq' || 
                  (selectedQuestionTypes === 'shortanswer' && item.type === "written"))
             );
@@ -285,7 +285,7 @@ export default function quiz(){
                                 const allCategoryIds = category.map(cat => cat._id);
                                 setSelectCategory(allCategoryIds);
                                 const filteredQuizzes = quiz.filter((item) => 
-                                    allCategoryIds.includes(item.category) && 
+                                    allCategoryIds.includes(item.category._id) && 
                                     (selectedQuestionTypes === 'mcq' || 
                                      (selectedQuestionTypes === 'shortanswer' && item.type === "written"))
                                 );
