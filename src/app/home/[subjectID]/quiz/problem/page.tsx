@@ -240,7 +240,7 @@ export default function Problem(){
             const totalScore = checkAnswer.length;
             submitScore(totalScore);
         }
-        router.push(`/home/${subjectID}/quiz/${scoreID}`);
+        router.push(`${FrontendRoutes.SUMMARY}/${scoreID}`);
     }
 
     // const toggleBookmark = (index: number) => {
