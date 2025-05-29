@@ -23,7 +23,7 @@ export default function Home() {
           className="container mx-auto relative h-64 sm:h-80 md:h-96 overflow-hidden rounded-sm md:rounded-md shadow-lg mt-0 md:mt-4"
         >
           <Image
-            src="/mdkkuview2.jpg"
+            src="/mdkkuview3.jpg"
             alt="MDKKU Self-Exam Bank"
             layout="fill" // Use layout="fill" for responsive images
             objectFit="cover"  // Make the image cover the container
@@ -31,7 +31,7 @@ export default function Home() {
             priority // Load the image with high priority
           />
           <div className="absolute top-4 sm:top-8 right-4 sm:right-8 flex flex-col sm:flex-row items-end sm:items-center text-right gap-2 sm:gap-4">
-            <h1 className="text-3xl md:text-5xl font-bold text-green-800 drop-shadow-md">MDKKU</h1>
+            <h1 className="text-3xl md:text-5xl font-bold text-blue-900 drop-shadow-md">MDKKU</h1>
             <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-md">Self-Exam Bank</h1>
           </div>
           <div className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 text-left">

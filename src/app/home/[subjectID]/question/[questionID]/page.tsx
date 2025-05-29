@@ -65,7 +65,7 @@ useEffect(() => {
 
 // Fetch subject name and category name
 useEffect(() => {
-    if (!question?.category || !question?.subject || !session?.user.token) {
+    if (!question?.category._id || !question?.subject._id || !session?.user.token) {
         return;
     }
     const fetchSubjectAndCategory = async () => {
@@ -95,10 +95,7 @@ useEffect(() => {
             setSubject(subjectData.data);
             console.log("Subject data:", subjectData.data);
 
-            const categoryID =
-                typeof question.category === "string"
-                    ? question.category
-                    : "";
+            const categoryID = question.category._id;
             if (!categoryID) {
                 throw new Error("Invalid category ID");
             }
@@ -168,7 +165,8 @@ useEffect(() => {
             <h1 className="text-2xl font-bold mb-4 md:text-3xl">Question Detail</h1>
             <Card className="mt-6 p-5 bg-white shadow-md rounded-lg relative w-full max-w-3xl gap-2">
             <p className="mt-2 text-base md:text-lg">Subject: {subject?.name}</p>
-            <p className="mt-2 text-base md:text-lg">Category: {category?.category}</p>
+                    <p className="mt-2 text-base md:text-lg">Category: {category?.category}</p>
+            <p className="mt-2 text-base md:text-lg">Question type: {question.type == "choice" ? "MCQ" : question.type == "written" ? "Short Answer" : "Unknown"}</p>
             <button
                 className="absolute cursor-pointer bottom-3 right-3 bg-orange-500 hover:bg-orange-600 text-white px-2 md:px-3 py-2 rounded shadow transition"
                 onClick={() => alert('Report functionality coming soon!')}

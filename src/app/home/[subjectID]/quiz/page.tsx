@@ -275,7 +275,7 @@ export default function quiz(){
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-2xl font-semibold text-gray-800">Select Topics</h2>
                     <button
-                        className="cursor-pointer px-5 py-2 rounded-lg text-lg bg-yellow-600 text-white shadow-md hover:bg-orange-500 transition transform hover:scale-105 duration-300"
+                        className="cursor-pointer px-5 py-2 rounded-lg text-lg bg-yellow-500 text-white shadow-md hover:bg-yellow-600 transition transform hover:scale-105 duration-300"
                         onClick={() => {
                             if (selectCategory.length === category.length) {
                                 setSelectCategory([]);
@@ -305,8 +305,6 @@ export default function quiz(){
                         cursor-pointer px-4 py-2 rounded-lg text-lg bg-gray-200 text-gray-800 shadow-md hover:bg-gray-300 hover:text-gray-900 transition transform hover:scale-105 duration-300
                         focus:outline-none
                         ${selectCategory.includes(String(cat._id)) ? 'bg-orange-500 text-white' : ''}
-                        ${selectCategory.includes(String(cat._id)) ? 'text-black shadow-inner' : ''}
-
                         `}
                         onClick={() => handleTopicToggle(cat._id)}
                         aria-pressed={selectCategory.includes(String(cat._id))}

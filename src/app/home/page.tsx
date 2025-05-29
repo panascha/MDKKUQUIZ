@@ -289,12 +289,12 @@ const Main = () => {
             {admin ? (
               <Button
                 textButton="Add Subject"
-                className="bg-sky-600 hover:bg-sky-800 py-2 px-5 rounded-xl text-white font-semibold shadow-md transition-all"
+                className="bg-sky-600 hover:bg-sky-800 mt-2 py-2 px-5 rounded-xl text-white font-semibold shadow-md transition-all"
                 onClick={() => setShowModal(true)}
               />
             ) : null}
             {/* Push the dropdown to the far right */}
-            <div className="ml-auto">
+            <div className="ml-auto mt-2">
               <DropdownMenu>
                 <DropdownMenuTrigger className="cursor-pointer hover:bg-sky-100 text-gray-700 font-medium rounded-lg p-2 transition-transform hover:scale-105 border border-gray-300 shadow-sm">
                   {year ? `Year ${year}` : "All Year"}

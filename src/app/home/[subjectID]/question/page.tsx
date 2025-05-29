@@ -214,7 +214,7 @@ const Question = () => {
             <div className="container mx-auto p-4 mt-20 justify-center items-center flex flex-col">
                 <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
                     <Link href={`${FrontendRoutes.HOMEPAGE}/${subjectID}`}>
-                    <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white pr-2 py-1 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
+                    <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white pr-2 py-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
                         <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
                     </button>
                     </Link>

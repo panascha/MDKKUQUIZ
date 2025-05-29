@@ -39,8 +39,8 @@ export default function Navbar() {
             <nav className="flex items-center justify-between h-16 px-6 bg-blue-950 text-white shadow-md">
                 {/* Logo and Home */}
                 <div className="flex items-center gap-4">
-                    <a href="/" className="text-2xl md:text-3xl font-bold tracking-tight hover:text-gray-200 transition duration-300 ease-in-out">
-                        MSEB
+                    <a href="/" className="flex items-center gap-2 hover:opacity-80 transition duration-300 ease-in-out">
+                        <img src={"/MSEBlogowhite.svg"} alt="Logo" className="h-16 w-28 object-contain" />
                     </a>
                     {user && (
                         <div className="hidden lg:flex gap-3 ml-4">
