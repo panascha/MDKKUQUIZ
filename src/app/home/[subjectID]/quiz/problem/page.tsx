@@ -126,10 +126,12 @@ export default function Problem(){
 
                 const allQuestions = mapToQuestion(response.data.data);
 
-                // ✅ Filter logic before shuffle
                 const filteredQuestions = allQuestions.filter((q) => {
-                    // Example: return only questions with a difficulty of "easy"
-                    return selectCategory.includes(q.quiz.category._id);
+                    const categoryMatch = selectCategory.includes(q.quiz.category._id);
+                    const typeMatch = selectedQuestionTypes === 'mcq' ? 
+                        q.quiz.type === 'choice' : 
+                        q.quiz.type === "written";
+                    return categoryMatch && typeMatch;
                 });
 
                 const shuffledQuestions = shuffleArray(filteredQuestions);
@@ -149,7 +151,7 @@ export default function Problem(){
         setSeconds((prev) => prev + 1);
         }, 1000);
 
-        return () => clearInterval(interval); // Cleanup on unmount
+        return () => clearInterval(interval); 
     }, []);
 
     const formatTime = (s: number) => {
