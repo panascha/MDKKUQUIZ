@@ -94,14 +94,16 @@ export default function Problem(){
                         },
                     }
                 );
+
                 const subject = await axios.get(
                     `${BackendRoutes.SUBJECT}/${subjectID}`,
                     {
-                        headers: {  
+                        headers: {
                             Authorization: `Bearer ${session?.data?.user.token}`,
                         },
                     }
                 );
+
                 const mapToQuestion = (data: Quiz[]): Question[] => {
                     return data.map((item) => ({
                         quiz: item,
@@ -112,45 +114,35 @@ export default function Problem(){
                         isCorrect: null,
                     }));
                 };
-                setQuestion(mapToQuestion(response.data.data));
+
+                const shuffleArray = <T,>(array: T[]): T[] => {
+                    const newArray = [...array];
+                    for (let i = newArray.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                    }
+                    return newArray;
+                };
+
+                const allQuestions = mapToQuestion(response.data.data);
+
+                // ✅ Filter logic before shuffle
+                const filteredQuestions = allQuestions.filter((q) => {
+                    // Example: return only questions with a difficulty of "easy"
+                    return selectCategory.includes(q.quiz.category._id);
+                });
+
+                const shuffledQuestions = shuffleArray(filteredQuestions);
+
+                setShowQuestion(shuffledQuestions);
                 setSubject(subject.data.data);
-                console.log(response.data.data);
             } catch (error) {
                 console.error("Error fetching question:", error);
             }
         };
+
         fetchQuestion();
-
     }, [subjectID, session?.data?.user.token]);
-
-
-    const getRandomQuestion = useCallback((array: Question[], count: number) => {
-        const shuffled = [...array].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, count);
-    }, []);
-
-    // Initial randomization when component mounts
-    useEffect(() => {
-        if (question.length === 0) return;
-
-        const filtered = question.filter((item) =>
-            selectCategory.includes(item.quiz.category._id)
-        );
-
-        const selected = getRandomQuestion(filtered, questionCount);
-        setShowQuestion(selected);
-    }, []); // Empty dependency array means this runs only once on mount
-
-    // Update questions when dependencies change without randomizing
-    useEffect(() => {
-        if (question.length === 0) return;
-
-        const filtered = question.filter((item) =>
-            selectCategory.includes(item.quiz.category._id)
-        );
-
-        setShowQuestion(filtered.slice(0, questionCount));
-    }, [question, questionCount, selectCategory]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -467,7 +459,7 @@ export default function Problem(){
                                             </button>
                                         </div>
                                     )}
-                                                                        {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-at-end' &&  showQuestion[currentQuestionIndex].isAnswered && (
+                                    {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-at-end' &&  showQuestion[currentQuestionIndex].isAnswered && (
                                         <div className="flex w-full justify-end gap-3">
                                             
                                             <button
