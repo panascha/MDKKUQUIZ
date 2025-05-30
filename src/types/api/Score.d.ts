@@ -16,6 +16,7 @@ export interface UserScore {
     Category: Category[];
     Score: Number;
     FullScore: Number;
-    Question: Question;
+    Question: Question[];
     timeTaken: Number;
+    createdAt: Date;
 }

@@ -16,13 +16,12 @@ const QuizResultPage = () => {
     const scoreID = params.scoreID;
 
     const [score, setScore] = useState<UserScore>();
-    const [question, setQuestion] = useState<Question>();
-    const [subject, setSubject] = useState<Subject>();
     const [showDropdown, setShowDropdown] = useState(false);
     const toggleDropdown = () => setShowDropdown(!showDropdown);
 
     useEffect(() => {
         const fetchQuestion = async () => {
+            console.log(scoreID)
             if (!scoreID) return;
             try {
                 const response = await axios.get(
@@ -35,9 +34,7 @@ const QuizResultPage = () => {
                         },
                     }
                 );
-
-                setQuestion(response.data.data.question);
-                setSubject(response.data.data.question.quiz.subject);
+                setScore(response.data.data);
                 console.log(response.data.data);
             } catch (error) {
                 console.error("Error fetching question:", error);
@@ -59,11 +56,11 @@ const QuizResultPage = () => {
 
         <div className="bg-white md:shadow-md rounded-md p-6 w-96 border-none md:border-2 border-gray-300">
             <h2 className="text-xl font-bold mb-4">Quiz Result</h2>
-            <p className="mb-2"><strong>Subject:</strong> Biology</p>
-            <p className="mb-2"><strong>Username:</strong> Panas Chang</p>
-            <p className="mb-2"><strong>Date-Time:</strong> 2023-10-01 12:00 PM</p>
+            <p className="mb-2"><strong>Subject: </strong>{score?.Subject.name}</p>
+            {/* <p className="mb-2"><strong>Username:</strong> Panas Chang</p> */}
+            <p className="mb-2"><strong>Date / Time: </strong>{score?.createdAt ? new Date(score.createdAt).toLocaleString() : ''}</p>
             <p className="mb-4 text-lg">
-            <strong>Score:</strong> <span id="score">5</span>/<span id="total">10</span>
+            <strong>Score: </strong> <span id="score">{score?.Score.toString()}</span> / <span id="total">{score?.FullScore.toString()}</span>
             </p>
         </div>
 
@@ -117,25 +114,24 @@ const QuizResultPage = () => {
 
         {/* Question Cards Section */}
         <section className="grid grid-cols-1 gap-6 mx-4 p-4 md:p-6 sm:mx-10 w-full md:w-2/3">
-            {[1, 2, 3].map((q, i) => (
+            {score?.Question.map((question: Question, index: number) => (
             <div
-                key={q}
-                className={`card ${i === 1 ? 'bg-red-100' : 'bg-green-100'} shadow-md rounded-lg p-6 border-gray-400 border-2 relative`}
+                key={question.Quiz._id}
+                className={`card ${!question.isCorrect ? 'bg-red-100' : 'bg-green-100'} shadow-md rounded-lg p-6 border-gray-400 border-2 relative`}
             >
-                <div className={`absolute top-0 left-0 h-full w-1.5 ${i === 1 ? 'bg-red-600' : 'bg-green-600'} rounded-l-md`} />
-                <h3 className="text-lg font-bold mb-1 question-text">Question {q}</h3>
-                <p className="mb-1"><strong>Subject:</strong> Biology</p>
-                <p className="mb-2"><strong>Topic:</strong> Human Anatomy</p>
+                <div className={`absolute top-0 left-0 h-full w-1.5 ${!question.isCorrect ? 'bg-red-600' : 'bg-green-600'} rounded-l-md`} />
+                <h3 className="text-lg font-bold mb-1 question-text">Question {question.Quiz.question}</h3>
+                <p className="mb-1"><strong>Subject:</strong> {score.Subject.name}</p>
+                <p className="mb-2"><strong>Topic:</strong> {question.Quiz.category.category}</p>
                 <p className="mb-3 text-center text-xl font-semibold">
-                What is the function of the heart in the human body?
+                {question.Quiz.question}
                 </p>
                 <div className="flex flex-col md:flex-row items-center gap-8">
                 <ImageGallery images={["/mdkkulogo.png"]} />
                 <div className="md:order-2 md:w-2/3">
-                    <p className="mb-1"><strong>Your Answer:</strong> To pump blood</p>
-                    <p className="mb-1"><strong>Answer:</strong> To pump blood</p>
-                    <p className="mb-1"><strong>Possible:</strong> To circulate oxygen and nutrients</p>
-                    <p className="mb-1"><strong>Explanation:</strong> The heart is a muscular organ that pumps blood through the blood vessels of the circulatory system, delivering oxygen and nutrients to the body and removing waste products.</p>
+                    <p className="mb-1"><strong>Your Answer: </strong>{question.Answer}</p>
+                    <p className="mb-1"><strong>Correct answer: </strong>{question.Quiz.correctAnswer}</p>
+                    {/* <p className="mb-1"><strong>Possible:</strong> To circulate oxygen and nutrients</p> */}
                 </div>
                 </div>
                 <div className="flex justify-end mt-4 md:mt-0 md:order-3">
