@@ -134,8 +134,9 @@ export default function Problem(){
                 });
 
                 const shuffledQuestions = shuffleArray(filteredQuestions);
+                const limitedQuestions = shuffledQuestions.slice(0, questionCount);
 
-                setShowQuestion(shuffledQuestions);
+                setShowQuestion(limitedQuestions);
                 setSubject(subject.data.data);
             } catch (error) {
                 console.error("Error fetching question:", error);
