@@ -234,7 +234,7 @@ export default function Problem(){
             const totalScore = checkAnswer.length;
             submitScore(totalScore);
         }
-        router.push(`${FrontendRoutes.SUMMARY}/${scoreID}`);
+        router.push(`/summary/${scoreID}`);
     }
 
     // const toggleBookmark = (index: number) => {
