@@ -33,7 +33,6 @@ export default function Problem(){
 
     const [seconds, setSeconds] = useState(0);
     const [scoreID, setScoreID] = useState("");
-    const [question, setQuestion] = useState<Question[]>([]);
     const [subject, setSubject] = useState<Subject>();
     const [showQuestion, setShowQuestion] = useState<Question[]>([])
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -292,7 +291,7 @@ export default function Problem(){
 
         currentQuestion.isCorrect = isCorrect;
         currentQuestion.isSubmitted = true;
-        setQuestion(updatedQuestions);
+        setShowQuestion(updatedQuestions);
     };
 
     const navigateToQuestion = (index: number) => {
@@ -344,45 +343,6 @@ export default function Problem(){
                     {currentQuestion && (
                         <div className="mb-8 sm:mb-12 flex flex-col md:flex-row justify-center items-center gap-6 w-full">
                             {currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 && (
-                                // <div className="mb-6 md:mb-0 md:w-1/2 flex flex-col items-center justify-center relative">
-                                //     <button
-                                //         className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white text-gray-700 px-3 py-2 rounded-full hover:bg-gray-100 z-10 shadow-md transition-all duration-300 hover:shadow-lg"
-                                //         onClick={(e) => {
-                                //             e.stopPropagation();
-                                //             setCurrentImageIndex((prevIndex) => (prevIndex - 1 + currentQuestion.quiz.img.length) % currentQuestion.quiz.img.length);
-                                //         }}
-                                //     >
-                                //         &#8249;
-                                //     </button>
-                                //     <div
-                                //         className="w-full h-72 sm:h-80 md:h-96 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
-                                //         onClick={(e) => {
-                                //             e.stopPropagation();
-                                //             setIsImageModalOpen(true);
-                                //         }}
-                                //     >
-                                //         <div className="w-full flex items-center justify-center h-full bg-gray-50">
-                                //             <img
-                                //                 //src={transformUrl(currentQuestion.img[currentImageIndex])}
-                                //                 alt={`Question ${currentImageIndex + 1}`}
-                                //                 className="object-contain max-w-full max-h-full transition-transform duration-300 ease-in-out"
-                                //             />
-                                //         </div>
-                                //     </div>
-                                //     <button
-                                //         className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white text-gray-700 px-3 py-2 rounded-full hover:bg-gray-100 z-10 shadow-md transition-all duration-300 hover:shadow-lg"
-                                //         onClick={(e) => {
-                                //             e.stopPropagation();
-                                //             setCurrentImageIndex((prevIndex) => (prevIndex + 1) % currentQuestion.quiz.img.length);
-                                //         }}
-                                //     >
-                                //         &#8250;
-                                //     </button>
-                                //     <div className="text-sm text-gray-500 text-center mt-3 font-medium">
-                                //         {currentImageIndex + 1} / {currentQuestion.quiz.img.length}
-                                //     </div>
-                                // </div>
-                                
                                 <ImageGallery images={currentQuestion.quiz.img} />
                             )}
                             <div className={`w-full md:w-1/2 ${currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 ? 'md:pl-8' : ''} flex flex-col items-center justify-center px-6`}>

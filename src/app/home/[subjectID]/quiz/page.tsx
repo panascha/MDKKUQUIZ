@@ -90,25 +90,12 @@ export default function quiz(){
         custom: 'shortanswer',
     }), []);
 
-    const defaultValues_TimerEnabled = useMemo(() => ({
-        chillquiz: false,
-        realtest: true,
-        custom: false,
-    }), []);
-
-    const defaultValues_RandomizedQuestions = useMemo(() => ({
-        chillquiz: true,
-        realtest: false,
-        custom: false,
-    }), []);
-    
     // Event Handlers
     const handleQuizTypeChange = useCallback((type: QuizType) => {
         // Update maxQuestions based on selected categories and quiz type
         const filteredQuizzes = quiz.filter((item) => 
             selectCategory.includes(item.category._id) && 
-            (defaultValues_QuestionType[type] === 'mcq' || 
-             (defaultValues_QuestionType[type] === 'shortanswer' && item.type === "written"))
+            (defaultValues_QuestionType[type] === 'mcq' ? item.type === "choice" : item.type === "written")
         );
         const maxAvailable = filteredQuizzes.length;
         setMaxQuestions(maxAvailable);
@@ -138,8 +125,7 @@ export default function quiz(){
             // Update maxQuestions based on the new selection
             const filteredQuizzes = quiz.filter((item) => 
                 newSelection.includes(item.category._id) && 
-                (selectedQuestionTypes === 'mcq' || 
-                 (selectedQuestionTypes === 'shortanswer' && item.type === "written"))
+                (selectedQuestionTypes === 'mcq' ? item.type === "choice" : item.type === "written")
             );
             const newMaxQuestions = filteredQuizzes.length;
             setMaxQuestions(newMaxQuestions);
@@ -169,7 +155,7 @@ export default function quiz(){
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = Number(e.target.value);
             const maxAvailableQuestions = selectedQuestionTypes.includes('mcq')
-            ? filteredQuiz.length
+            ? filteredQuiz.filter(q => q.type === "choice").length
             : filteredQuiz.filter(q => q.type === "written").length;
 
             setQuestionCount(value > 0 ? Math.min(value, maxAvailableQuestions) : 0);
@@ -418,7 +404,12 @@ export default function quiz(){
                     <button
                         className={`cursor-pointer px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105
                             ${selectCategory.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
-                        onClick={() => setQuestionCount((prev) => Math.min(filteredQuiz.length, prev + 5))}
+                        onClick={() => setQuestionCount((prev) => Math.min(
+                            Math.min(5, selectedQuestionTypes.includes('mcq')
+                                ? filteredQuiz.filter(q => q.type === "choice").length
+                                : filteredQuiz.filter(q => q.type === "written").length),
+                            prev + 5
+                        ))}
                         aria-label="Increase number of questions"
                         disabled={selectCategory.length === 0}
                     >
@@ -426,7 +417,7 @@ export default function quiz(){
                     </button>
                 </div>
                 <p className="text-sm text-gray-600 mt-2 max-w-md mx-auto text-center">
-                    {selectedQuestionTypes.includes('mcq') && `MCQ Questions Available: ${maxQuestions}`}
+                    {selectedQuestionTypes.includes('mcq') && `MCQ Questions Available: ${filteredQuiz.filter(q => q.type === "choice").length}`}
                     {selectedQuestionTypes.includes('shortanswer') && `Short Answer Questions Available: ${filteredQuiz.filter(q => q.type === "written").length}`}
                 </p>
                 </section>
