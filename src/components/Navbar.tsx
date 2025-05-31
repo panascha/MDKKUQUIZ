@@ -45,10 +45,16 @@ export default function Navbar() {
                     {user && (
                         <div className="hidden lg:flex gap-3 ml-4">
                             <button
-                                onClick={() => router.push('/home')}
+                                onClick={() => router.push(FrontendRoutes.HOMEPAGE)}
                                 className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
                             >
                                 Home
+                            </button>
+                            <button
+                                onClick={() => router.push(FrontendRoutes.PROFILE)}
+                                className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
+                            >
+                                Profile
                             </button>
                         </div>
                     )}

@@ -15,6 +15,7 @@ const QuizResultPage = () => {
     const params = useParams();
     const scoreID = params.scoreID;
 
+    const [showModal, setShowModal] = useState<Boolean>(false);
     const [score, setScore] = useState<UserScore>();
     const [showDropdown, setShowDropdown] = useState(false);
     const [filter, setFilter] = useState<'all' | 'correct' | 'incorrect'>('all');
@@ -83,7 +84,7 @@ const QuizResultPage = () => {
     return (
     <>
         <div className="container mx-auto mt-24 pt-20 md:mt-16 flex flex-col items-center justify-center">
-        <div className="absolute text-lg font-bold top-8 md:top-12 left-8 md:left-10">
+        <div className="absolute text-lg font-bold top-20 md:top-22 left-8 md:left-10">
             <Link href="/" className="text-black hover:text-blue-500">
                 Back to Main Page
             </Link>
@@ -160,14 +161,13 @@ const QuizResultPage = () => {
                 className={`card ${!question.isCorrect ? 'bg-red-100' : 'bg-green-100'} shadow-md rounded-lg p-6 border-gray-400 border-2 relative`}
             >
                 <div className={`absolute top-0 left-0 h-full w-1.5 ${!question.isCorrect ? 'bg-red-600' : 'bg-green-600'} rounded-l-md`} />
-                <h3 className="text-lg font-bold mb-1 question-text">Question {question.Quiz.question}</h3>
-                <p className="mb-1"><strong>Subject:</strong> {score?.Subject.name}</p>
+                <h3 className="text-lg font-bold mb-1 question-text">Question {index+1}</h3>
                 <p className="mb-2"><strong>Topic:</strong> {question.Quiz.category.category}</p>
                 <p className="mb-3 text-center text-xl font-semibold">
                 {question.Quiz.question}
                 </p>
                 <div className="flex flex-col md:flex-row items-center gap-8">
-                <ImageGallery images={["/mdkkulogo.png"]} />
+                <ImageGallery images={question.Quiz.img} />
                 <div className="md:order-2 md:w-2/3">
                     <p className="mb-1"><strong>Your Answer: </strong>{question.Answer}</p>
                     <p className="mb-1"><strong>Correct answer: </strong>{question.Quiz.correctAnswer}</p>
