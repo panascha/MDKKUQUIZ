@@ -10,12 +10,13 @@ import { Subject } from '@/types/api/Subject';
 import { BackendRoutes } from '@/config/apiRoutes';
 import { LoaderIcon, XCircleIcon } from "lucide-react";
 import Button from '@/components/ui/Button';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { PencilIcon, XIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import AddSubjectModal from '@/components/subjects/AddSubjectModal';
+import EditSubjectModal from '@/components/subjects/EditSubjectModal';
 
 const fetchSubject = async (): Promise<Array<Subject>> => {
     const response = await axios.get(BackendRoutes.SUBJECT);
@@ -46,7 +47,7 @@ const Main = () => {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
-        image: null as File | null, // Add image
+        image: null as File | null,
         year: 1
     });
     const admin = user?.role == Role_type.SADMIN;
@@ -74,7 +75,6 @@ const Main = () => {
         if (updatedData.name) formData.append("name", updatedData.name);
         if (updatedData.description) formData.append("description", updatedData.description);
         if (updatedData.year) formData.append("year", updatedData.year.toString());
-        // Only append image if a new image is uploaded
         if (
           updatedData.img &&
           typeof updatedData.img === "object" &&
@@ -82,8 +82,7 @@ const Main = () => {
         ) {
           formData.append("image", updatedData.img as File);
         } else if (updatedData.img) {
-          // If no new image is uploaded, send the existing image
-          formData.append("image", updatedData.img as string); // It could be an image URL or existing image path
+          formData.append("image", updatedData.img as string);
         }
     
         const response = await axios.put(`${BackendRoutes.SUBJECT}/${id}`, formData, {
@@ -98,7 +97,7 @@ const Main = () => {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["subject"] });
         toast.success("Subject updated successfully!");
-        setEditModal(false); // Close the modal on success
+        setEditModal(false);
       },
       onError: (error: AxiosError) => {
         toast.error(`Update failed: ${error.message}`);
@@ -172,7 +171,6 @@ const Main = () => {
       }
     };
     
-    
     const validateForm = () => {
       setError("");
     
@@ -199,7 +197,6 @@ const Main = () => {
       return true;
     };
     
-      
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -223,20 +220,7 @@ const Main = () => {
           year: formData.year,
           img: formData.image //error but it works so dont touch it
         });
-      };
-      if (error)
-        return (
-          <p className="text-red-500 flex items-center gap-2 pt-4">
-            <XCircleIcon className="w-5 h-5" />
-            Error: {error}
-          </p>
-        );
-    if (isLoading)
-    return (
-        <p className="flex items-center justify-center gap-3 pt-10">
-        <LoaderIcon /> Loading...
-        </p>
-    );
+    };
 
     const handleEditSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -279,6 +263,21 @@ const Main = () => {
       if (year === null || year === undefined) return true;
       return item.year === year;
     });
+
+    if (error)
+      return (
+        <p className="text-red-500 flex items-center gap-2 pt-4">
+          <XCircleIcon className="w-5 h-5" />
+          Error: {error}
+        </p>
+      );
+
+    if (isLoading)
+      return (
+        <p className="flex items-center justify-center gap-3 pt-10">
+          <LoaderIcon /> Loading...
+        </p>
+      );
 
     return (
       <ProtectedPage>
@@ -375,272 +374,32 @@ const Main = () => {
               </div>
             ))}
           </div>
-
         </div>
-        
-        {/* Subject Dialogs */}
-        <Dialog
-          open={showModal}
-          onOpenChange={(open) => {
-            setShowModal(open);
-            if (!open) {
-              resetForm();
-              setError(null); // Reset error state when closing modal
-            }
-          }}
-        >
-          <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
-            <DialogHeader>
-              <DialogTitle>Subject</DialogTitle>
-            </DialogHeader>
-            <form
-              onSubmit={handleSubmit}
-              className="w-full space-y-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Name Input */}
-              <div>
-                <label className="mb-1 block text-sm font-semibold">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  placeholder="Biology"
-                />
-                {error && error.includes('name') && (
-                  <p className="text-red-500 text-sm">Name is required.</p>
-                )}
-              </div>
-      
-              {/* Description Input */}
-              <div>
-                <label className="mb-1 block text-sm font-semibold">Description</label>
-                <input
-                  type="text"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  placeholder="Everything about Biology"
-                />
-                {error && error.includes('description') && (
-                  <p className="text-red-500 text-sm">Description is required.</p>
-                )}
-              </div>
-                
-              {/* Year Dropdown */}
-              <div>
-                <label className="mb-1 block text-sm font-semibold">Year</label>
-                <select
-                  name="year"
-                  value={formData.year}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                >
-                  <option value="" disabled>Select a year</option>
-                  {[1, 2, 3, 4, 5, 6].map((year) => (
-                    <option key={year} value={year}>
-                      Year {year}
-                    </option>
-                  ))}
-                </select>
-                {error && error.includes('year') && (
-                  <p className="text-red-500 text-sm">Year is required.</p>
-                )}
-              </div>
 
-              {/* Image Upload (Optional) */}
-              <div>
-                <label htmlFor="image" className="mb-1 block text-sm font-semibold">
-                  Upload Image (Optional)
-                </label>
-                <input
-                  type="file"
-                  name="image"
-                  id="image"
-                  accept="image/*"
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
-                />
-                {formData.image && (
-                  <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
-                )}
-                {!formData.image && existingImg && (
-                  <div className="mt-2">
-                    <Image
-                      src={existingImg}
-                      alt="Existing Image"
-                      width={0}
-                      height={0}
-                      className="rounded-lg"
-                    />
-                    <p className="text-sm text-gray-500 mt-2">Current Image</p>
-                  </div>
-                )}
-                {error && error.includes('image') && (
-                  <p className="text-red-500 text-sm">Please upload a valid image.</p>
-                )}
-              </div>
-              {/* Submit Button */}
-              <DialogFooter className="flex justify-between pt-4">
-                <Button
-                  textButton="Submit"
-                  disabled={createMutation.isPending}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
-                >
-                  {createMutation.isPending ? (
-                    <>
-                      <LoaderIcon className="mr-2 inline animate-spin" size={16} />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Subject"
-                  )}
-                </Button>
-      
-                {/* Cancel Button */}
-                <DialogClose asChild>
-                  <Button
-                    textButton="Cancel"
-                    className="bg-red-600 hover:bg-red-700 text-white font-semibold"
-                    onClick={resetForm}
-                  />
-                </DialogClose>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      
-        {/* Edit Dialog */}
-        <Dialog
-          open={editModal}
-          onOpenChange={(open) => {
-            setEditModal(open);
-            if (!open) {
-              resetForm();
-              setError(null);
-            }
-          }}
-        >
-          <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
-            <DialogHeader>
-              <DialogTitle>Edit Subject</DialogTitle>
-            </DialogHeader>
-            <form
-              onSubmit={handleEditSubmit}
-              className="w-full space-y-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Name */}
-              <div>
-                <label className="mb-1 block text-sm font-semibold">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                />
-              </div>
-      
-              {/* Description */}
-              <div>
-                <label className="mb-1 block text-sm font-semibold">Description</label>
-                <input
-                  type="text"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                />
-              </div>
+        {/* Add Subject Modal */}
+        <AddSubjectModal
+          showModal={showModal}
+          setShowModal={setShowModal}
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
+          resetForm={resetForm}
+          error={error}
+          createMutation={createMutation}
+        />
 
-              {/* Year Dropdown */}
-              <div>
-                <label className="mb-1 block text-sm font-semibold">Year</label>
-                <select
-                  name="year"
-                  value={formData.year}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                >
-                  <option value="" >Select a year</option>
-                  {[1, 2, 3, 4, 5, 6].map((year) => (
-                    <option key={year} value={year}>
-                      Year {year}
-                    </option>
-                  ))}
-                </select>
-                {error && error.includes('year') && (
-                  <p className="text-red-500 text-sm">Year is required.</p>
-                )}
-              </div>
-              
-              {/* Image Upload */}
-              <div>
-                <label htmlFor="image" className="mb-1 block text-sm font-semibold">
-                  Upload New Image (optional)
-                </label>
-                <input
-                  type="file"
-                  name="image"
-                  id="image"
-                  accept="image/*"
-                  onChange={handleInputChange}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                />
-                {formData.image instanceof File && (
-                  <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
-                )}
-                {!formData.image && existingImg && (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden">
-                    <Image
-                      src={existingImg.startsWith("http") ? existingImg : `http://localhost:5000${existingImg}`}
-                      alt="Subject Image"
-                      fill
-                      style={{ objectFit: "cover" }}
-                      className="rounded-lg"
-                    />
-                  </div>
-                )}
-              </div>
-      
-              {/* Buttons */}
-              <DialogFooter className="flex justify-between pt-4">
-                <Button
-                  textButton="Update"
-                  disabled={editMutation.isPending}
-                  className="bg-blue-500 hover:bg-blue-600"
-                >
-                  {editMutation.isPending ? (
-                    <>
-                      <LoaderIcon className="mr-2 inline animate-spin" size={16} />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Subject"
-                  )}
-                </Button>
-      
-                <DialogClose asChild>
-                  <Button
-                    textButton="Cancel"
-                    className="bg-red-500 hover:bg-red-800"
-                    onClick={resetForm}
-                  />
-                </DialogClose>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {/* Edit Subject Modal */}
+        <EditSubjectModal
+          editModal={editModal}
+          setEditModal={setEditModal}
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleEditSubmit={handleEditSubmit}
+          resetForm={resetForm}
+          error={error}
+          editMutation={editMutation}
+          existingImg={existingImg}
+        />
       </ProtectedPage>
     );
 };

@@ -10,182 +10,254 @@ import {
 } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { BackendRoutes } from "@/config/apiRoutes";
 import { Role_type } from "@/config/role";
 import { useUser } from "@/hooks/useUser";
+import { UserScore } from "@/types/api/Score";
 import { User } from "@/types/User";
-import { LoaderCircleIcon } from "lucide-react";
-import { useState } from "react";
+import axios from "axios";
+import { LoaderCircleIcon, UserCircle2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import ScoreCard from "@/components/profile/ScoreCard";
 
 const Page = () => {
-  const { user, loading, updateUser, isUpdating, logout, isLoggingOut } =
-    useUser();
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<User>>({});
+    const session = useSession();
+    const { user, loading, updateUser, isUpdating, logout, isLoggingOut } =
+        useUser();
+    const [isEditing, setIsEditing] = useState(false);
+    const [formData, setFormData] = useState<Partial<User>>({});
+    const [score, setScore] = useState<UserScore[]>([]);
+    const [isLoadingScores, setIsLoadingScores] = useState(true);
 
-  const handleLogout = () => {
-    toast.promise(
-      new Promise((resolve, reject) => {
-        logout(undefined, {
-          onSuccess: () => resolve("Logged out successfully!"),
-          onError: (error) => reject(error),
+    useEffect(() => {
+        const fetchScores = async () => {
+            if (!user?._id || !session.data?.user.token) {
+                setIsLoadingScores(false);
+                return;
+            }
+
+            try {
+                setIsLoadingScores(true);
+                const response = await axios.get(
+                    `${BackendRoutes.SCORE}/user/${user._id}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${session.data.user.token}`,
+                        },
+                    }
+                );
+                setScore(response.data.data);
+            } catch (error) {
+                console.error("Error fetching scores:", error);
+                toast.error("Failed to load scores");
+            } finally {
+                setIsLoadingScores(false);
+            }
+        };
+        
+        fetchScores();
+    }, [user?._id, session.data?.user.token]); 
+
+    const handleLogout = () => {
+        toast.promise(
+        new Promise((resolve, reject) => {
+            logout(undefined, {
+            onSuccess: () => resolve("Logged out successfully!"),
+            onError: (error) => reject(error),
+            });
+        }),
+        {
+            loading: "Logging out...",
+            success: "Logged out successfully!",
+            error: "Logout failed. Please try again.",
+        },
+        );
+    };
+
+    const handleEditToggle = () => {
+        if (!isEditing && user) {
+        setFormData({
+            name: user.name,
+            email: user.email,
         });
-      }),
-      {
-        loading: "Logging out...",
-        success: "Logged out successfully!",
-        error: "Logout failed. Please try again.",
-      },
-    );
-  };
+        }
+        setIsEditing(!isEditing);
+    };
 
-  const handleEditToggle = () => {
-    if (!isEditing && user) {
-      setFormData({
-        name: user.name,
-        email: user.email,
-      });
+    const handleSave = () => {
+        toast.promise(
+        new Promise((resolve, reject) => {
+            updateUser(formData, {
+            onSuccess: () => {
+                setIsEditing(false);
+                resolve("Profile updated successfully!");
+            },
+            onError: (error) => {
+                reject(error);
+            },
+            });
+        }),
+        {
+            loading: "Updating profile...",
+            success: "Profile updated successfully!",
+            error: "Failed to update profile",
+        },
+        );
+    };
+
+    if (loading) {
+        return (
+        <div className="place-items-center pt-20">
+            <Skeleton className="h-72 w-lg place-items-center pt-5 shadow-lg">
+            <LoaderCircleIcon className="animate-spin" />
+            </Skeleton>
+        </div>
+        );
     }
-    setIsEditing(!isEditing);
-  };
 
-  const handleSave = () => {
-    toast.promise(
-      new Promise((resolve, reject) => {
-        updateUser(formData, {
-          onSuccess: () => {
-            setIsEditing(false);
-            resolve("Profile updated successfully!");
-          },
-          onError: (error) => {
-            reject(error);
-          },
-        });
-      }),
-      {
-        loading: "Updating profile...",
-        success: "Profile updated successfully!",
-        error: "Failed to update profile",
-      },
-    );
-  };
+    if (!user) {
+        return (
+        <div className="place-items-center pt-20">
+            <Skeleton className="h-72 w-lg place-items-center pt-5 shadow-lg">
+            <LoaderCircleIcon className="animate-spin" />
+            </Skeleton>
+        </div>
+        );
+    }
 
-  if (loading) {
     return (
-      <div className="place-items-center pt-20">
-        <Skeleton className="h-72 w-lg place-items-center pt-5 shadow-lg">
-          <LoaderCircleIcon className="animate-spin" />
-        </Skeleton>
-      </div>
+        <main className="space-y-10 px-10 pt-20">
+            <section className="flex w-full flex-col items-center justify-center pt-10">
+                <p className="text-3xl font-semibold text-gray-800">Your Profile</p>
+            </section>
+
+            {/* Profile Information Card */}
+            <section className="flex w-full justify-center">
+                <Card className="w-lg max-w-full p-5 shadow-xl transition-all duration-300 hover:shadow-2xl">
+                    <CardHeader className="border-b border-gray-100 bg-gray-50/50">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="flex items-center space-x-3 text-xl font-bold text-gray-800">
+                                <UserCircle2 className="h-6 w-6 text-sky-600" />
+                                <span>Profile Information</span>
+                                {user.role !== Role_type.USER && (
+                                    <Badge className="ml-2 bg-sky-100 text-sky-800 hover:bg-sky-200 transition-colors duration-300">
+                                        {user.role}
+                                    </Badge>
+                                )}
+                            </CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                        <div className="grid grid-cols-3 items-center gap-6">
+                            {isEditing ? (
+                                <>
+                                    <label className="block font-medium text-gray-700">Name</label>
+                                    <Input
+                                        value={formData.name || ""}
+                                        onChange={(e) =>
+                                        setFormData({ ...formData, name: e.target.value })
+                                        }
+                                        disabled={isUpdating}
+                                        className="col-span-2 transition-all duration-300 focus:ring-2 focus:ring-sky-500"
+                                    />
+
+                                    <label className="block font-medium text-gray-700">Email</label>
+                                    <Input
+                                        type="email"
+                                        value={formData.email || ""}
+                                        onChange={(e) =>
+                                        setFormData({ ...formData, email: e.target.value })
+                                        }
+                                        disabled={isUpdating}
+                                        className="col-span-2 transition-all duration-300 focus:ring-2 focus:ring-sky-500"
+                                    />
+                                    <label className="block font-medium text-gray-700">Year</label>
+                                    <select
+                                        name="year"
+                                        value={formData.year}
+                                        onChange={(e) =>
+                                        setFormData({ ...formData, year: e.target.value })}
+                                        disabled={isUpdating}
+                                        className="col-span-2 transition-all duration-300 focus:ring-2 focus:ring-sky-500"
+                                        >
+                                        <option value="" disabled>Select a year</option>
+                                        {[1, 2, 3, 4, 5, 6].map((year) => (
+                                            <option key={year} value={year}>
+                                            {year}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </>
+                            ) : (
+                                <>
+                                    <strong className="text-gray-700">Name:</strong>{" "}
+                                    <span className="col-span-2 text-gray-600">{user.name}</span>
+                                    <strong className="text-gray-700">Email:</strong>
+                                    <span className="col-span-2 text-gray-600">{user.email}</span>
+                                    <strong className="text-gray-700">Year:</strong>
+                                    <span className="col-span-2 text-gray-600">{user.year}</span>
+                                </>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </section>
+
+            {/* Profile Actions */}
+            <section className="flex w-full max-w-lg justify-end space-x-3 justify-self-center px-5">
+                {isEditing ? (
+                    <>
+                        <Button
+                            textButton="Cancel"
+                            onClick={handleEditToggle}
+                            disabled={isUpdating}
+                            className="transition-all duration-300 hover:bg-gray-100"
+                        />
+                        <Button
+                            textButton="Confirm"
+                            onClick={handleSave}
+                            className="transition-all duration-300 hover:bg-sky-600"
+                        />
+                    </>
+                ) : (
+                    <>
+                        <Button 
+                            textButton="edit" 
+                            onClick={handleEditToggle}
+                            className="transition-all duration-300 hover:bg-sky-600"
+                        />
+                        <Button
+                            textButton="logout"
+                            className="shadow-3xl transition-all duration-300 hover:bg-red-600"
+                            onClick={handleLogout}
+                            disabled={isLoggingOut}
+                        />
+                    </>
+                )}
+            </section>
+
+            {/* Scores Section */}
+            <section className="flex w-full justify-center">
+                {isLoadingScores ? (
+                    <div className="w-full">
+                        <Skeleton className="h-72 w-full" />
+                    </div>
+                ) : score.length > 0 ? (
+                    <ScoreCard scores={score} />
+                ) : (
+                    <Card className="w-full p-5 shadow-xl transition-all duration-300 hover:shadow-2xl">
+                        <CardContent className="flex items-center justify-center py-10">
+                            <p className="text-gray-500">No scores available yet.</p>
+                        </CardContent>
+                    </Card>
+                )}
+            </section>
+        </main>
     );
-  }
-
-  if (!user) {
-    return (
-      <div className="place-items-center pt-20">
-        <Skeleton className="h-72 w-lg place-items-center pt-5 shadow-lg">
-          <LoaderCircleIcon className="animate-spin" />
-        </Skeleton>
-      </div>
-    );
-  }
-
-  return (
-    <main className="space-y-10 px-10 pt-20">
-      <section className="flex w-full flex-col items-center justify-center pt-10">
-        <p className="text-3xl font-semibold">Your Profile</p>
-      </section>
-      <section className="flex w-full justify-center">
-        <Card className="w-lg max-w-full p-5 shadow-xl">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center space-x-3 text-xl font-bold">
-                <span>Profile Information</span>
-                {user.role !== Role_type.USER && <Badge>{user.role}</Badge>}
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 items-center gap-4">
-              {isEditing ? (
-                <>
-                  <label className="block font-medium">Name</label>
-                  <Input
-                    value={formData.name || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    disabled={isUpdating}
-                    className="col-span-2"
-                  />
-
-                  <label className="block font-medium">Email</label>
-                  <Input
-                    type="email"
-                    value={formData.email || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    disabled={isUpdating}
-                    className="col-span-2"
-                  />
-
-                  <label className="block font-medium">Phone</label>
-                  {/* <Input
-                    value={formData.tel || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, tel: e.target.value })
-                    }
-                    disabled={isUpdating}
-                    className="col-span-2"
-                  /> */}
-                </>
-              ) : (
-                <>
-                  <strong>Name:</strong>{" "}
-                  <span className="col-span-2">{user.name}</span>
-                  <strong>Email:</strong>
-                  <span className="col-span-2">{user.email} </span>
-                  <strong>Phone:</strong>{" "}
-                  <span className="col-span-2">{user.tel}</span>
-                </>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <p className="text-sm text-gray-500">ID: {user._id}</p>
-          </CardFooter>
-        </Card>
-      </section>
-      <section className="flex w-full max-w-lg justify-end space-x-3 justify-self-center px-5">
-        {isEditing ? (
-          <>
-            <Button
-              textButton="Cancel"
-              onClick={handleEditToggle}
-              disabled={isUpdating}
-            />
-            <Button
-              textButton="Confirm"
-              onClick={handleSave}
-              //isLoading={isUpdating}
-            />
-          </>
-        ) : (
-          <>
-            <Button textButton="edit" onClick={handleEditToggle} />
-            <Button
-              textButton="logout"
-              //hideTextOnMobile={false}
-              className="shadow-3xl"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-            />
-          </>
-        )}
-      </section>
-    </main>
-  );
 };
 
 export default Page;
