@@ -160,7 +160,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   }, [closeModal]);
 
   return (
-    <div className="relative w-[280px] md:w-[300px]">
+    <div className="relative w-[280px] md:w-[250px]">
       {images.length > 1 && (
         <button
           onClick={goToPrevious}

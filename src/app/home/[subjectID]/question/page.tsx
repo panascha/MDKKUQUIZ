@@ -208,6 +208,18 @@ const Question = () => {
           );          
     }
 
+    if (!subjects) {
+        return (
+            <div className="text-red-500 pt-4">Subjects not found</div>
+          );          
+    }
+
+    if (!categories) {
+        return (
+            <div className="text-red-500 pt-4">Categories not found</div>
+          );          
+    }
+
 
     return (
         <ProtectedPage>
@@ -327,9 +339,9 @@ const Question = () => {
                         </div>
                     </div>
                 </section>
-                <Table headers={["#", "question", "answer"]} data={filteredQuestions.map((question, index) => ({
+                <Table headers={["#", "Question", "Answer", "Type"]} data={filteredQuestions.map((question, index) => ({
                     "#": index + 1,
-                    question: (
+                    Question: (
                         <button
                             // href={`${FrontendRoutes.HOMEPAGE}/${subjectID}/question/${question._id}`}
                             className="text-blue-600 cursor-pointer transition duration-300 ease-in-out hover:underline hover:text-blue-800"
@@ -341,9 +353,10 @@ const Question = () => {
                             {question.question}
                         </button>
                     ),
-                    answer: Array.isArray(question.correctAnswer)
+                    Answer: Array.isArray(question.correctAnswer)
                         ? question.correctAnswer.join(", ")
-                        : question.correctAnswer
+                        : question.correctAnswer,
+                    Type: question.type === "choice" ? "MCQ" : question.type === "written" ? "Short Answer" : "Unknown",
                 }))} />
 
                 {/* Create Question Dialog */}
