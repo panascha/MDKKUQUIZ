@@ -2,39 +2,34 @@
 import React, { useCallback, useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { BackendRoutes, FrontendRoutes } from '@/config/apiRoutes';
+import { FrontendRoutes } from '@/config/apiRoutes';
 import { useSession } from 'next-auth/react';
-import axios, { AxiosError } from 'axios';
 import { Question } from '@/types/api/Question';
 import ProtectedPage from '@/components/ProtectPage';
 import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule } from '@mui/icons-material';
-import { Quiz } from '@/types/api/Quiz';
-import { Subject } from '@/types/api/Subject';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@/hooks/useUser';
 import ImageGallery from '@/components/magicui/ImageGallery';
+import { useGetQuestions } from '@/hooks/quiz/useGetQuestions';
+import { useSubmitScore } from '@/hooks/quiz/useSubmitScore';
+import { useQuery } from '@tanstack/react-query';
 
-export default function Problem(){
+export default function Problem() {
     const session = useSession();
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
-    const queryClient = useQueryClient();
     const { user } = useUser();
 
-    const subjectID = params.subjectID;
-
+    const subjectID = params.subjectID as string;
     const answerMode = searchParams.get('answerMode');
     const questionCount = Number(searchParams.get('questionCount'));
     const selectedQuestionTypes = searchParams.get('questionType');
     const selectCategory = useMemo(() => (
-    (searchParams.get('categories') || '').split(',').filter(Boolean)
+        (searchParams.get('categories') || '').split(',').filter(Boolean)
     ), [searchParams]);
 
     const [seconds, setSeconds] = useState(0);
-    const [scoreID, setScoreID] = useState("");
-    const [subject, setSubject] = useState<Subject>();
-    const [showQuestion, setShowQuestion] = useState<Question[]>([])
+    const [showQuestion, setShowQuestion] = useState<Question[]>([]);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -45,113 +40,33 @@ export default function Problem(){
     const allQuestionsAnswered = showQuestion.every(q => q.isAnswered);
     const allQuestionsSubmitted = showQuestion.every(q => q.isSubmitted);
 
-    const scoreMutation = useMutation({
-        mutationFn: async (scoreData: {
-            user: string;
-            Subject: string;
-            Category: string[];
-            Score: number;
-            FullScore: number;
-            Question: Array<{
-                Quiz: string;
-                Answer: string;
-                isCorrect: boolean;
-            }>;
-            timeTaken: number;
-        }) => {
-            if (!session?.data?.user.token) throw new Error("Authentication required");
-            
-            const response = await axios.post(BackendRoutes.SCORE, scoreData, {
-                headers: {
-                    Authorization: `Bearer ${session?.data?.user.token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-            setScoreID(response.data.data._id)
-            return response.data.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["scores"] });
-        },
-        onError: (error: AxiosError<{ message: string }>) => {
-            console.error("Failed to submit score:", error);
-            alert(`Failed to submit score: ${error.response?.data?.message || error.message}`);
-        },
+    const getQuestionsFn = useGetQuestions({
+        subjectID,
+        selectCategory,
+        selectedQuestionTypes: selectedQuestionTypes || '',
+        questionCount
     });
 
+    const { data: quizData, isLoading } = useQuery({
+        queryKey: ['questions', subjectID, selectCategory, selectedQuestionTypes, questionCount],
+        queryFn: getQuestionsFn,
+        enabled: !!session?.data?.user.token && !!subjectID
+    });
+
+    const { submitScore, calculateScore, scoreId } = useSubmitScore();
+
     useEffect(() => {
-        const fetchQuestion = async () => {
-            if (!subjectID) return;
-            try {
-                const response = await axios.get(
-                    BackendRoutes.QUIZ_FILTER.replace(":subjectID", String(subjectID)),
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${session.data?.user.token}`,
-                        },
-                    }
-                );
-
-                const subject = await axios.get(
-                    `${BackendRoutes.SUBJECT}/${subjectID}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${session?.data?.user.token}`,
-                        },
-                    }
-                );
-
-                const mapToQuestion = (data: Quiz[]): Question[] => {
-                    return data.map((item) => ({
-                        quiz: item,
-                        select: null,
-                        isBookmarked: false,
-                        isAnswered: false,
-                        isSubmitted: false,
-                        isCorrect: null,
-                    }));
-                };
-
-                const shuffleArray = <T,>(array: T[]): T[] => {
-                    const newArray = [...array];
-                    for (let i = newArray.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-                    }
-                    return newArray;
-                };
-
-                const allQuestions = mapToQuestion(response.data.data);
-
-                const filteredQuestions = allQuestions.filter((q) => {
-                    const categoryMatch = selectCategory.includes(q.quiz.category._id);
-                    const typeMatch = selectedQuestionTypes === 'mcq' ? 
-                        q.quiz.type === 'choice' : 
-                        q.quiz.type === "written";
-                    return categoryMatch && typeMatch;
-                });
-
-                const shuffledQuestions = shuffleArray(filteredQuestions);
-                const limitedQuestions = shuffledQuestions.slice(0, questionCount);
-
-                setShowQuestion(limitedQuestions);
-                setSubject(subject.data.data);
-            } catch (error) {
-                console.error("Error fetching question:", error);
-            }
-        };
-
-        fetchQuestion();
-    }, [subjectID, session?.data?.user.token]);
+        if (quizData) {
+            setShowQuestion(quizData.questions);
+        }
+    }, [quizData]);
 
     useEffect(() => {
         const interval = setInterval(() => {
-        setSeconds((prev) => prev + 1);
+            setSeconds((prev) => prev + 1);
         }, 1000);
 
-        return () => clearInterval(interval); 
+        return () => clearInterval(interval);
     }, []);
 
     const formatTime = (s: number) => {
@@ -171,23 +86,45 @@ export default function Problem(){
             setCurrentImageIndex(0);
         }
     };
-    
-    const submitScore = (totalScore: number) => {
-        // Get user ID from session
-        const userId = user._id;
 
-        if (!userId) {
+    const handleSubmit = () => {
+        if (!user._id) {
             alert("No user ID available in session");
             return;
         }
 
+        // Mark all questions as correct or incorrect
+        const updatedQuestions = showQuestion.map(question => {
+            let isCorrect = false;
+            if (selectedQuestionTypes === 'mcq') {
+                const userAnswer = question.select || '';
+                const correctAnswers = question.quiz.correctAnswer || [];
+                isCorrect = userAnswer !== '' && correctAnswers.includes(userAnswer);
+            } else if (selectedQuestionTypes === 'shortanswer') {
+                const userAnswer = question.select || '';
+                const correctAnswers = question.quiz.correctAnswer || [];
+                isCorrect = correctAnswers.some(correctAnswer => 
+                    userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()
+                );
+            }
+            return {
+                ...question,
+                isCorrect,
+                isSubmitted: true
+            };
+        });
+
+        setShowQuestion(updatedQuestions);
+
+        const totalScore = calculateScore(updatedQuestions, selectedQuestionTypes || '');
+
         const scoreData = {
-            user: userId,
-            Subject: String(subjectID),
+            user: user._id,
+            Subject: subjectID,
             Category: selectCategory,
             Score: totalScore,
             FullScore: showQuestion.length,
-            Question: showQuestion.map(q => ({
+            Question: updatedQuestions.map(q => ({
                 Quiz: q.quiz._id,
                 Answer: q.select || '',
                 isCorrect: q.isCorrect || false
@@ -195,55 +132,11 @@ export default function Problem(){
             timeTaken: seconds
         };
 
-        try {
-            scoreMutation.mutate(scoreData);
-        } catch (error) {
-            alert("An unexpected error occurred while submitting the score");
+        submitScore(scoreData);
+        if (scoreId) {
+            router.push(`/profile/${scoreId}`);
         }
     };
-
-    const handleSubmit = () => {
-        if (answerMode === "reveal-at-end"){
-            const updatedQuestions = [...showQuestion];
-            let totalScore = 0;
-
-            updatedQuestions.forEach((question) => {
-                let isCorrect = false;
-                if (selectedQuestionTypes === 'mcq') {
-                    const userAnswer = question.select || '';
-                    const correctAnswers = question.quiz.correctAnswer || [];
-                    isCorrect = userAnswer !== '' && correctAnswers.includes(userAnswer);
-                } else if (selectedQuestionTypes === 'shortanswer') {
-                    const userAnswer = question.select || '';
-                    const correctAnswers = question.quiz.correctAnswer || [];
-                    isCorrect = correctAnswers.some(correctAnswer => 
-                        userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()
-                    );
-                }
-                
-                question.isCorrect = isCorrect;
-                question.isSubmitted = true;
-                if (isCorrect) totalScore++;
-            });
-
-            setShowQuestion(updatedQuestions);
-            submitScore(totalScore);
-        }
-        else {
-            const checkAnswer = showQuestion.filter((q) => q.isCorrect);
-            const totalScore = checkAnswer.length;
-            submitScore(totalScore);
-        }
-        router.push(`/profile/${scoreID}`);
-    }
-
-    // const toggleBookmark = (index: number) => {
-    //     setQuestions(prevQuestions =>
-    //         prevQuestions.map((question, i) =>
-    //             i === index ? { ...question, isBookmarked: !question.isBookmarked } : question
-    //         )
-    //     );
-    // };
 
     const clearAnswer = () => {
         if (!showQuestion[currentQuestionIndex].isSubmitted) {
@@ -304,12 +197,20 @@ export default function Problem(){
         setQuestionViewMode(prevMode => (prevMode === 'grid' ? 'list' : 'grid'));
     };
 
-    return(
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        );
+    }
+
+    return (
         <ProtectedPage>
             <div className="container mt-20 p-4 sm:p-8 sm:border-2 sm:border-gray-300 rounded-xl shadow-lg bg-white mx-auto max-w-7xl"
                 onClick={() => isImageModalOpen && setIsImageModalOpen(false)}>
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{subject?.name}</h1>
+                    <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{quizData?.subject.name}</h1>
                     <div className="flex justify-between items-center">
                         <p className="text-base sm:text-lg text-gray-600 mt-2 sm:mt-4 font-medium">
                             Question {currentQuestionIndex + 1} of {showQuestion.length}
@@ -560,4 +461,4 @@ export default function Problem(){
             </div>
         </ProtectedPage>
     );
-};
+}
