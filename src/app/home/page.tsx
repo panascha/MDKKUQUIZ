@@ -17,24 +17,20 @@ import { PencilIcon, XIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import AddSubjectModal from '@/components/subjects/AddSubjectModal';
 import EditSubjectModal from '@/components/subjects/EditSubjectModal';
-
-const fetchSubject = async (): Promise<Array<Subject>> => {
-    const response = await axios.get(BackendRoutes.SUBJECT);
-    if (Array.isArray(response.data.data)) {
-      return response.data.data;
-    }
-    throw new Error("Failed to fetch dentists data");
-};
+import { useCreateSubject } from '@/hooks/subject/useCreateSubject';
+import { useUpdateSubject } from '@/hooks/subject/useUpdateSubject';
+import { useDeleteSubject } from '@/hooks/subject/useDeleteSubject';
+import { useGetSubject } from '@/hooks/subject/useGetSubject';
 
 const Main = () => {
     const {
         data: subject = [],
         isLoading,
         isError,
-      } = useQuery({
+    } = useQuery({
         queryKey: ["subject"],
-        queryFn: fetchSubject,
-      });
+        queryFn: useGetSubject,
+    });
     const { user } = useUser();
     const queryClient = useQueryClient();
     const [existingImg, setExistingImg] = useState<string | null>(null);
@@ -51,90 +47,10 @@ const Main = () => {
         year: 1
     });
     const admin = user?.role == Role_type.SADMIN;
+    const deleteSubject = useDeleteSubject();
+    const editSubject = useUpdateSubject();   
+    const createSubject = useCreateSubject();
 
-    const deleteMutation = useMutation({
-        mutationFn: async (id: string) => {
-          if (!session?.user.token) throw new Error("Authentication required");
-          await axios.delete(`${BackendRoutes.SUBJECT}/${id}`, {
-            headers: { Authorization: `Bearer ${session.user.token}` },
-          });
-        },
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["subject"] });
-        },
-        onError: (error: Error) => {
-          setError(error.message);
-        },
-    });
-
-    const editMutation = useMutation({
-      mutationFn: async ({ id, updatedData }: { id: string; updatedData: Partial<Subject> }) => {
-        if (!session?.user.token) throw new Error("Authentication required");
-    
-        const formData = new FormData();
-        if (updatedData.name) formData.append("name", updatedData.name);
-        if (updatedData.description) formData.append("description", updatedData.description);
-        if (updatedData.year) formData.append("year", updatedData.year.toString());
-        if (
-          updatedData.img &&
-          typeof updatedData.img === "object" &&
-          "name" in updatedData.img
-        ) {
-          formData.append("image", updatedData.img as File);
-        } else if (updatedData.img) {
-          formData.append("image", updatedData.img as string);
-        }
-    
-        const response = await axios.put(`${BackendRoutes.SUBJECT}/${id}`, formData, {
-          headers: {
-            Authorization: `Bearer ${session.user.token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-    
-        return response.data.data;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["subject"] });
-        toast.success("Subject updated successfully!");
-        setEditModal(false);
-      },
-      onError: (error: AxiosError) => {
-        toast.error(`Update failed: ${error.message}`);
-      },
-    });    
-
-    const createMutation = useMutation({
-      mutationFn: async (newSubject: Omit<Subject, "_id"|"createAt">) => {
-        if (!session?.user.token) throw new Error("Authentication required");
-    
-        const formDataPayload = new FormData();
-        formDataPayload.append("name", newSubject.name);
-        formDataPayload.append("description", newSubject.description);
-        formDataPayload.append("year", newSubject.year.toString());
-        // Ensure image is added correctly as file, only if it's not null
-        if (newSubject.img) {
-          formDataPayload.append("image", newSubject.img); // img is now a File
-        }
-    
-        const response = await axios.post(BackendRoutes.SUBJECT, formDataPayload, {
-          headers: {
-            Authorization: `Bearer ${session.user.token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-    
-        return response.data.data;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["subject"] });
-        setShowModal(false);
-        resetForm();
-      },
-      onError: (error: AxiosError) => {
-        setError(error.message);
-      },
-    });
     // Reset form function
     const resetForm = () => {
       setFormData({
@@ -193,33 +109,46 @@ const Main = () => {
         setError("Image is required");
         return false;
       }
-    
       return true;
     };
     
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
 
-        if (!validateForm()) {
-          return;
-        }
+      e.preventDefault();
 
-        if (!user) {
-          toast.error("Login First");
-          return;
-        }
+      if (!validateForm()) {
+        toast.error("Form Error");
+        return;
+      }
 
-        if (!formData.name || !formData.description) {
-          toast.error("Name and description are required.");
-          return;
-        }
+      if (!user) {
+        toast.error("Login First");
+        return;
+      }
 
-        createMutation.mutate({
-          name: formData.name,
-          description: formData.description,
-          year: formData.year,
-          img: formData.image //error but it works so dont touch it
-        });
+      if (!formData.name || !formData.description) {
+        toast.error("Name and description are required.");
+        return;
+      }
+      createSubject.mutate({
+        name: formData.name,
+        description: formData.description,
+        year: formData.year,
+        img: formData.image //error but it works so dont touch it
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["subject"] });
+          setShowModal(false);
+          toast.success("Subject create successfully!");
+          resetForm();
+          
+        },
+        onError: (error: AxiosError) => {
+          console.log(error.message);
+          setError(error.message);
+        } 
+      });
     };
 
     const handleEditSubmit = (e: React.FormEvent) => {
@@ -236,7 +165,7 @@ const Main = () => {
       }
     
       // If no new image is selected, use the existing image (existingImg)
-      editMutation.mutate({
+      editSubject.mutate({
         id: selectedSubjectId,
         updatedData: {
           name: formData.name,
@@ -244,6 +173,16 @@ const Main = () => {
           year: formData.year,
           img: formData.image || existingImg || "", // error but it works so dont touch it
         }
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["subject"] });
+          toast.success("Subject updated successfully!");
+          setEditModal(false);
+        },
+        onError: (error: AxiosError) => {
+          toast.error(`Update failed: ${error.message}`);
+        },
       });
     };    
     
@@ -363,8 +302,18 @@ const Main = () => {
                       <PencilIcon size={16} />
                     </button>
                     <button
-                      onClick={() => deleteMutation.mutate(subject._id)}
-                      disabled={deleteMutation.isPending}
+                      onClick={() => deleteSubject.mutate(subject._id,  
+                        {
+                          onSuccess: () => {
+                            queryClient.invalidateQueries({ queryKey: ["subject"] });
+                            toast.success("delete succesfully!")
+                          },
+                          onError: (error: Error) => {
+                            setError(error.message);
+                          },
+                        }
+                      )}
+                      disabled={deleteSubject.isPending}
                       className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
                     >
                       <XIcon size={16} />
@@ -385,7 +334,7 @@ const Main = () => {
           handleSubmit={handleSubmit}
           resetForm={resetForm}
           error={error}
-          createMutation={createMutation}
+          createMutation={createSubject}
         />
 
         {/* Edit Subject Modal */}
@@ -397,7 +346,7 @@ const Main = () => {
           handleEditSubmit={handleEditSubmit}
           resetForm={resetForm}
           error={error}
-          editMutation={editMutation}
+          editMutation={editSubject}
           existingImg={existingImg}
         />
       </ProtectedPage>

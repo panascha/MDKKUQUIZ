@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 import axios, { AxiosError } from 'axios';
 import { Question } from '@/types/api/Question';
 import ProtectedPage from '@/components/ProtectPage';
-import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule, Category } from '@mui/icons-material';
+import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule } from '@mui/icons-material';
 import { Quiz } from '@/types/api/Quiz';
 import { Subject } from '@/types/api/Subject';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

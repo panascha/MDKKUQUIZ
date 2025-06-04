@@ -10,25 +10,18 @@ import axios from 'axios';
 import { BackendRoutes, FrontendRoutes } from '@/config/apiRoutes';
 import Image from 'next/image';
 import ProtectedPage from '@/components/ProtectPage';
-import Navbar from '@/components/Navbar';
-import Router from 'next/router';
 import { useRouter } from "next/navigation";
-import { ButtonWithLogo } from '@/components/magicui/Buttonwithlogo';
 
 
 const SubjectDetail = () => {
 
     const router = useRouter();
-
     const [subject, setSubject] = useState<Subject | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-  
     const params = useParams();
     const subjectID = params.subjectID;
   
-    const { data: session } = useSession();
-
     useEffect(() => {
         if (!subjectID) return;
     

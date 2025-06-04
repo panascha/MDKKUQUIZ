@@ -24,6 +24,21 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ scores }) => {
     return Math.round((Number(score.Score) / Number(score.FullScore)) * 100);
   };
 
+  // Format time taken
+  const formatTimeTaken = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${remainingSeconds}s`;
+    } else {
+      return `${remainingSeconds}s`;
+    }
+  };
+
   return (
     <Card className="w-full shadow-xl transition-all duration-300 hover:shadow-2xl">
       <CardHeader className="border-b border-gray-100 bg-gray-50/50">
@@ -55,7 +70,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ scores }) => {
                               Date: {new Date(score.createdAt).toLocaleDateString()}
                             </p>
                             <p className="text-sm text-gray-500">
-                              Time Taken: {Number(score.timeTaken).toString()} seconds
+                              Time Taken: {formatTimeTaken(Number(score.timeTaken))}
                             </p>
                           </div>
                           <Badge
@@ -86,7 +101,6 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ scores }) => {
                         </div>
                         <div className="mt-4 space-y-1 text-sm text-gray-600">
                           <p className="font-medium">Score: {score.Score.toString()} / {score.FullScore.toString()}</p>
-                          <p>Correct Answers: {score.Question.filter(q => q.isCorrect).length} / {score.Question.length}</p>
                         </div>
                       </div>
                     </Link>

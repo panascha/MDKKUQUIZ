@@ -1,13 +1,15 @@
-import { UserProps } from './User';
 import { Quiz } from './Quiz';
 import { Keyword } from './Keyword';
+import { User } from '../User';
+
 export interface Report {
     _id: string;
-    user: UserProps;
-    type: 'question' | 'keyword';
-    description: string;
-    current: Quiz | Keyword;
-    reported: Quiz | Keyword;
-    status: 'Under review' | 'Approved' | 'Rejected';
+    User: UserProps;
+    originalQuiz: Quiz;
+    suggestedChanges: Quiz;
+    status: 'pending' | 'approved' | 'rejected';
+    approvedAdmin: Array<User>;
+    reason: string;
     createdAt: Date;
 }
+

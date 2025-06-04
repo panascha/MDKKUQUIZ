@@ -2,40 +2,46 @@ import React from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
 import Button from '@/components/ui/Button';
 import { LoaderIcon } from "lucide-react";
+import Image from 'next/image';
+import { UserProps } from '@/types/api/UserProps';
+import { Quiz } from '@/types/api/Quiz';
 
-interface AddSubjectModalProps {
-  showModal: boolean;
-  setShowModal: (show: boolean) => void;
+interface AddReportModalProps {
+  editModal: boolean;
+  setEditModal: (show: boolean) => void;
   formData: {
-    name: string;
-    description: string;
+    User: UserProps;
+    originalQuiz: Quiz;
+    suggestedQuiz: Quiz;
     image: File | null;
     year: number;
   };
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  handleSubmit: (e: React.FormEvent) => void;
+  handleEditSubmit: (e: React.FormEvent) => void;
   resetForm: () => void;
   error: string | null;
-  createMutation: {
+  editMutation: {
     isPending: boolean;
   };
+  existingImg: string | null;
 }
 
-const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
-  showModal,
-  setShowModal,
+const AddReportModal: React.FC<AddReportModalProps> = ({
+  editModal,
+  setEditModal,
   formData,
   handleInputChange,
-  handleSubmit,
+  handleEditSubmit,
   resetForm,
   error,
-  createMutation,
+  editMutation,
+  existingImg,
 }) => {
   return (
     <Dialog
-      open={showModal}
+      open={editModal}
       onOpenChange={(open) => {
-        setShowModal(open);
+        setEditModal(open);
         if (!open) {
           resetForm();
         }
@@ -43,14 +49,14 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
     >
       <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
         <DialogHeader>
-          <DialogTitle>Subject</DialogTitle>
+          <DialogTitle>Edit Report</DialogTitle>
         </DialogHeader>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleEditSubmit}
           className="w-full space-y-4"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Name Input */}
+          {/* Name */}
           <div>
             <label className="mb-1 block text-sm font-semibold">Name</label>
             <input
@@ -59,15 +65,11 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
               value={formData.name}
               onChange={handleInputChange}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-              placeholder="Biology"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
             />
-            {error && error.includes('name') && (
-              <p className="text-red-500 text-sm">Name is required.</p>
-            )}
           </div>
 
-          {/* Description Input */}
+          {/* Description */}
           <div>
             <label className="mb-1 block text-sm font-semibold">Description</label>
             <input
@@ -76,14 +78,10 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
               value={formData.description}
               onChange={handleInputChange}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-              placeholder="Everything about Biology"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
             />
-            {error && error.includes('description') && (
-              <p className="text-red-500 text-sm">Description is required.</p>
-            )}
           </div>
-            
+
           {/* Year Dropdown */}
           <div>
             <label className="mb-1 block text-sm font-semibold">Year</label>
@@ -92,9 +90,9 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
               value={formData.year}
               onChange={handleInputChange}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
             >
-              <option value="" disabled>Select a year</option>
+              <option value="">Select a year</option>
               {[1, 2, 3, 4, 5, 6].map((year) => (
                 <option key={year} value={year}>
                   Year {year}
@@ -105,11 +103,11 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
               <p className="text-red-500 text-sm">Year is required.</p>
             )}
           </div>
-
+          
           {/* Image Upload */}
           <div>
             <label htmlFor="image" className="mb-1 block text-sm font-semibold">
-              Upload Image (Optional)
+              Upload New Image (optional)
             </label>
             <input
               type="file"
@@ -117,38 +115,45 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
               id="image"
               accept="image/*"
               onChange={handleInputChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
             />
-            {formData.image && (
+            {formData.image instanceof File && (
               <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
             )}
-            {error && error.includes('image') && (
-              <p className="text-red-500 text-sm">Please upload a valid image.</p>
+            {!formData.image && existingImg && (
+              <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                <Image
+                  src={existingImg.startsWith("http") ? existingImg : `http://localhost:5000${existingImg}`}
+                  alt="Report Image"
+                  fill
+                  style={{ objectFit: "cover" }}
+                  className="rounded-lg"
+                />
+              </div>
             )}
           </div>
 
-          {/* Submit Button */}
+          {/* Buttons */}
           <DialogFooter className="flex justify-between pt-4">
             <Button
-              textButton="Submit"
-              disabled={createMutation.isPending}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+              textButton="Update"
+              disabled={editMutation.isPending}
+              className="bg-blue-500 hover:bg-blue-600"
             >
-              {createMutation.isPending ? (
+              {editMutation.isPending ? (
                 <>
                   <LoaderIcon className="mr-2 inline animate-spin" size={16} />
-                  Saving...
+                  Updating...
                 </>
               ) : (
-                "Save Subject"
+                "Update Report"
               )}
             </Button>
 
-            {/* Cancel Button */}
             <DialogClose asChild>
               <Button
                 textButton="Cancel"
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                className="bg-red-500 hover:bg-red-800"
                 onClick={resetForm}
               />
             </DialogClose>
@@ -159,4 +164,4 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   );
 };
 
-export default AddSubjectModal; 
+export default AddReportModal; 
