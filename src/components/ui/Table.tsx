@@ -19,7 +19,7 @@ export const Table: React.FC<TableProps> = ({ headers, data }) => {
             "border border-gray-300 text-sm md:text-base border-separate border-spacing-0"
             )}
         >
-            <thead className="border-gray-300">
+            <thead className="border-b border-gray-300 bg-gray-50">
             <tr className={cn("hover:bg-gray-100 text-gray-500", "transition duration-300")}>
                 {headers.map((header, index) => (
                 <th key={index} className={cn("p-3 md:p-4 text-left")}>

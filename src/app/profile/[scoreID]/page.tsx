@@ -47,11 +47,15 @@ const QuizResultPage = () => {
         const searchTerms = searchTerm.toLowerCase().split(' ');
         const questionText = question.Quiz.question.toLowerCase();
         const answerText = question.Answer.toLowerCase();
+        const categoryText = question.Quiz.category.category.toLowerCase();
+        const choiceText = question.Quiz.choice.map(choice => choice.toLowerCase()).join(' ');
         const correctAnswerText = question.Quiz.correctAnswer.join(' ').toLowerCase();
 
         return filterMatch && searchTerms.every(term => 
             questionText.includes(term) || 
             answerText.includes(term) || 
+            categoryText.includes(term) ||
+            choiceText.includes(term) ||
             correctAnswerText.includes(term)
         );
     });
@@ -115,7 +119,7 @@ const QuizResultPage = () => {
             <input
                 id="search"
                 type="text"
-                placeholder="Search from Topic, Question, Choices, Your answer, Explanation"
+                placeholder="Search from Topic, Question, Choices, Your answer, Correct answer"
                 className="border border-gray-300 rounded-md p-2 w-full"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -134,9 +138,9 @@ const QuizResultPage = () => {
                     </button>
                     {showDropdown && (
                         <div className="absolute bg-white border border-gray-300 rounded-md mt-2 w-full p-1 z-10 sm:text-sm">
-                        <div className="p-2 hover:bg-green-100 cursor-pointer" onClick={() => handleFilter('all')}>All</div>
-                        <div className="p-2 hover:bg-green-100 cursor-pointer" onClick={() => handleFilter('correct')}>Correct</div>
-                        <div className="p-2 hover:bg-red-100 cursor-pointer" onClick={() => handleFilter('incorrect')}>Incorrect</div>
+                        <div className="p-2 hover:bg-orange-100 cursor-pointer transition-colors duration-200" onClick={() => handleFilter('all')}>All</div>
+                        <div className="p-2 hover:bg-green-100 cursor-pointer transition-colors duration-200" onClick={() => handleFilter('correct')}>Correct</div>
+                        <div className="p-2 hover:bg-red-100 cursor-pointer transition-colors duration-200" onClick={() => handleFilter('incorrect')}>Incorrect</div>
                         </div>
                     )}
                     </div>
@@ -166,7 +170,7 @@ const QuizResultPage = () => {
                 <p className="mb-3 text-center text-xl font-semibold">
                 {question.Quiz.question}
                 </p>
-                <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="flex flex-col md:flex-row items-center gap-8 ml-4 md:gap-6 md:justify-between">
                 <ImageGallery images={question.Quiz.img} />
                 <div className="md:order-2 md:w-2/3">
                     <p className="mb-1"><strong>Your Answer: </strong>{question.Answer}</p>

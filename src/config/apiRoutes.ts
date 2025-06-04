@@ -16,6 +16,8 @@ export enum BackendRoutes {
   QUIZ = `${BackendRootRoutes}/quiz`,
   QUIZ_FILTER = `${BackendRootRoutes}/quiz/filter`,
   QUIZ_BY_ID = `${BackendRootRoutes}/quiz/:questionID`,
+  KEYWORD = `${BackendRootRoutes}/keyword`,
+  KEYWORD_BY_ID = `${BackendRootRoutes}/keyword/:keywordID`,
   SCORE = `${BackendRootRoutes}/score`,
   SCORE_USERID = `${BackendRootRoutes}/score/user/:UserID`,
 }
