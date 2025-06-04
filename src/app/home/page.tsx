@@ -1,13 +1,11 @@
 "use client"
 import React, { useState } from 'react';
 import Link from 'next/link';
-import axios, { AxiosError } from "axios";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ProtectedPage from '@/components/ProtectPage';
 import { useUser } from '@/hooks/useUser';
 import { Role_type } from '@/config/role';
 import { Subject } from '@/types/api/Subject';
-import { BackendRoutes } from '@/config/apiRoutes';
 import { LoaderIcon, XCircleIcon } from "lucide-react";
 import Button from '@/components/ui/Button';
 import { useSession } from 'next-auth/react';
@@ -21,6 +19,7 @@ import { useCreateSubject } from '@/hooks/subject/useCreateSubject';
 import { useUpdateSubject } from '@/hooks/subject/useUpdateSubject';
 import { useDeleteSubject } from '@/hooks/subject/useDeleteSubject';
 import { useGetSubject } from '@/hooks/subject/useGetSubject';
+import { AxiosError } from 'axios';
 
 const Main = () => {
     const {
@@ -134,7 +133,8 @@ const Main = () => {
         name: formData.name,
         description: formData.description,
         year: formData.year,
-        img: formData.image //error but it works so dont touch it
+        img: formData.image as unknown as string, // Type assertion for File to string
+        Category: [] // Add empty Category array as it's required by the type
       },
       {
         onSuccess: () => {
@@ -142,9 +142,8 @@ const Main = () => {
           setShowModal(false);
           toast.success("Subject create successfully!");
           resetForm();
-          
         },
-        onError: (error: AxiosError) => {
+        onError: (error: Error) => {
           console.log(error.message);
           setError(error.message);
         } 
@@ -164,14 +163,14 @@ const Main = () => {
         return;
       }
     
-      // If no new image is selected, use the existing image (existingImg)
       editSubject.mutate({
         id: selectedSubjectId,
         updatedData: {
           name: formData.name,
           description: formData.description,
           year: formData.year,
-          img: formData.image || existingImg || "", // error but it works so dont touch it
+          img: formData.image ? (formData.image as unknown as string) : existingImg || "",
+          Category: [] // Add empty Category array as it's required by the type
         }
       },
       {
@@ -180,7 +179,7 @@ const Main = () => {
           toast.success("Subject updated successfully!");
           setEditModal(false);
         },
-        onError: (error: AxiosError) => {
+        onError: (error: Error) => {
           toast.error(`Update failed: ${error.message}`);
         },
       });
