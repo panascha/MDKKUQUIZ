@@ -2,22 +2,22 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { BackendRoutes } from "@/config/apiRoutes";
 import { useSession } from "next-auth/react";
-import { Quiz } from "@/types/api/Quiz";
+import { Report } from "@/types/api/Report";
 
-export const useCreateQuiz = (reportData:Report) => {
+export const useCreateReport = () => {
     const session = useSession();
     return useMutation({
-        mutationFn: async () => {
+        mutationFn: async (reportData: Omit<Report, '_id' | 'createdAt'>) => {
             if (!session?.data?.user.token) throw new Error("Authentication required");
 
             const response = await axios.post(BackendRoutes.REPORT, reportData, {
                 headers: {
-                Authorization: `Bearer ${session.data.user.token}`,
-                "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${session.data.user.token}`,
+                    "Content-Type": "application/json",
                 },
             });
 
             return response.data.data;
         },
-    })
-}
+    });
+};

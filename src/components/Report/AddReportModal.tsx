@@ -2,73 +2,80 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
 import Button from '@/components/ui/Button';
 import { LoaderIcon } from "lucide-react";
-import Image from 'next/image';
 import { UserProps } from '@/types/api/UserProps';
 import { Quiz } from '@/types/api/Quiz';
 import { useCreateQuiz } from '@/hooks/quiz/useCreateQuiz';
+import { useCreateReport } from '@/hooks/report/useCreateReport';
+import { Report } from '@/types/api/Report';
+import toast from 'react-hot-toast';
+import { useSession } from 'next-auth/react';
+import { useUser } from '@/hooks/useUser';
+
+interface QuizFormData {
+  user: string;
+  subject: string;
+  category: string;
+  choice: Array<string>;
+  correctAnswer: Array<string>;
+  img: Array<string>;
+  question: string;
+  type: string;
+  status: 'pending' | 'approved' | 'rejected' | 'reported';
+}
 
 interface AddReportModalProps {
-  editModal: boolean;
-  setEditModal: (show: boolean) => void;
-  reportData: {
-    User: UserProps;
-    originalQuiz: Quiz;
-    suggestedChanges: Quiz;
-    image: File | null;
-    year: number;
-  };
-  quizData: Quiz;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  resetForm: () => void;
-  error: string | null;
-  editMutation: {
-    isPending: boolean;
-  };
-  existingImg: string | null;
+  showModal: boolean;
+  setShowModal: (show: boolean) => void;
+  originalQuiz: Quiz;
+  userProp: UserProps;
 }
 
 const AddReportModal: React.FC<AddReportModalProps> = ({
-  editModal,
-  setEditModal,
-  reportData,
-  quizData,
-  handleInputChange,
-  resetForm,
-  error,
-  editMutation,
-  existingImg,
+  showModal,
+  setShowModal,
+  originalQuiz,
+  userProp,
 }) => {
   // State for suggested quiz
-  const [suggestedQuiz, setSuggestedQuiz] = useState<Quiz>({
-    ...quizData,
-    _id: '', // New quiz will get new ID
-    user: reportData.User,
-    approved: false,
+  const [formData, setFormData] = useState<QuizFormData>({
+    user: userProp._id,
+    subject: originalQuiz.subject._id,
+    category: originalQuiz.category._id,
+    choice: originalQuiz.choice,
+    correctAnswer: originalQuiz.correctAnswer,
+    img: originalQuiz.img,
+    question: originalQuiz.question,
+    type: originalQuiz.type,
+    status: 'reported'
   });
 
   // State for new image
   const [newImage, setNewImage] = useState<File | null>(null);
-
+  const [error, setError] = useState<string | null>(null);
   // Create quiz mutation
-  const createQuizMutation = useCreateQuiz(suggestedQuiz);
+  const createQuizMutation = useCreateQuiz();
+  // Create report mutation
+  const createReportMutation = useCreateReport();
+  const session = useSession();
+  const { user } = useUser();
 
-  const handleSuggestedChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setSuggestedQuiz(prev => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }));
   };
 
   const handleChoiceChange = (index: number, value: string) => {
-    setSuggestedQuiz(prev => ({
+    setFormData(prev => ({
       ...prev,
       choice: prev.choice.map((choice, i) => i === index ? value : choice)
     }));
   };
 
   const handleCorrectAnswerChange = (index: number, value: string) => {
-    setSuggestedQuiz(prev => ({
+    setFormData(prev => ({
       ...prev,
       correctAnswer: prev.correctAnswer.map((answer, i) => i === index ? value : answer)
     }));
@@ -80,44 +87,59 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
     }
   };
 
+  const resetForm = () => {
+        setFormData({
+        user: userProp._id,
+        subject: originalQuiz.subject._id,
+        category: originalQuiz.category._id,
+        choice: originalQuiz.choice,
+        correctAnswer: originalQuiz.correctAnswer,
+        img: originalQuiz.img,
+        question: originalQuiz.question,
+        type: originalQuiz.type,
+        status: 'reported'
+    });
+    setNewImage(null);
+    setError(null);
+    setShowModal(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setError(null);
+    if(!user._id){
+      return toast.error("there is no user ID");
+    }
     try {
-      // Create the suggested quiz
-      const result = await createQuizMutation.mutateAsync();
-      
-      // Get the created quiz ID from the result
-      const suggestedQuizId = result._id;
-      
-      // Update the report data with the new quiz ID
-      const updatedReportData = {
-        ...reportData,
-        suggestedQuiz: {
-          ...suggestedQuiz,
-          _id: suggestedQuizId
-        },
-        image: newImage
+      // Create the suggested quiz first
+      const quizResult = await createQuizMutation.mutateAsync(formData);
+      toast.success("create quiz success");
+      // Create the report with the new quiz ID
+      const newReportData: Omit<Report, '_id' | 'createdAt'> = {
+        User: user._id,
+        originalQuiz: originalQuiz,
+        suggestedChanges: quizResult,
+        status: 'pending',
+        reason: ''
       };
-      
-      // Here you would submit the report with the updated data
-      // You'll need to implement the report submission logic
+
+      // Submit the report
+      await createReportMutation.mutateAsync(newReportData);
       
       // Close the modal after successful submission
-      setEditModal(false);
       resetForm();
       
     } catch (error) {
-      console.error('Error creating quiz:', error);
-      // Handle error appropriately
+      console.error('Error creating quiz or report:', error);
+      setError('Failed to create report. Please try again.');
     }
   };
 
   return (
     <Dialog
-      open={editModal}
+      open={showModal}
       onOpenChange={(open) => {
-        setEditModal(open);
+        setShowModal(open);
         if (!open) {
           resetForm();
         }
@@ -125,7 +147,7 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
     >
       <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
         <DialogHeader>
-          <DialogTitle>Report</DialogTitle>
+          <DialogTitle>Report Quiz</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit}
@@ -138,7 +160,7 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
               <label className="mb-1 block text-sm font-semibold">Subject</label>
               <input
                 type="text"
-                value={quizData.subject.name}
+                value={originalQuiz.subject.name}
                 disabled={true}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
               />
@@ -147,7 +169,7 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
               <label className="mb-1 block text-sm font-semibold">Category</label>
               <input
                 type="text"
-                value={quizData.category.category}
+                value={originalQuiz.category.category}
                 disabled={true}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
               />
@@ -156,7 +178,7 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
               <label className="mb-1 block text-sm font-semibold">Type</label>
               <input
                 type="text"
-                value={quizData.type}
+                value={originalQuiz.type}
                 disabled={true}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
               />
@@ -170,37 +192,41 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
               <input
                 type="text"
                 name="question"
-                value={suggestedQuiz.question}
-                onChange={handleSuggestedChange}
+                value={formData.question}
+                onChange={handleInputChange}
+                required
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               />
             </div>
 
             {/* Choices */}
-            {quizData.choice? (
-            <div>
-              <label className="mb-1 block text-sm font-semibold">Choices</label>
-              {suggestedQuiz.choice.map((choice, index) => (
-                <div key={index} className="mb-2">
-                  <input
-                    type="text"
-                    value={choice}
-                    onChange={(e) => handleChoiceChange(index, e.target.value)}
-                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                  />
-                </div>
-              ))}
-            </div>
-            ): (null)}
+            {originalQuiz.choice ? (
+              <div>
+                <label className="mb-1 block text-sm font-semibold">Choices</label>
+                {formData.choice.map((choice, index) => (
+                  <div key={index} className="mb-2">
+                    <input
+                      type="text"
+                      value={choice}
+                      onChange={(e) => handleChoiceChange(index, e.target.value)}
+                      required
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
             {/* Correct Answers */}
             <div>
               <label className="mb-1 block text-sm font-semibold">Correct Answers</label>
-              {suggestedQuiz.correctAnswer.map((answer, index) => (
+              {formData.correctAnswer.map((answer, index) => (
                 <div key={index} className="mb-2">
                   <input
                     type="text"
                     value={answer}
                     onChange={(e) => handleCorrectAnswerChange(index, e.target.value)}
+                    required
                     className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                   />
                 </div>
@@ -235,10 +261,10 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
           <DialogFooter className="flex justify-between pt-4">
             <Button
               textButton="Submit Report"
-              disabled={editMutation.isPending}
+              disabled={createQuizMutation.isPending || createReportMutation.isPending}
               className="bg-blue-500 hover:bg-blue-600"
             >
-              {editMutation.isPending ? (
+              {createQuizMutation.isPending || createReportMutation.isPending ? (
                 <>
                   <LoaderIcon className="mr-2 inline animate-spin" size={16} />
                   Submitting...

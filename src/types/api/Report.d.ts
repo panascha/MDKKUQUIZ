@@ -8,7 +8,6 @@ export interface Report {
     originalQuiz: Quiz;
     suggestedChanges: Quiz;
     status: 'pending' | 'approved' | 'rejected';
-    approvedAdmin: Array<User>;
     reason: string;
     createdAt: Date;
 }

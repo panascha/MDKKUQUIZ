@@ -12,6 +12,6 @@ export interface Quiz {
     choice: Array<string>;
     correctAnswer: Array<string>;
     img: Array<string>;
-    approved: Boolean;
+    status: 'pending' | 'approved' | 'rejected' | 'reported';
   }
   

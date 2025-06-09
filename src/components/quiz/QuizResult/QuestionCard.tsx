@@ -2,8 +2,7 @@ import ImageGallery from '@/components/magicui/ImageGallery';
 import AddReportModal from '@/components/Report/AddReportModal';
 import { Question } from '@/types/api/Score';
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { UserProps } from '@/types/api/UserProps';
+import { useUser } from '@/hooks/useUser';
 
 interface QuizQuestionCardProps {
     question: Question;
@@ -12,7 +11,7 @@ interface QuizQuestionCardProps {
 
 export const QuizQuestionCard = ({ question, index }: QuizQuestionCardProps) => {
     const [showModal, setShowModal] = useState<boolean>(false);
-    const { data: session } = useSession();
+    const { user } = useUser();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         // Handle input changes for the report form
@@ -49,21 +48,10 @@ export const QuizQuestionCard = ({ question, index }: QuizQuestionCardProps) => 
                 </button>
             </div>
             <AddReportModal
-                editModal={showModal}
-                setEditModal={setShowModal}
-                reportData={{
-                    User: session?.user as UserProps,
-                    originalQuiz: question.Quiz,
-                    suggestedChanges: question.Quiz, // You might want to create a new object for suggested changes
-                    image: null,
-                    year: new Date().getFullYear()
-                }}
-                quizData={question.Quiz}
-                handleInputChange={handleInputChange}
-                resetForm={resetForm}
-                error={null}
-                editMutation={{ isPending: false }}
-                existingImg={null}
+                showModal={showModal}
+                setShowModal={setShowModal}
+                originalQuiz={question.Quiz}
+                userProp={user}
             />
         </div>
     );
