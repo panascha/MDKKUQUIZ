@@ -9,7 +9,7 @@ export const useGetQuizBySubjectId = (subjectID: string) => {
   return async () => {
     if (!session?.user.token) throw new Error("Authentication required");
     
-    const response = await axios.get(`${BackendRoutes.QUIZ}/filter/${subjectID}`, {
+    const response = await axios.get(`${BackendRoutes.QUIZ}/filter/${subjectID}?status=approved`, {
       headers: { Authorization: `Bearer ${session.user.token}` },
     });
     return response.data.data as Quiz[];

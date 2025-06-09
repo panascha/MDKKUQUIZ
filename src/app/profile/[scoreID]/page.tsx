@@ -15,6 +15,7 @@ const QuizResultPage = () => {
     const params = useParams();
     const scoreID = params.scoreID;
 
+    const [showModal, setShowModal] = useState<Boolean>(false);
     const [score, setScore] = useState<UserScore>();
     const [showDropdown, setShowDropdown] = useState(false);
     const [filter, setFilter] = useState<'all' | 'correct' | 'incorrect'>('all');

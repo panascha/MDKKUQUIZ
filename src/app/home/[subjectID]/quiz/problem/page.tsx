@@ -9,9 +9,10 @@ import ProtectedPage from '@/components/ProtectPage';
 import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule } from '@mui/icons-material';
 import { useUser } from '@/hooks/useUser';
 import ImageGallery from '@/components/magicui/ImageGallery';
-import { useGetQuestions } from '@/hooks/quiz/useGetQuestions';
-import { useSubmitScore } from '@/hooks/quiz/useSubmitScore';
+import { useGetQuestions } from '@/hooks/quiz/useGetQuizzes';
+import { useSubmitScore } from '@/hooks/score/useSubmitScore';
 import { useQuery } from '@tanstack/react-query';
+import { useGetQuestionsOnlyApproved } from '@/hooks/quiz/useGetQuizzesOnlyApproved';
 
 export default function Problem() {
     const session = useSession();
@@ -40,7 +41,7 @@ export default function Problem() {
     const allQuestionsAnswered = showQuestion.every(q => q.isAnswered);
     const allQuestionsSubmitted = showQuestion.every(q => q.isSubmitted);
 
-    const getQuestionsFn = useGetQuestions({
+    const getQuestionsFn = useGetQuestionsOnlyApproved({
         subjectID,
         selectCategory,
         selectedQuestionTypes: selectedQuestionTypes || '',
@@ -210,7 +211,7 @@ export default function Problem() {
             <div className="container mt-20 p-4 sm:p-8 sm:border-2 sm:border-gray-300 rounded-xl shadow-lg bg-white mx-auto max-w-7xl"
                 onClick={() => isImageModalOpen && setIsImageModalOpen(false)}>
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{quizData?.subject.name}</h1>
+                    <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{quizData?.questions[0].quiz.subject.name}</h1>
                     <div className="flex justify-between items-center">
                         <p className="text-base sm:text-lg text-gray-600 mt-2 sm:mt-4 font-medium">
                             Question {currentQuestionIndex + 1} of {showQuestion.length}

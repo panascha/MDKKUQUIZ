@@ -1,23 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
 import Button from '@/components/ui/Button';
 import { LoaderIcon } from "lucide-react";
 import Image from 'next/image';
 import { UserProps } from '@/types/api/UserProps';
 import { Quiz } from '@/types/api/Quiz';
+import { useCreateQuiz } from '@/hooks/quiz/useCreateQuiz';
 
 interface AddReportModalProps {
   editModal: boolean;
   setEditModal: (show: boolean) => void;
-  formData: {
+  reportData: {
     User: UserProps;
     originalQuiz: Quiz;
-    suggestedQuiz: Quiz;
+    suggestedChanges: Quiz;
     image: File | null;
     year: number;
   };
+  quizData: Quiz;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  handleEditSubmit: (e: React.FormEvent) => void;
   resetForm: () => void;
   error: string | null;
   editMutation: {
@@ -29,14 +30,89 @@ interface AddReportModalProps {
 const AddReportModal: React.FC<AddReportModalProps> = ({
   editModal,
   setEditModal,
-  formData,
+  reportData,
+  quizData,
   handleInputChange,
-  handleEditSubmit,
   resetForm,
   error,
   editMutation,
   existingImg,
 }) => {
+  // State for suggested quiz
+  const [suggestedQuiz, setSuggestedQuiz] = useState<Quiz>({
+    ...quizData,
+    _id: '', // New quiz will get new ID
+    user: reportData.User,
+    approved: false,
+  });
+
+  // State for new image
+  const [newImage, setNewImage] = useState<File | null>(null);
+
+  // Create quiz mutation
+  const createQuizMutation = useCreateQuiz(suggestedQuiz);
+
+  const handleSuggestedChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setSuggestedQuiz(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleChoiceChange = (index: number, value: string) => {
+    setSuggestedQuiz(prev => ({
+      ...prev,
+      choice: prev.choice.map((choice, i) => i === index ? value : choice)
+    }));
+  };
+
+  const handleCorrectAnswerChange = (index: number, value: string) => {
+    setSuggestedQuiz(prev => ({
+      ...prev,
+      correctAnswer: prev.correctAnswer.map((answer, i) => i === index ? value : answer)
+    }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setNewImage(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      // Create the suggested quiz
+      const result = await createQuizMutation.mutateAsync();
+      
+      // Get the created quiz ID from the result
+      const suggestedQuizId = result._id;
+      
+      // Update the report data with the new quiz ID
+      const updatedReportData = {
+        ...reportData,
+        suggestedQuiz: {
+          ...suggestedQuiz,
+          _id: suggestedQuizId
+        },
+        image: newImage
+      };
+      
+      // Here you would submit the report with the updated data
+      // You'll need to implement the report submission logic
+      
+      // Close the modal after successful submission
+      setEditModal(false);
+      resetForm();
+      
+    } catch (error) {
+      console.error('Error creating quiz:', error);
+      // Handle error appropriately
+    }
+  };
+
   return (
     <Dialog
       open={editModal}
@@ -49,104 +125,126 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
     >
       <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
         <DialogHeader>
-          <DialogTitle>Edit Report</DialogTitle>
+          <DialogTitle>Report</DialogTitle>
         </DialogHeader>
         <form
-          onSubmit={handleEditSubmit}
+          onSubmit={handleSubmit}
           className="w-full space-y-4"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Name */}
-          <div>
-            <label className="mb-1 block text-sm font-semibold">Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-            />
+          {/* Original Question Section */}
+          <div className="border-b pb-4">
+            <div>
+              <label className="mb-1 block text-sm font-semibold">Subject</label>
+              <input
+                type="text"
+                value={quizData.subject.name}
+                disabled={true}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-semibold">Category</label>
+              <input
+                type="text"
+                value={quizData.category.category}
+                disabled={true}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-semibold">Type</label>
+              <input
+                type="text"
+                value={quizData.type}
+                disabled={true}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
+              />
+            </div>
           </div>
 
-          {/* Description */}
-          <div>
-            <label className="mb-1 block text-sm font-semibold">Description</label>
-            <input
-              type="text"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              required
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-            />
-          </div>
+          {/* Suggested Changes Section */}
+          <div className="border-b pb-4">
+            <div>
+              <label className="mb-1 block text-sm font-semibold">Question</label>
+              <input
+                type="text"
+                name="question"
+                value={suggestedQuiz.question}
+                onChange={handleSuggestedChange}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
 
-          {/* Year Dropdown */}
-          <div>
-            <label className="mb-1 block text-sm font-semibold">Year</label>
-            <select
-              name="year"
-              value={formData.year}
-              onChange={handleInputChange}
-              required
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-            >
-              <option value="">Select a year</option>
-              {[1, 2, 3, 4, 5, 6].map((year) => (
-                <option key={year} value={year}>
-                  Year {year}
-                </option>
+            {/* Choices */}
+            {quizData.choice? (
+            <div>
+              <label className="mb-1 block text-sm font-semibold">Choices</label>
+              {suggestedQuiz.choice.map((choice, index) => (
+                <div key={index} className="mb-2">
+                  <input
+                    type="text"
+                    value={choice}
+                    onChange={(e) => handleChoiceChange(index, e.target.value)}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  />
+                </div>
               ))}
-            </select>
-            {error && error.includes('year') && (
-              <p className="text-red-500 text-sm">Year is required.</p>
-            )}
+            </div>
+            ): (null)}
+            {/* Correct Answers */}
+            <div>
+              <label className="mb-1 block text-sm font-semibold">Correct Answers</label>
+              {suggestedQuiz.correctAnswer.map((answer, index) => (
+                <div key={index} className="mb-2">
+                  <input
+                    type="text"
+                    value={answer}
+                    onChange={(e) => handleCorrectAnswerChange(index, e.target.value)}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label htmlFor="image" className="mb-1 block text-sm font-semibold">
+                Upload New Image (optional)
+              </label>
+              <input
+                type="file"
+                name="image"
+                id="image"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              />
+              {newImage && (
+                <p className="text-sm text-gray-600">Selected: {newImage.name}</p>
+              )}
+            </div>
           </div>
-          
-          {/* Image Upload */}
-          <div>
-            <label htmlFor="image" className="mb-1 block text-sm font-semibold">
-              Upload New Image (optional)
-            </label>
-            <input
-              type="file"
-              name="image"
-              id="image"
-              accept="image/*"
-              onChange={handleInputChange}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-            />
-            {formData.image instanceof File && (
-              <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
-            )}
-            {!formData.image && existingImg && (
-              <div className="relative w-full h-48 rounded-lg overflow-hidden">
-                <Image
-                  src={existingImg.startsWith("http") ? existingImg : `http://localhost:5000${existingImg}`}
-                  alt="Report Image"
-                  fill
-                  style={{ objectFit: "cover" }}
-                  className="rounded-lg"
-                />
-              </div>
-            )}
-          </div>
+
+          {/* Error Message */}
+          {error && (
+            <p className="text-red-500 text-sm">{error}</p>
+          )}
 
           {/* Buttons */}
           <DialogFooter className="flex justify-between pt-4">
             <Button
-              textButton="Update"
+              textButton="Submit Report"
               disabled={editMutation.isPending}
               className="bg-blue-500 hover:bg-blue-600"
             >
               {editMutation.isPending ? (
                 <>
                   <LoaderIcon className="mr-2 inline animate-spin" size={16} />
-                  Updating...
+                  Submitting...
                 </>
               ) : (
-                "Update Report"
+                "Submit Report"
               )}
             </Button>
 

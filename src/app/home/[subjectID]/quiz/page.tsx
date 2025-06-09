@@ -71,12 +71,6 @@ export default function Quiz() {
     }, [quiz, selectCategory]);
 
     // Default Values
-    const defaultValues_Question = useMemo(() => ({
-        chillquiz: Math.min(10, Math.ceil(maxQuestions * 0.3)),
-        realtest: Math.min(30, Math.ceil(maxQuestions * 0.8)),
-        custom: maxQuestions,
-    }), [maxQuestions]);
-
     const defaultValues_AnswerMode = useMemo(() => ({
         chillquiz: answerModes[1],
         realtest: answerModes[0],
