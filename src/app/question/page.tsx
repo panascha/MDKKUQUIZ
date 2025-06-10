@@ -1,0 +1,372 @@
+"use client";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
+import { BackendRoutes, FrontendRoutes } from '@/config/apiRoutes';
+import { Subject } from '@/types/api/Subject';
+import { Quiz } from '@/types/api/Quiz';
+import { Category } from '@/types/api/Category';
+import ProtectedPage from '@/components/ProtectPage';
+import Link from 'next/link';
+import { IoIosArrowBack } from 'react-icons/io';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { LoaderIcon } from 'react-hot-toast';
+import { Role_type } from '@/config/role';
+
+const QuestionPage = () => {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const subjectFromUrl = searchParams.get('subject');
+    
+    const { data: session } = useSession();
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const [questions, setQuestions] = useState<Quiz[]>([]);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    // Search and filter
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectFromUrl);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+    // Check if user is admin or S-admin
+    const isAdmin = session?.user.role === Role_type.ADMIN || session?.user.role === Role_type.SADMIN;
+
+    useEffect(() => {
+        if (!session) return;
+
+        const fetchQuestions = async () => {
+            try {
+                setIsLoading(true);
+                const response = await axios.get(BackendRoutes.QUIZ, {
+                    headers: {
+                        Authorization: `Bearer ${session.user.token}`,
+                    },
+                    params: {
+                        subjectID: selectedSubject,
+                    },
+                });
+                // Filter questions based on user role
+                const filteredQuestions = isAdmin 
+                    ? response.data.data 
+                    : response.data.data.filter((q: Quiz) => q.status === "approved");
+                setQuestions(filteredQuestions);
+                console.log("Fetched questions:", filteredQuestions);
+                setIsLoading(false);
+            }
+            catch (err) {
+                setError("Failed to fetch questions.");
+                setIsLoading(false);
+            }
+        };
+        fetchQuestions();
+
+        const fetchSubjects = async () => {
+            try {
+                const response = await axios.get(BackendRoutes.SUBJECT, {
+                    headers: {
+                        Authorization: `Bearer ${session.user.token}`,
+                    },
+                });
+                setSubjects(response.data.data);
+            } catch (err) {
+                setError("Failed to fetch subjects.");
+            }
+        };
+        fetchSubjects();
+
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get(BackendRoutes.CATEGORY, {
+                    headers: {
+                        Authorization: `Bearer ${session.user.token}`,
+                    },
+                });
+                setCategories(response.data.data);
+            } catch (err) {
+                setError("Failed to fetch categories.");
+            }
+        };
+        fetchCategories();
+
+    }, [session, selectedSubject, isAdmin]);
+
+    // Update URL when subject filter changes
+    useEffect(() => {
+        if (selectedSubject) {
+            router.push(`/question?subject=${selectedSubject}`);
+        } else {
+            router.push('/question');
+        }
+    }, [selectedSubject, router]);
+
+    type FilterOptions = {
+        searchTerm: string;
+        selectedSubject: string | null;
+        selectedCategory: string | null;
+    };
+
+    const useFilteredQuestions = (
+        questions: Quiz[] | null,
+        { searchTerm, selectedSubject, selectedCategory }: FilterOptions
+    ) => {
+        const [filteredQuestions, setFilteredQuestions] = useState<Quiz[]>([]);
+
+        const filterQuestions = useCallback(
+            (
+                currentQuestions: Quiz[] | null,
+                currentSearchTerm: string,
+                currentSubject: string | null,
+                currentCategory: string | null
+            ) => {
+                if (!currentQuestions || currentQuestions.length === 0) {
+                    return [];
+                }
+                const operators = ['and', 'or', 'not'];
+                const searchTerms =
+                    currentSearchTerm
+                        .match(/(?:[^\s"“"]+|"[^"]*"|"[^"]*")+/g)
+                        ?.map(term => term.replace(/["""]/g, '').toLowerCase()) || [];
+                const subjectFilter = (q: Quiz) => {
+                    return !currentSubject || (q.subject._id === currentSubject);
+                };
+                const categoryFilter = (q: Quiz) => {
+                    return !currentCategory || (q.category._id === currentCategory);
+                };
+
+                if (!searchTerms.length) {
+                    return currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q));
+                }
+
+                return currentQuestions.filter(q => {
+                    let includeQuestion: boolean | null = null;
+                    let currentOperator = 'or';
+
+                    for (let i = 0; i < searchTerms.length; i++) {
+                        const term = searchTerms[i];
+
+                        if (operators.includes(term)) {
+                            currentOperator = term;
+                            continue;
+                        }
+
+                        const termInQuestion =
+                            (q.question && q.question.toLowerCase().includes(term)) ||
+                            (Array.isArray(q.choice) && q.choice.some(c => c.toLowerCase().includes(term))) ||
+                            (Array.isArray(q.correctAnswer) && q.correctAnswer.some(a => a.toLowerCase().includes(term)));
+
+                        if (includeQuestion === null) {
+                            includeQuestion = termInQuestion;
+                        } else if (currentOperator === 'and') {
+                            includeQuestion = includeQuestion && termInQuestion;
+                        } else if (currentOperator === 'or') {
+                            includeQuestion = includeQuestion || termInQuestion;
+                        } else if (currentOperator === 'not') {
+                            includeQuestion = includeQuestion && !termInQuestion;
+                        }
+                    }
+                    return !!includeQuestion && subjectFilter(q) && categoryFilter(q);
+                });
+            },
+            []
+        );
+
+        useEffect(() => {
+            setFilteredQuestions(
+                filterQuestions(questions, searchTerm, selectedSubject, selectedCategory)
+            );
+        }, [questions, searchTerm, selectedSubject, selectedCategory, filterQuestions]);
+
+        return filteredQuestions;
+    };
+
+    const filteredQuestions = useFilteredQuestions(questions, {
+        searchTerm,
+        selectedSubject,
+        selectedCategory,
+    });
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center gap-3 pt-10">
+                <LoaderIcon /> Loading...
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="text-red-500 flex items-center gap-2 pt-4">
+                <span>Error:</span> {error}
+            </div>
+        );
+    }
+
+    return (
+        <ProtectedPage>
+            <div className="container mx-auto p-4 mt-20 justify-center items-center flex flex-col">
+                <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
+                    <Link href={FrontendRoutes.HOMEPAGE}>
+                        <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white pr-2 py-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
+                            <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
+                        </button>
+                    </Link>
+                </div>
+                <div className='absolute top-22 md:top-25 right-4 md:right-15'>
+                    <button onClick={() => router.push(FrontendRoutes.QUESTION_CREATE)} className="border-1 mb-4 hover:bg-green-600 hover:text-white pl-2 p-3 rounded-sm transition duration-300 ease-in-out hover:opacity-60 cursor-pointer">
+                        + Create
+                    </button>
+                </div>
+                <h1 className="text-3xl font-bold text-center mb-4">Question List</h1>
+
+                {/* Search and filter section */}
+                <section className="flex flex-col gap-4 mt-3 mx-auto p-2 sm:p-4 md:p-6 w-full max-w-5xl items-center justify-center md:flex-row md:justify-between">
+                    <div className="flex flex-col gap-2 w-full md:w-7/12">
+                        <label htmlFor="search" className="text-sm md:text-md text-center md:text-left">
+                            Search:
+                            <small className="ml-2 text-gray-500">
+                                Try Pubmed search e.g. "strongyloides" and/or/not "hookworm"
+                            </small>
+                        </label>
+                        <input
+                            id="search"
+                            type="text"
+                            placeholder="Search from Question, Choice, Answer"
+                            className="border border-gray-300 rounded-md p-2 w-full"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2 w-full md:w-5/12 md:flex-row md:gap-4">
+                        <div className="flex flex-col gap-2 w-full">
+                            <label className="text-sm md:text-md text-center md:text-left hidden md:block">
+                                Filter subject:
+                            </label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className="hover:bg-gray-200 border border-gray-300 rounded-md p-2 w-full transition duration-300 ease-in-out cursor-pointer">
+                                    {selectedSubject
+                                        ? (
+                                            <span className="md:text-base text-sm">
+                                                {subjects.find((subject) => subject._id === selectedSubject)?.name}
+                                            </span>
+                                        )
+                                        : <span className="md:text-base text-sm">All Subjects</span>
+                                    }
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-48 sm:w-56 bg-white">
+                                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out">
+                                        <span onClick={() => setSelectedSubject(null)}>All Subjects</span>
+                                    </DropdownMenuItem>
+                                    {subjects.map((subject) => (
+                                        <DropdownMenuItem className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
+                                            key={subject._id}
+                                            onClick={() => setSelectedSubject(subject._id)}
+                                        >
+                                            {subject.name}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                        <div className="flex flex-col gap-2 w-full">
+                            <label className="text-sm md:text-md text-center md:text-left hidden md:block">
+                                Filter topic:
+                            </label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className="hover:bg-gray-200 border border-gray-300 rounded-md p-2 w-full transition duration-300 ease-in-out cursor-pointer">
+                                    {selectedCategory
+                                        ? (
+                                            <span className="md:text-base text-sm">
+                                                {categories.find((category) => category._id === selectedCategory)?.category}
+                                            </span>
+                                        )
+                                        : <span className="md:text-base text-sm">All Topics</span>
+                                    }
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-48 sm:w-56 bg-white">
+                                    <DropdownMenuItem
+                                        className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
+                                        onClick={() => setSelectedCategory(null)}
+                                    >
+                                        All Topics
+                                    </DropdownMenuItem>
+                                    {(
+                                        selectedSubject
+                                            ? (subjects.find(subject => subject._id === selectedSubject)?.Category ?? [])
+                                            : categories
+                                    ).map(category => (
+                                        <DropdownMenuItem
+                                            className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
+                                            key={category._id}
+                                            onClick={() => setSelectedCategory(category._id)}
+                                        >
+                                            {category.category}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Question List */}
+                <Card className="w-full shadow-xl transition-all duration-300 max-w-5xl">
+                    <CardContent className="p-6">
+                        <div className="grid gap-6">
+                            {filteredQuestions.map((question) => (
+                                <Link
+                                    href={`/question/${question._id}`}
+                                    key={question._id}
+                                    className="block transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 rounded-lg"
+                                >
+                                    <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="space-y-2">
+                                                <p className="text-sm font-semibold text-gray-700">
+                                                    {question.question}
+                                                </p>
+                                                <p className="text-sm text-gray-500">
+                                                    {question.subject.name}
+                                                </p>
+                                            </div>
+                                            <Badge
+                                                className={`transition-colors duration-300 ${
+                                                    question.status === "approved"
+                                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                                    : question.status === "pending"
+                                                    ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                                                    : "bg-red-100 text-red-800 hover:bg-red-200"
+                                                }`}
+                                            >
+                                                {question.status === "approved" 
+                                                    ? "Approved" 
+                                                    : question.status === "pending"
+                                                    ? "Pending"
+                                                    : "Rejected"}
+                                            </Badge>
+                                        </div>
+                                        <div className="mt-4 space-y-1 text-sm text-gray-600">
+                                            <p className="font-medium">Choices:</p>
+                                            {question.choice.map((choice, index) => (
+                                                <p key={index} className="ml-4">
+                                                    {String.fromCharCode(65 + index)}. {choice}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </ProtectedPage>
+    );
+}
+
+export default QuestionPage; 

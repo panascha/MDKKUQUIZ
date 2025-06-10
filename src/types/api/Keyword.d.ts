@@ -5,9 +5,9 @@ import { Category } from './Category';
 export interface Keyword {
     _id: string;
     user: UserProps;
+    name: string;
     subject: Subject;
     category: Category;
-    name: string;
-    keyword: Array<string>;
-    approved: Boolean;
+    keywords: Array<string>;
+    status: string;
 }

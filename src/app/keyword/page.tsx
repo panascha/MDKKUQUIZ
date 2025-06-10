@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import { BackendRoutes, FrontendRoutes } from '@/config/apiRoutes';
@@ -12,48 +12,32 @@ import Link from 'next/link';
 import { IoIosArrowBack } from 'react-icons/io';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Category } from '@/types/api/Category';
+import { useGetKeywords } from '@/hooks/keyword/useGetKeywordOnlyApproved';
+import { useGetSubject } from '@/hooks/subject/useGetSubject';
+import { useGetCategory } from '@/hooks/category/useGetCategory';
 
 const KeywordPage = () => {
     const router = useRouter();
-    const params = useParams();
-    const { subjectID } = params;
+    const searchParams = useSearchParams();
+    const subjectFromUrl = searchParams.get('subject');
     
     const { data: session } = useSession();
+    const { keywords, isLoading: keywordsLoading, error: keywordsError } = useGetKeywords();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const [keywords, setKeywords] = useState<Keyword[]>([]);
 
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
 
+    // Search and filter
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectFromUrl);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
     useEffect(() => {
-        if (!subjectID) return;
         if (!session) return;
 
-        const fetchKeywords = async () => {
-            try {
-                setIsLoading(true);
-                const response = await axios.get(BackendRoutes.KEYWORD, {
-                    headers: {
-                        Authorization: `Bearer ${session.user.token}`,
-                    },
-                    params: {
-                        subjectID: subjectID,
-                    },
-                });
-                setKeywords(response.data.data);
-                console.log("Fetched keywords:", response.data.data);
-                setIsLoading(false);
-            }
-            catch (err) {
-                setError("Failed to fetch keywords.");
-                setIsLoading(false);
-            }
-        };
-        fetchKeywords();
-
-        const fetchSubjects = async () => {
+        const fetchData = async () => {
             try {
                 const response = await axios.get(BackendRoutes.SUBJECT, {
                     headers: {
@@ -61,121 +45,117 @@ const KeywordPage = () => {
                     },
                 });
                 setSubjects(response.data.data);
-            } catch (err) {
-                setError("Failed to fetch subjects.");
-            }
-        };
-        fetchSubjects();
 
-        const fetchCategories = async () => {
-            try {
-                const response = await axios.get(BackendRoutes.CATEGORY, {
+                const categoryResponse = await axios.get(BackendRoutes.CATEGORY, {
                     headers: {
                         Authorization: `Bearer ${session.user.token}`,
                     },
                 });
-                setCategories(response.data.data);
+                setCategories(categoryResponse.data.data);
+                setIsLoading(false);
             } catch (err) {
-                setError("Failed to fetch categories.");
+                setError(`Failed to fetch data : ${err}`);
+                setIsLoading(false);
             }
         };
-        fetchCategories();
+        fetchData();
+    }, [session]);
 
-    }, [subjectID, session]);
+    // Update URL when subject filter changes
+    useEffect(() => {
+        if (selectedSubject) {
+            router.push(`/keyword?subject=${selectedSubject}`);
+        } else {
+            router.push('/keyword');
+        }
+    }, [selectedSubject, router]);
 
-    // Search and filter
-        const [searchTerm, setSearchTerm] = useState('');
-        const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectID as string | null);
-        const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    
-        type FilterOptions = {
-            searchTerm: string;
-            selectedSubject: string | null;
-            selectedCategory: string | null;
-        };
+    type FilterOptions = {
+        searchTerm: string;
+        selectedSubject: string | null;
+        selectedCategory: string | null;
+    };
 
-        const useFilteredKeywords = (
-            keywords: Keyword[] | null,
-            { searchTerm, selectedSubject, selectedCategory }: FilterOptions
-        ) => {
-            const [filteredKeywords, setFilteredKeywords] = useState<Keyword[]>([]);
+    const useFilteredKeywords = (
+        keywords: Keyword[] | null,
+        { searchTerm, selectedSubject, selectedCategory }: FilterOptions
+    ) => {
+        const [filteredKeywords, setFilteredKeywords] = useState<Keyword[]>([]);
 
-            const filterKeywords = useCallback(
-                (
-                    currentKeywords: Keyword[] | null,
-                    currentSearchTerm: string,
-                    currentSubject: string | null,
-                    currentCategory: string | null
-                ) => {
-                    if (!currentKeywords || currentKeywords.length === 0) {
-                        return [];
-                    }
-                    const operators = ['and', 'or', 'not'];
-                    const searchTerms =
-                        currentSearchTerm
-                            .match(/(?:[^\s"“”]+|"[^"]*"|“[^”]*”)+/g)
-                            ?.map(term => term.replace(/["“”]/g, '').toLowerCase()) || [];
-                    const subjectFilter = (q: Keyword) => {
-                        console.log(q.subject, currentSubject);
-                        return !currentSubject || (q.subject._id === currentSubject);
-                    };
-                    const categoryFilter = (q: Keyword) => {
-                        return !currentCategory || (q.category._id === currentCategory);
-                    };
-    
-                    if (!searchTerms.length) {
-                        // console.log("No search terms provided, returning all questions", currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q)));
-                        return currentKeywords.filter(q => subjectFilter(q) && categoryFilter(q));
-                    }
+        const filterKeywords = useCallback(
+            (
+                currentKeywords: Keyword[] | null,
+                currentSearchTerm: string,
+                currentSubject: string | null,
+                currentCategory: string | null
+            ) => {
+                if (!currentKeywords || currentKeywords.length === 0) {
+                    return [];
+                }
+                const operators = ['and', 'or', 'not'];
+                const searchTerms =
+                    currentSearchTerm
+                        .match(/(?:[^\s"“"]+|"[^"]*"|"[^"]*")+/g)
+                        ?.map(term => term.replace(/["""]/g, '').toLowerCase()) || [];
+                const subjectFilter = (q: Keyword) => {
+                    return !currentSubject || (q.subject._id === currentSubject);
+                };
+                const categoryFilter = (q: Keyword) => {
+                    return !currentCategory || (q.category._id === currentCategory);
+                };
 
-                    return currentKeywords.filter(q => {
-                        let includeQuestion: boolean | null = null;
-                        let currentOperator = 'or';
-    
-                        for (let i = 0; i < searchTerms.length; i++) {
-                            const term = searchTerms[i];
-    
-                            if (operators.includes(term)) {
-                                currentOperator = term;
-                                continue;
-                            }
-    
-                            const termInQuestion =
-                                (q.name && q.name.toLowerCase().includes(term)) ||
-                                (Array.isArray(q.keyword) && q.keyword.some(c => c.toLowerCase().includes(term)))
-    
-                            if (includeQuestion === null) {
-                                includeQuestion = termInQuestion;
-                            } else if (currentOperator === 'and') {
-                                includeQuestion = includeQuestion && termInQuestion;
-                            } else if (currentOperator === 'or') {
-                                includeQuestion = includeQuestion || termInQuestion;
-                            } else if (currentOperator === 'not') {
-                                includeQuestion = includeQuestion && !termInQuestion;
-                            }
+                if (!searchTerms.length) {
+                    return currentKeywords.filter(q => subjectFilter(q) && categoryFilter(q));
+                }
+
+                return currentKeywords.filter(q => {
+                    let includeQuestion: boolean | null = null;
+                    let currentOperator = 'or';
+
+                    for (let i = 0; i < searchTerms.length; i++) {
+                        const term = searchTerms[i];
+
+                        if (operators.includes(term)) {
+                            currentOperator = term;
+                            continue;
                         }
-                        return !!includeQuestion && subjectFilter(q) && categoryFilter(q);
-                    });
-                },
-                []
+
+                        const termInQuestion =
+                            (q.name && q.name.toLowerCase().includes(term)) ||
+                            (Array.isArray(q.keywords) && q.keywords.some(c => c.toLowerCase().includes(term)))
+
+                        if (includeQuestion === null) {
+                            includeQuestion = termInQuestion;
+                        } else if (currentOperator === 'and') {
+                            includeQuestion = includeQuestion && termInQuestion;
+                        } else if (currentOperator === 'or') {
+                            includeQuestion = includeQuestion || termInQuestion;
+                        } else if (currentOperator === 'not') {
+                            includeQuestion = includeQuestion && !termInQuestion;
+                        }
+                    }
+                    return !!includeQuestion && subjectFilter(q) && categoryFilter(q);
+                });
+            },
+            []
+        );
+
+        useEffect(() => {
+            setFilteredKeywords(
+                filterKeywords(keywords, searchTerm, selectedSubject, selectedCategory)
             );
-    
-            useEffect(() => {
-                setFilteredKeywords(
-                    filterKeywords(keywords, searchTerm, selectedSubject, selectedCategory)
-                );
-            }, [keywords, searchTerm, selectedSubject, selectedCategory, filterKeywords]);
+        }, [keywords, searchTerm, selectedSubject, selectedCategory, filterKeywords]);
 
-            return filteredKeywords;
-        };
+        return filteredKeywords;
+    };
 
-        const filteredKeywords = useFilteredKeywords(keywords, {
-            searchTerm,
-            selectedSubject,
-            selectedCategory,
-        });
+    const filteredKeywords = useFilteredKeywords(keywords, {
+        searchTerm,
+        selectedSubject,
+        selectedCategory,
+    });
 
-    if (isLoading) {
+    if (keywordsLoading || isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
                 <h1 className="text-2xl font-bold mb-4">Loading...</h1>
@@ -183,10 +163,10 @@ const KeywordPage = () => {
         );
     }
 
-    if (error) {
+    if (keywordsError || error) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-                <h1 className="text-2xl font-bold mb-4 text-red-500">{error}</h1>
+                <h1 className="text-2xl font-bold mb-4 text-red-500">{keywordsError || error}</h1>
             </div>
         );
     }
@@ -195,10 +175,10 @@ const KeywordPage = () => {
         <ProtectedPage>
             <div className="container mx-auto p-4 mt-20 justify-center items-center flex flex-col">
                 <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
-                    <Link href={`${FrontendRoutes.HOMEPAGE}/${subjectID}`}>
-                    <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white pr-2 py-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
-                        <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
-                    </button>
+                    <Link href={FrontendRoutes.HOMEPAGE}>
+                        <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white pr-2 py-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
+                            <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
+                        </button>
                     </Link>
                 </div>
                 <div className='absolute top-22 md:top-25 right-4 md:right-15'>
@@ -303,4 +283,4 @@ const KeywordPage = () => {
     );
 }
 
-export default KeywordPage;
+export default KeywordPage; 

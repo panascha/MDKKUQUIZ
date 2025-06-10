@@ -14,13 +14,13 @@ export const SubjectActions = ({ subjectId }: SubjectActionsProps) => {
                 Take Quiz
             </Link>
             <Link
-                href={`${subjectId}/question`}
+                href={`/question?subject=${subjectId}`}
                 className="cursor-pointer px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out text-center"
             >
                 Explore Question
             </Link>
             <Link
-                href={`${subjectId}/keyword`}
+                href={`/keyword?subject=${subjectId}`}
                 className="cursor-pointer px-6 py-3 bg-yellow-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-yellow-700 transition duration-300 ease-in-out text-center"
             >
                 Explore Keyword
