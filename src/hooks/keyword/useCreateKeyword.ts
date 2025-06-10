@@ -3,28 +3,25 @@ import axios from "axios";
 import { BackendRoutes } from "@/config/apiRoutes";
 import { useSession } from "next-auth/react";
 
-export interface CreateQuizData {
+export interface CreateKeywordData {
   user: string;
+  name: string;
   subject: string;
   category: string;
-  choice: Array<string>;
-  correctAnswer: Array<string>;
-  img: Array<string>;
-  question: string;
-  type: string;
+  keywords: Array<string>;
   status: 'pending' | 'approved' | 'rejected' | 'reported';
 }
 
-export const useCreateQuiz = () => {
+export const useCreateKeyword = () => {
     const session = useSession();
     return useMutation({
-        mutationFn: async (quizData: CreateQuizData) => {
+        mutationFn: async (keywordData: CreateKeywordData) => {
             if (!session?.data?.user.token) throw new Error("Authentication required");
 
-            const response = await axios.post(BackendRoutes.QUIZ, quizData, {
+            const response = await axios.post(BackendRoutes.KEYWORD, keywordData, {
                 headers: {
-                Authorization: `Bearer ${session.data.user.token}`,
-                "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${session.data.user.token}`,
+                    "Content-Type": "application/json",
                 },
             });
 

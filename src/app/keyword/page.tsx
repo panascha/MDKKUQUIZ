@@ -15,6 +15,8 @@ import { Category } from '@/types/api/Category';
 import { useGetKeywords } from '@/hooks/keyword/useGetKeywordOnlyApproved';
 import { useGetSubject } from '@/hooks/subject/useGetSubject';
 import { useGetCategory } from '@/hooks/category/useGetCategory';
+import AddKeywordModal from '@/components/keyword/AddKeywordModal';
+import { useUser } from '@/hooks/useUser';
 
 const KeywordPage = () => {
     const router = useRouter();
@@ -25,9 +27,11 @@ const KeywordPage = () => {
     const { keywords, isLoading: keywordsLoading, error: keywordsError } = useGetKeywords();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showAddModal, setShowAddModal] = useState(false);
 
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+    const { user } = useUser();
 
     // Search and filter
     const [searchTerm, setSearchTerm] = useState('');
@@ -182,7 +186,10 @@ const KeywordPage = () => {
                     </Link>
                 </div>
                 <div className='absolute top-22 md:top-25 right-4 md:right-15'>
-                    <button onClick={() => router.push(FrontendRoutes.QUESTION_CREATE)} className="border-1 mb-4 hover:bg-green-600 hover:text-white pl-2 p-3 rounded-sm transition duration-300 ease-in-out hover:opacity-60 cursor-pointer">
+                    <button 
+                        onClick={() => setShowAddModal(true)} 
+                        className="border-1 mb-4 hover:bg-green-600 hover:text-white pl-2 p-3 rounded-sm transition duration-300 ease-in-out hover:opacity-60 cursor-pointer"
+                    >
                         + Create
                     </button>
                 </div>
@@ -278,6 +285,13 @@ const KeywordPage = () => {
                     </div>
                 </section>
                 <KeywordCard keywords={filteredKeywords} />
+                <AddKeywordModal 
+                    showModal={showAddModal}
+                    setShowModal={setShowAddModal}
+                    userProp={user}
+                    subject={subjects}
+                    category={categories}
+                />
             </div>
         </ProtectedPage>
     );
