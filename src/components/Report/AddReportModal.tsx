@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
 import Button from '@/components/ui/Button';
-import { LoaderIcon } from "lucide-react";
+import { LoaderIcon, X } from "lucide-react";
 import { UserProps } from '@/types/api/UserProps';
 import { Quiz } from '@/types/api/Quiz';
 import { useCreateQuiz } from '@/hooks/quiz/useCreateQuiz';
@@ -10,6 +10,8 @@ import { Report } from '@/types/api/Report';
 import toast from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
 import { useUser } from '@/hooks/useUser';
+import Image from 'next/image';
+import ImageGallery from '@/components/magicui/ImageGallery';
 
 interface QuizFormData {
   user: string;
@@ -83,8 +85,24 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setNewImage(e.target.files[0]);
+      const file = e.target.files[0];
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file');
+        return;
+      }
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size should be less than 5MB');
+        return;
+      }
+      setNewImage(file);
+      setError(null);
     }
+  };
+
+  const removeNewImage = () => {
+    setNewImage(null);
   };
 
   const resetForm = () => {
@@ -145,13 +163,13 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
+      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] flex flex-col mt-8">
         <DialogHeader>
           <DialogTitle>Report Quiz</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit}
-          className="w-full space-y-4"
+          className="w-full space-y-4 overflow-y-auto pr-2"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Original Question Section */}
@@ -184,6 +202,36 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
               />
             </div>
           </div>
+
+          {/* Original Images Section */}
+          {originalQuiz.img && originalQuiz.img.length > 0 && (
+            <div className="border-b pb-4">
+              <label className="mb-2 block text-sm font-semibold">Original Images</label>
+              <div className="flex flex-wrap gap-2">
+                {Array.isArray(originalQuiz.img) ? (
+                  originalQuiz.img.map((img, index) => (
+                    <div key={index} className="relative w-24 h-24">
+                      <Image
+                        src={`http://localhost:5000${img}`}
+                        alt={`Original image ${index + 1}`}
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="relative w-24 h-24">
+                    <Image
+                      src={`http://localhost:5000${originalQuiz.img}`}
+                      alt="Original image"
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Suggested Changes Section */}
           <div className="border-b pb-4">
@@ -233,7 +281,7 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
               ))}
             </div>
 
-            {/* Image Upload */}
+            {/* New Image Upload */}
             <div>
               <label htmlFor="image" className="mb-1 block text-sm font-semibold">
                 Upload New Image (optional)
@@ -247,7 +295,24 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               />
               {newImage && (
-                <p className="text-sm text-gray-600">Selected: {newImage.name}</p>
+                <div className="mt-2">
+                  <div className="relative aspect-square w-32">
+                    <Image
+                      src={URL.createObjectURL(newImage)}
+                      alt="New image preview"
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeNewImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">{newImage.name}</p>
+                </div>
               )}
             </div>
           </div>
@@ -256,33 +321,33 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
           {error && (
             <p className="text-red-500 text-sm">{error}</p>
           )}
-
-          {/* Buttons */}
-          <DialogFooter className="flex justify-between pt-4">
-            <Button
-              textButton="Submit Report"
-              disabled={createQuizMutation.isPending || createReportMutation.isPending}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              {createQuizMutation.isPending || createReportMutation.isPending ? (
-                <>
-                  <LoaderIcon className="mr-2 inline animate-spin" size={16} />
-                  Submitting...
-                </>
-              ) : (
-                "Submit Report"
-              )}
-            </Button>
-
-            <DialogClose asChild>
-              <Button
-                textButton="Cancel"
-                className="bg-red-500 hover:bg-red-800"
-                onClick={resetForm}
-              />
-            </DialogClose>
-          </DialogFooter>
         </form>
+
+        {/* Buttons - Fixed at bottom */}
+        <DialogFooter className="flex justify-between pt-4 mt-auto border-t">
+          <Button
+            textButton="Submit Report"
+            disabled={createQuizMutation.isPending || createReportMutation.isPending}
+            className="bg-blue-500 hover:bg-blue-600"
+          >
+            {createQuizMutation.isPending || createReportMutation.isPending ? (
+              <>
+                <LoaderIcon className="mr-2 inline animate-spin" size={16} />
+                Submitting...
+              </>
+            ) : (
+              "Submit Report"
+            )}
+          </Button>
+
+          <DialogClose asChild>
+            <Button
+              textButton="Cancel"
+              className="bg-red-500 hover:bg-red-800"
+              onClick={resetForm}
+            />
+          </DialogClose>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

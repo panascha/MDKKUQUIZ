@@ -17,6 +17,9 @@ import { LoaderIcon } from 'react-hot-toast';
 import { Role_type } from '@/config/role';
 import AddQuizModal from '@/components/quiz/Modal/AddQuizModal';
 import { useUser } from '@/hooks/useUser';
+import { useDeleteQuiz } from '@/hooks/quiz/useDeleteQuiz';
+import { Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const QuestionPage = () => {
     const router = useRouter();
@@ -37,12 +40,17 @@ const QuestionPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectFromUrl);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
     // Check if user is admin or S-admin
-    const isAdmin = session?.user.role === Role_type.ADMIN || session?.user.role === Role_type.SADMIN;
+    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
+    
+
+    const deleteQuizMutation = useDeleteQuiz();
 
     useEffect(() => {
-        if (!session) return;
+        if (!session){
+            toast.error("there is no session");
+            return;  
+        } 
 
         const fetchQuestions = async () => {
             try {
@@ -195,6 +203,32 @@ const QuestionPage = () => {
         selectedCategory,
     });
 
+    const handleDeleteQuiz = async (quizId: string) => {
+        if (!window.confirm('Are you sure you want to delete this question?')) {
+            return;
+        }
+
+        try {
+            await deleteQuizMutation.mutateAsync(quizId);
+            toast.success('Question deleted successfully');
+            // Refresh the questions list
+            const response = await axios.get(BackendRoutes.QUIZ, {
+                headers: {
+                    Authorization: `Bearer ${session?.user.token}`,
+                },
+                params: {
+                    subjectID: selectedSubject,
+                },
+            });
+            const filteredQuestions = isAdmin 
+                ? response.data.data 
+                : response.data.data.filter((q: Quiz) => q.status === "approved");
+            setQuestions(filteredQuestions);
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Failed to delete question');
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center gap-3 pt-10">
@@ -338,47 +372,63 @@ const QuestionPage = () => {
                     <CardContent className="p-6">
                         <div className="grid gap-6">
                             {filteredQuestions.map((question) => (
-                                <Link
-                                    href={`/question/${question._id}`}
-                                    key={question._id}
-                                    className="block transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 rounded-lg"
-                                >
-                                    <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="space-y-2">
-                                                <p className="text-sm font-semibold text-gray-700">
-                                                    {question.question}
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    {question.subject.name}
-                                                </p>
+                                <div key={question._id} className="relative group">
+                                    <Link
+                                        href={`/question/${question._id}`}
+                                        className="block transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 rounded-lg"
+                                    >
+                                        <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="space-y-2">
+                                                    <p className="text-sm font-semibold text-gray-700">
+                                                        {question.question}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {question.subject.name}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge
+                                                        className={`transition-colors duration-300 ${
+                                                            question.status === "approved"
+                                                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                                            : question.status === "pending"
+                                                            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                                                            : "bg-red-100 text-red-800 hover:bg-red-200"
+                                                        }`}
+                                                    >
+                                                        {question.status === "approved" 
+                                                            ? "Approved" 
+                                                            : question.status === "pending"
+                                                            ? "Pending"
+                                                            : "Rejected"}
+                                                    </Badge>
+                                                    {isAdmin && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                handleDeleteQuiz(question._id);
+                                                            }}
+                                                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200 opacity-0 group-hover:opacity-100"
+                                                            title="Delete question"
+                                                        >
+                                                            <Trash2 className="w-5 h-5" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <Badge
-                                                className={`transition-colors duration-300 ${
-                                                    question.status === "approved"
-                                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                                    : question.status === "pending"
-                                                    ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                                                    : "bg-red-100 text-red-800 hover:bg-red-200"
-                                                }`}
-                                            >
-                                                {question.status === "approved" 
-                                                    ? "Approved" 
-                                                    : question.status === "pending"
-                                                    ? "Pending"
-                                                    : "Rejected"}
-                                            </Badge>
+                                            <div className="mt-4 space-y-1 text-sm text-gray-600">
+                                                <p className="font-medium">Choices:</p>
+                                                {question.choice.map((choice, index) => (
+                                                    <p key={index} className="ml-4">
+                                                        {String.fromCharCode(65 + index)}. {choice}
+                                                    </p>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="mt-4 space-y-1 text-sm text-gray-600">
-                                            <p className="font-medium">Choices:</p>
-                                            {question.choice.map((choice, index) => (
-                                                <p key={index} className="ml-4">
-                                                    {String.fromCharCode(65 + index)}. {choice}
-                                                </p>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </Link>
+                                    </Link>
+                                </div>
                             ))}
                         </div>
                     </CardContent>

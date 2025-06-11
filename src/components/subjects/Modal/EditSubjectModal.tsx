@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import Button from '@/components/ui/Button';
 import { LoaderIcon } from "lucide-react";
 import Image from 'next/image';
+import { X } from "lucide-react";
 
 interface EditSubjectModalProps {
   editModal: boolean;
@@ -114,18 +115,36 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
               onChange={handleInputChange}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
             />
-            {formData.image instanceof File && (
-              <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
-            )}
-            {!formData.image && existingImg && (
-              <div className="relative w-full h-48 rounded-lg overflow-hidden">
-                <Image
-                  src={existingImg.startsWith("http") ? existingImg : `http://localhost:5000${existingImg}`}
-                  alt="Subject Image"
-                  fill
-                  style={{ objectFit: "cover" }}
-                  className="rounded-lg"
-                />
+            {formData.image instanceof File ? (
+              <div className="mt-4 relative group">
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                  <Image
+                    src={URL.createObjectURL(formData.image)}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange({ target: { name: 'image', value: null } } as any)}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                <p className="mt-1 text-xs text-gray-600 truncate">{formData.image.name}</p>
+              </div>
+            ) : existingImg && (
+              <div className="mt-4 relative group">
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                  <Image
+                    src={existingImg.startsWith("http") ? existingImg : `http://localhost:5000${existingImg}`}
+                    alt="Current Image"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-gray-600">Current image</p>
               </div>
             )}
           </div>

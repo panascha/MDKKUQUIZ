@@ -12,139 +12,80 @@ import { Card } from '@/components/ui/Card';
 import ImageGallery from '@/components/magicui/ImageGallery';
 import { LoaderIcon } from 'react-hot-toast';
 import ProtectedPage from '@/components/ProtectPage';
-
+import AddReportModal from '@/components/Report/AddReportModal';
+import { useUser } from '@/hooks/useUser';
 
 const QuestionDetail = () => {
     const params = useParams();
     const questionID = params.questionID;
-
     const { data: session } = useSession();
+    const { user } = useUser();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
     const [question, setQuestion] = useState<Quiz | null>(null);
-    const [subject, setSubject] = useState<Subject | null>(null);
-    const [category, setCategory] = useState<Category | null>(null);
+    const [showReportModal, setShowReportModal] = useState(false);
 
-// Fetch question details
-useEffect(() => {
-    const fetchQuestion = async () => {
-        try {
-            setIsLoading(true);
-            const response = await fetch(
-                BackendRoutes.QUIZ_BY_ID.replace(":questionID", typeof questionID === "string" ? questionID : Array.isArray(questionID) ? questionID[0] : ""),
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session?.user.token}`,
-                    },
+    // Fetch question details
+    useEffect(() => {
+        const fetchQuestion = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch(
+                    BackendRoutes.QUIZ_BY_ID.replace(":questionID", typeof questionID === "string" ? questionID : Array.isArray(questionID) ? questionID[0] : ""),
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${session?.user.token}`,
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch question");
                 }
-            );
 
-            if (!response.ok) {
-                throw new Error("Failed to fetch question");
+                const data = await response.json();
+                setQuestion(data.data);
+                console.log("Question data:", data.data);
+            } catch (error) {
+                setError(`${error}`);
+            } finally {
+                setIsLoading(false);
             }
+        };
 
-            const data = await response.json();
-            setQuestion(data.data);
-            console.log("Question data:", data.data);
-        } catch (error) {
-            setError(`${error}`);
-        } finally {
-            setIsLoading(false);
+        if (questionID && session?.user.token) {
+            fetchQuestion();
         }
-    };
-
-    if (questionID && session?.user.token) {
-        fetchQuestion();
-    }
-}, [questionID, session?.user.token]);
-
-// Fetch subject name and category name
-useEffect(() => {
-    if (!question?.category._id || !question?.subject._id || !session?.user.token) {
-        return;
-    }
-    const fetchSubjectAndCategory = async () => {
-        try {
-            setIsLoading(true);
-            const subjectResponse = await fetch(
-                BackendRoutes.SUBJECT_BY_ID.replace(
-                    ":subjectID",
-                    typeof question.subject === "string"
-                        ? question.subject
-                        : ""
-                ),
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session?.user.token}`,
-                    },
-                }
-            );
-
-            if (!subjectResponse.ok) {
-                throw new Error("Failed to fetch subject");
-            }
-
-            const subjectData = await subjectResponse.json();
-            setSubject(subjectData.data);
-            console.log("Subject data:", subjectData.data);
-
-            const categoryID = question.category._id;
-            if (!categoryID) {
-                throw new Error("Invalid category ID");
-            }
-            const categoryResponse = await fetch(
-                BackendRoutes.CATEGORY_BY_ID.replace(":categoryID", categoryID),
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session?.user.token}`,
-                    },
-                }
-            );
-
-            if (!categoryResponse.ok) {
-                throw new Error("Failed to fetch category");
-            }
-
-            const categoryData = await categoryResponse.json();
-            setCategory(categoryData.data);
-            console.log("Category data:", categoryData.data);
-        } catch (error) {
-            setError(`${error}`);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    fetchSubjectAndCategory();
-}, [question, session?.user.token]);
+    }, [questionID, session?.user.token]);
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center gap-3 pt-10">
-              <LoaderIcon /> Loading...
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="flex items-center gap-3 text-lg text-gray-600">
+                    <LoaderIcon className="animate-spin" /> Loading...
+                </div>
             </div>
-          );          
+        );          
     }
     
     if (error) {
         return (
-            <div className="text-red-500 flex items-center gap-2 pt-4">
-              <span>Error:</span> {error}
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-red-500 flex items-center gap-2 p-4 bg-red-50 rounded-lg">
+                    <span className="font-semibold">Error:</span> {error}
+                </div>
             </div>
-          );          
+        );          
     }
 
     if (!question) {
         return (
-            <div className="text-red-500 pt-4">Questions not found</div>
-          );          
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-red-500 p-4 bg-red-50 rounded-lg">Questions not found</div>
+            </div>
+        );          
     }
 
     // sample images for the image gallery
@@ -152,74 +93,116 @@ useEffect(() => {
 
     return (
         <ProtectedPage>
-        <div className="flex flex-col items-center justify-center p-4 mt-20 min-h-screen">
-            <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
-            <Link href={FrontendRoutes.QUESTION}>
-                <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
-                <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
-                </button>
-            </Link>
-            </div>
-            <h1 className="text-2xl font-bold mb-4 md:text-3xl">Question Detail</h1>
-            <Card className="mt-6 p-5 bg-white shadow-md rounded-lg relative w-full max-w-3xl gap-2">
-            <p className="mt-2 text-base md:text-lg">Subject: {subject?.name}</p>
-                    <p className="mt-2 text-base md:text-lg">Category: {category?.category}</p>
-            <p className="mt-2 text-base md:text-lg">Question type: {question.type == "choice" ? "MCQ" : question.type == "written" ? "Short Answer" : "Unknown"}</p>
-            <button
-                className="absolute cursor-pointer bottom-3 right-3 bg-orange-500 hover:bg-orange-600 text-white px-2 md:px-3 py-2 rounded shadow transition"
-                onClick={() => alert('Report functionality coming soon!')}
-            >
-                Report
-            </button>
-            </Card>
-            <Card className="mt-4 p-4 bg-white rounded-lg shadow-lg border-1 border-gray-200 w-full max-w-3xl flex-col md:flex-row md:space-x-6">
-                {/* Question text */}
-                <div className="md:w-1/2 flex flex-col justify-start">
-                <span className="text-base md:text-lg">Question: {question.question}</span>
-                {/* Images */}
-                {question.img && question.img.length > 0 && (
-                    <div className="flex flex-col items-center space-y-2 mt-4">
-                    <span className="text-base md:text-lg self-start">Image:</span>
-                    <div className="flex flex-wrap justify-center gap-2">
-                        <ImageGallery 
-                            images={Array.isArray(question.img) 
-                                ? question.img.map(img => `http://localhost:5000${img}`) 
-                                : [`http://localhost:5000${question.img}`]} 
-                        />
+            <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-4xl mx-auto">
+                    {/* Back Button */}
+                    <div className="mb-6">
+                        <Link href={FrontendRoutes.QUESTION}>
+                            <button className="flex items-center gap-2 text-gray-600 hover:text-orange-500 transition-colors duration-200">
+                                <IoIosArrowBack className="text-xl" />
+                                <span>Back to Questions</span>
+                            </button>
+                        </Link>
                     </div>
-                    </div>
-                )}
-                </div>
-                {/* Choices and Answers */}
-                <div className="md:w-1/2 flex flex-col justify-start mt-4 md:mt-0">
-                {question.choice && question.choice.length > 0 && (
-                    <div className="flex flex-col items-start">
-                    <span className="text-base md:text-lg">Choices:</span>
-                    <ul className="list-disc list-inside ml-4">
-                        {question.choice.map((choice: string, idx: number) => (
-                        <li key={idx} className="text-base md:text-lg">
-                            {choice}
-                        </li>
-                        ))}
-                    </ul>
-                    </div>
-                )}
-                <div className="mt-4 flex flex-col items-start">
-                    <span className="text-base md:text-lg">
-                    Correct Answer{question.correctAnswer.length > 1 ? 's' : ''}:
-                    </span>
-                    <ul className="list-disc list-inside ml-4">
-                    {question.correctAnswer.map((ans: string, idx: number) => (
-                        <li key={idx} className="text-base md:text-lg">
-                        {ans}
-                        </li>
-                    ))}
-                    </ul>
-                </div>
-                </div>
-            </Card>
 
-        </div>
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Question Detail</h1>
+                        <div className="h-1 w-20 bg-orange-500 mx-auto rounded-full"></div>
+                    </div>
+
+                    {/* Question Info Card */}
+                    <Card className="bg-white shadow-lg rounded-xl p-6 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                                <p className="text-sm text-gray-500 mb-1">Subject</p>
+                                <p className="font-semibold text-gray-900">{question.subject.name}</p>
+                            </div>
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                                <p className="text-sm text-gray-500 mb-1">Category</p>
+                                <p className="font-semibold text-gray-900">{question.category.category}</p>
+                            </div>
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                                <p className="text-sm text-gray-500 mb-1">Question Type</p>
+                                <p className="font-semibold text-gray-900">
+                                    {question.type === "choice" ? "MCQ" : question.type === "written" ? "Short Answer" : "Unknown"}
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowReportModal(true)}
+                            className="mt-4 w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg shadow-sm transition-colors duration-200 flex items-center justify-center gap-2"
+                        >
+                            Report Question
+                        </button>
+                    </Card>
+
+                    {/* Question Content Card */}
+                    <Card className="bg-white shadow-lg rounded-xl p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Left Column - Question and Images */}
+                            <div className="space-y-6">
+                                <div className="bg-gray-50 p-6 rounded-lg">
+                                    <h2 className="text-lg font-semibold text-gray-900 mb-3">Question</h2>
+                                    <p className="text-gray-700 leading-relaxed">{question.question}</p>
+                                </div>
+                                
+                                {question.img && question.img.length > 0 && (
+                                    <div className="bg-gray-50 p-6 rounded-lg">
+                                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Images</h2>
+                                        <div className="flex justify-center">
+                                            <ImageGallery 
+                                                images={Array.isArray(question.img) 
+                                                    ? question.img.map(img => `http://localhost:5000${img}`) 
+                                                    : [`http://localhost:5000${question.img}`]} 
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right Column - Choices and Answers */}
+                            <div className="space-y-6">
+                                {question.choice && question.choice.length > 0 && (
+                                    <div className="bg-gray-50 p-6 rounded-lg">
+                                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Choices</h2>
+                                        <ul className="space-y-2">
+                                            {question.choice.map((choice: string, idx: number) => (
+                                                <li key={idx} className="flex items-start gap-2">
+                                                    <span className="text-orange-500 font-semibold">{String.fromCharCode(65 + idx)}.</span>
+                                                    <span className="text-gray-700">{choice}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                <div className="bg-gray-50 p-6 rounded-lg">
+                                    <h2 className="text-lg font-semibold text-gray-900 mb-3">
+                                        Correct Answer{question.correctAnswer.length > 1 ? 's' : ''}
+                                    </h2>
+                                    <ul className="space-y-2">
+                                        {question.correctAnswer.map((ans: string, idx: number) => (
+                                            <li key={idx} className="flex items-start gap-2">
+                                                <span className="text-green-500 font-semibold">✓</span>
+                                                <span className="text-gray-700">{ans}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            </div>
+
+            {/* Report Modal */}
+            <AddReportModal
+                showModal={showReportModal}
+                setShowModal={setShowReportModal}
+                originalQuiz={question}
+                userProp={user}
+            />
         </ProtectedPage>
     )
 }

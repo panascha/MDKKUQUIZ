@@ -1,7 +1,8 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
 import Button from '@/components/ui/Button';
-import { LoaderIcon } from "lucide-react";
+import { LoaderIcon, X } from "lucide-react";
+import Image from 'next/image';
 
 interface AddSubjectModalProps {
   showModal: boolean;
@@ -120,7 +121,24 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
             />
             {formData.image && (
-              <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
+              <div className="mt-4 relative group">
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                  <Image
+                    src={URL.createObjectURL(formData.image)}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange({ target: { name: 'image', value: null } } as any)}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                <p className="mt-1 text-xs text-gray-600 truncate">{formData.image.name}</p>
+              </div>
             )}
             {error && error.includes('image') && (
               <p className="text-red-500 text-sm">Please upload a valid image.</p>

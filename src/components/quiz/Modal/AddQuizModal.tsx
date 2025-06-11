@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useUser } from '@/hooks/useUser';
 import toast from 'react-hot-toast';
 import { CreateQuizData, useCreateQuiz } from '@/hooks/quiz/useCreateQuiz';
+import Image from 'next/image';
 
 interface AddQuizModalProps {
   showModal: boolean;
@@ -340,17 +341,25 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
             />
             {imageFiles.length > 0 && (
-              <div className="mt-2 space-y-2">
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
                 {imageFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                    <p className="text-sm text-gray-600">{file.name}</p>
+                  <div key={index} className="relative group">
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      <Image
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="text-red-500 hover:text-red-700"
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <X className="h-5 w-5" />
+                      <X className="h-4 w-4" />
                     </button>
+                    <p className="mt-1 text-xs text-gray-600 truncate">{file.name}</p>
                   </div>
                 ))}
               </div>
