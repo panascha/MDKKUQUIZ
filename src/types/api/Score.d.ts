@@ -7,6 +7,7 @@ export interface Question {
     Quiz: Quiz;
     Answer: String;
     isCorrect: boolean;
+    isBookmarked: boolean;
 }
 
 export interface UserScore {

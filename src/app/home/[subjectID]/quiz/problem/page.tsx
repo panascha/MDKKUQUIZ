@@ -111,6 +111,7 @@ export default function Problem() {
             return {
                 ...question,
                 isCorrect,
+                isBookmarked: question.isBookmarked || false,
                 isSubmitted: true
             };
         });
@@ -128,13 +129,15 @@ export default function Problem() {
             Question: updatedQuestions.map(q => ({
                 Quiz: q.quiz._id,
                 Answer: q.select || '',
-                isCorrect: q.isCorrect || false
+                isCorrect: q.isCorrect || false,
+                isBookmarked: q.isBookmarked || false
             })),
             timeTaken: seconds
         };
 
         submitScore(scoreData);
         if (scoreId) {
+            console.log(scoreData);
             router.push(`/profile/${scoreId}`);
         }
     };
@@ -147,6 +150,12 @@ export default function Problem() {
             updatedQuestions[currentQuestionIndex].isCorrect = null;
             setShowQuestion(updatedQuestions);
         }
+    };
+
+    const toggleBookmark = (index: number) => {
+        const updatedQuestions = [...showQuestion];
+        updatedQuestions[index].isBookmarked = !updatedQuestions[index].isBookmarked;
+        setShowQuestion(updatedQuestions);
     };
 
     const handleAnswerSelection = (answer: string) => {
@@ -256,7 +265,7 @@ export default function Problem() {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            //toggleBookmark(currentQuestionIndex);
+                                            toggleBookmark(currentQuestionIndex);
                                         }}
                                         className="focus:outline-none transform hover:scale-110 transition-transform duration-200"
                                     >
@@ -411,10 +420,10 @@ export default function Problem() {
                                 {showQuestion.map((q, index) => (
                                     <button
                                         key={index}
-                                        className={`p-3 rounded-lg text-sm sm:text-base text-left transition-all duration-300 font-medium
-                                            ${index === currentQuestionIndex ? 'bg-blue-100 text-blue-800 border-2 border-blue-300' : 'hover:bg-gray-50'}
-                                            ${q.isBookmarked ? 'border-2 border-yellow-400 bg-yellow-50' : ''}
-                                            ${q.isAnswered ? 'bg-green-50 border border-green-200' : ''}
+                                        className={`p-3 rounded-lg text-sm sm:text-base text-left transition-all duration-300 font-medium border hover:bg-gray-100
+                                            ${index === currentQuestionIndex ? 'border-3 border-blue-400' : 'hover:bg-gray-50'}
+                                            ${q.isBookmarked ? 'border-2 border-yellow-500' : ''}
+                                            ${q.isAnswered ? 'bg-blue-100 border border-blue-200' : ''}
                                             ${q.isSubmitted ?
                                                 q.isCorrect === true ? 'bg-green-100 text-green-800 border border-green-300'
                                                     : q.isCorrect === false ? 'bg-red-100 text-red-800 border border-red-300'
