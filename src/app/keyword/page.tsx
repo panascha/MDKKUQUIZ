@@ -17,6 +17,11 @@ import { useGetSubject } from '@/hooks/subject/useGetSubject';
 import { useGetCategory } from '@/hooks/category/useGetCategory';
 import AddKeywordModal from '@/components/keyword/AddKeywordModal';
 import { useUser } from '@/hooks/useUser';
+import { useDeleteKeyword } from '@/hooks/keyword/useDeleteKeyword';
+import { Trash2 } from 'lucide-react';
+import { Role_type } from '@/config/role';
+import { toast } from 'react-hot-toast';
+import { Badge } from '@/components/ui/Badge';
 
 const KeywordPage = () => {
     const router = useRouter();
@@ -32,6 +37,10 @@ const KeywordPage = () => {
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const { user } = useUser();
+    const deleteKeywordMutation = useDeleteKeyword();
+
+    // Check if user is admin or S-admin
+    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
 
     // Search and filter
     const [searchTerm, setSearchTerm] = useState('');
@@ -159,6 +168,18 @@ const KeywordPage = () => {
         selectedCategory,
     });
 
+    const handleDeleteKeyword = async (keywordId: string) => {
+        if (!window.confirm('Are you sure you want to delete this keyword?')) {
+            return;
+        }
+
+        try {
+            await deleteKeywordMutation.mutateAsync(keywordId);
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Failed to delete keyword');
+        }
+    };
+
     if (keywordsLoading || isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -284,7 +305,66 @@ const KeywordPage = () => {
                         </div>
                     </div>
                 </section>
-                <KeywordCard keywords={filteredKeywords} />
+                <div className="grid gap-6 w-full max-w-5xl">
+                    {filteredKeywords.map((keyword) => (
+                        <div key={keyword._id} className="relative group">
+                            <Link href={`/keyword/${keyword._id}`} className="block">
+                                <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="space-y-2">
+                                            <p className="text-sm font-semibold text-gray-700">
+                                                {keyword.name}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {keyword.subject.name}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Badge
+                                                className={`transition-colors duration-300 ${
+                                                    keyword.status === "approved"
+                                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                                    : keyword.status === "pending"
+                                                    ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                                                    : "bg-red-100 text-red-800 hover:bg-red-200"
+                                                }`}
+                                            >
+                                                {keyword.status === "approved" 
+                                                    ? "Approved" 
+                                                    : keyword.status === "pending"
+                                                    ? "Pending"
+                                                    : "Rejected"}
+                                            </Badge>
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        handleDeleteKeyword(keyword._id);
+                                                    }}
+                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200 opacity-0 group-hover:opacity-100"
+                                                    title="Delete keyword"
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 space-y-1 text-sm text-gray-600">
+                                        <p className="font-medium">Keywords:</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {keyword.keywords.map((kw, index) => (
+                                                <span key={index} className="px-2 py-1 bg-gray-100 rounded-md">
+                                                    {kw}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        </div>
+                    ))}
+                </div>
                 <AddKeywordModal 
                     showModal={showAddModal}
                     setShowModal={setShowAddModal}

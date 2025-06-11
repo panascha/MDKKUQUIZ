@@ -221,7 +221,13 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                   <DropdownMenuItem
                     key={s._id}
                     className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
-                    onClick={() => setFormData(prev => ({ ...prev, subject: s._id }))}
+                    onClick={() => {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        subject: s._id,
+                        category: '' // Reset category when subject changes
+                      }));
+                    }}
                   >
                     {s.name}
                   </DropdownMenuItem>
@@ -234,19 +240,34 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
           <div>
             <label className="mb-1 block text-sm font-semibold">Category *</label>
             <DropdownMenu>
-              <DropdownMenuTrigger className="w-full text-left hover:bg-gray-200 border border-gray-300 rounded-md p-2 transition duration-300 ease-in-out cursor-pointer">
-                {formData.category ? category.find(c => c._id === formData.category)?.category : 'Select Category'}
+              <DropdownMenuTrigger 
+                className={`w-full text-left hover:bg-gray-200 border border-gray-300 rounded-md p-2 transition duration-300 ease-in-out cursor-pointer ${
+                  !formData.subject ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={!formData.subject}
+              >
+                {!formData.subject 
+                  ? 'Select Subject First' 
+                  : formData.category 
+                    ? category.find(c => c._id === formData.category)?.category 
+                    : 'Select Category'}
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full bg-white">
-                {category.map((c) => (
-                  <DropdownMenuItem
-                    key={c._id}
-                    className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
-                    onClick={() => setFormData(prev => ({ ...prev, category: c._id }))}
-                  >
-                    {c.category}
-                  </DropdownMenuItem>
-                ))}
+                {formData.subject && (
+                  <>
+                    {category
+                      .filter(c => c.subject._id === formData.subject)
+                      .map((c) => (
+                        <DropdownMenuItem
+                          key={c._id}
+                          className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
+                          onClick={() => setFormData(prev => ({ ...prev, category: c._id }))}
+                        >
+                          {c.category}
+                        </DropdownMenuItem>
+                      ))}
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
