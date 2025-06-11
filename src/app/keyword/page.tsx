@@ -33,12 +33,11 @@ const KeywordPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
-
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const { user } = useUser();
     const deleteKeywordMutation = useDeleteKeyword();
-
+    
     // Check if user is admin or S-admin
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
     const isSAdmin = user?.role === Role_type.SADMIN;
@@ -329,36 +328,42 @@ const KeywordPage = () => {
                                                 {keyword.subject.name}
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Badge
-                                                className={`transition-colors duration-300 ${
-                                                    keyword.status === "approved"
-                                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                                    : keyword.status === "pending"
-                                                    ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                                                    : "bg-red-100 text-red-800 hover:bg-red-200"
-                                                }`}
-                                            >
-                                                {keyword.status === "approved" 
-                                                    ? "Approved" 
-                                                    : keyword.status === "pending"
-                                                    ? "Pending"
-                                                    : "Rejected"}
-                                            </Badge>
-                                            {isSAdmin && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        handleDeleteKeyword(keyword._id);
-                                                    }}
-                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200 opacity-0 group-hover:opacity-100"
-                                                    title="Delete keyword"
+                                        {isAdmin && (
+                                            <div className="flex items-center gap-2">
+                                                <Badge
+                                                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                                                        keyword.status === "approved"
+                                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                                                        : keyword.status === "pending"
+                                                        ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                                                        : keyword.status === "reported"
+                                                        ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100"
+                                                        : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
+                                                    }`}
                                                 >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </button>
-                                            )}
-                                        </div>
+                                                    {keyword.status === "approved" 
+                                                        ? "Approved" 
+                                                        : keyword.status === "pending"
+                                                        ? "Pending"
+                                                        : keyword.status === "reported"
+                                                        ? "Reported"
+                                                        : "Rejected"}
+                                                </Badge>
+                                                {isSAdmin && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            handleDeleteKeyword(keyword._id);
+                                                        }}
+                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200 opacity-0 group-hover:opacity-100"
+                                                        title="Delete keyword"
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="mt-4 space-y-1 text-sm text-gray-600">
                                         <p className="font-medium">Keywords:</p>

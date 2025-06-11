@@ -9,15 +9,20 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import Link from 'next/link';
 import { IoIosArrowBack } from "react-icons/io";
+import AddKeywordReportModal from '@/components/keyword/AddKeywordReportModal';
+import { useUser } from '@/hooks/useUser';
+import { Role_type } from '@/config/role';
 
 const KeywordDetail = () => {
     const params = useParams();
     const keywordID = params.keywordID;
-
+    const { user } = useUser();
     const { data: session } = useSession();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [keyword, setKeyword] = useState<Keyword | null>(null);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
 
     useEffect(() => {
         const fetchKeyword = async () => {
@@ -66,40 +71,78 @@ const KeywordDetail = () => {
                     </Link>
                 </div>
                 <h1 className="text-2xl font-bold mb-4">Keyword Detail</h1>
-                <Card className="mt-6 p-5 bg-white shadow-md rounded-lg relative w-full max-w-3xl gap-2">
-                    <p className="mt-2 text-base md:text-lg">Subject: {keyword?.subject?.name}</p>
-                    <p className="mt-2 text-base md:text-lg">Category: {keyword?.category?.category}</p>
-                    <button
-                        className="absolute cursor-pointer bottom-3 right-3 bg-orange-500 hover:bg-orange-600 text-white px-2 md:px-3 py-2 rounded shadow transition"
-                        onClick={() => alert('Report functionality coming soon!')}
-                    >
-                        Report
-                    </button>
+                <Card className="mt-6 p-6 bg-white shadow-lg rounded-xl relative w-full max-w-3xl">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <p className="text-sm text-gray-500">Subject</p>
+                                <p className="text-base md:text-lg font-medium text-gray-900">{keyword?.subject?.name}</p>
+                            </div>
+                            {isAdmin && (
+                                <Badge
+                                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                                        keyword?.status === "approved"
+                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                                        : keyword?.status === "pending"
+                                        ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                                        : keyword?.status === "reported"
+                                        ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100"
+                                        : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
+                                    }`}
+                                >
+                                    {keyword?.status === "approved" 
+                                        ? "Approved" 
+                                        : keyword?.status === "pending"
+                                        ? "Pending"
+                                        : keyword?.status === "reported"
+                                        ? "Reported"
+                                        : "Rejected"}
+                                </Badge>
+                            )}
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm text-gray-500">Category</p>
+                            <p className="text-base md:text-lg font-medium text-gray-900">{keyword?.category?.category}</p>
+                        </div>
+                        {keyword?.status === 'approved' && (
+                            <button
+                                className="mt-4 w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow-sm transition-colors duration-200 flex items-center justify-center gap-2"
+                                onClick={() => setShowReportModal(true)}
+                            >
+                                Report Keyword
+                            </button>
+                        )}
+                    </div>
                 </Card>
-                <Card className="mt-6 p-5 bg-white shadow-md rounded-lg relative w-full max-w-3xl gap-2">
-                    <p className="text-base md:text-lg">Name: {keyword?.name}</p>
-                    <p className="text-base md:text-lg">Keywords: </p>
-                    {keyword?.keywords?.map((kw, index) => (
-                        <span key={index} className="text-base"> {index + 1}: {kw}</span>
-                    ))}
-                    
-                    <Badge
-                        className={`absolute top-5 right-5 transition-colors duration-300 ${
-                            keyword?.status === "approved"
-                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                            : keyword?.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                            : "bg-red-100 text-red-800 hover:bg-red-200"
-                        }`}
-                    >
-                        {keyword?.status === "approved" 
-                            ? "Approved" 
-                            : keyword?.status === "pending"
-                            ? "Pending"
-                            : "Rejected"}
-                    </Badge>
+                <Card className="mt-6 p-6 bg-white shadow-lg rounded-xl relative w-full max-w-3xl">
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <p className="text-sm text-gray-500">Name</p>
+                            <p className="text-base md:text-lg font-medium text-gray-900">{keyword?.name}</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm text-gray-500">Keywords</p>
+                            <div className="space-y-2">
+                                {keyword?.keywords?.map((kw, index) => (
+                                    <div key={index} className="flex items-center gap-2">
+                                        <span className="text-sm font-medium text-gray-500">{index + 1}.</span>
+                                        <span className="text-base text-gray-900">{kw}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </Card>
             </div>
+
+            {showReportModal && keyword && (
+                <AddKeywordReportModal
+                    showModal={showReportModal}
+                    setShowModal={setShowReportModal}
+                    originalKeyword={keyword}
+                    userProp={user}
+                />
+            )}
         </ProtectedPage>
     );
 };

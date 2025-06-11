@@ -1,5 +1,5 @@
 import ImageGallery from '@/components/magicui/ImageGallery';
-import AddReportModal from '@/components/Report/AddReportModal';
+import AddReportModal from '@/components/Report/AddQuizReportModal';
 import { Question } from '@/types/api/Score';
 import { useState } from 'react';
 import { useUser } from '@/hooks/useUser';
