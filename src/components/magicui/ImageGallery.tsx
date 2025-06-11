@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { XMarkIcon, MagnifyingGlassPlusIcon, MagnifyingGlassMinusIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 interface ImageGalleryProps {
   images: string[];
@@ -11,6 +12,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isLoading, setIsLoading] = useState(true);
   const imageRef = useRef<HTMLImageElement>(null);
   const modalRef = useRef<HTMLDivElement>(null); // Ref สำหรับ Modal Container
   const [isDragging, setIsDragging] = useState(false);
@@ -159,12 +161,44 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
     }
   }, [closeModal]);
 
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!isModalOpen) return;
+
+    switch (e.key) {
+      case 'ArrowLeft':
+        goToPrevious();
+        break;
+      case 'ArrowRight':
+        goToNext();
+        break;
+      case 'Escape':
+        closeModal();
+        break;
+      case '+':
+        zoomIn();
+        break;
+      case '-':
+        zoomOut();
+        break;
+    }
+  }, [isModalOpen, goToPrevious, goToNext, closeModal, zoomIn, zoomOut]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  const handleImageLoad = () => {
+    setIsLoading(false);
+  };
+
   return (
     <div className="relative w-[280px] md:w-[250px]">
       {images.length > 1 && (
         <button
           onClick={goToPrevious}
           className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/20 text-white rounded-full p-2 z-10 hover:bg-black/50 focus:outline-none"
+          aria-label="Previous image"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -172,6 +206,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -186,11 +221,27 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
       <div
         className="relative aspect-square md:aspect-square sm:aspect-square cursor-pointer overflow-hidden rounded-md shadow-md"
         onClick={openModal}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && openModal()}
+        aria-label="Open image gallery"
       >
-        <img
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        )}
+        <Image
           src={currentImage}
-          alt={`Image ${currentIndex + 1}`}
-          className="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+          alt={`Image ${currentIndex + 1} of ${images.length}`}
+          className={cn(
+            "object-cover w-full h-full transition-transform duration-300 hover:scale-105",
+            isLoading && "opacity-0"
+          )}
+          onLoad={handleImageLoad}
+          width={280}
+          height={280}
+          priority
         />
       </div>
 
@@ -198,6 +249,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
         <button
           onClick={goToNext}
           className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/20 text-white rounded-full p-2 z-10 hover:bg-black/50 focus:outline-none"
+          aria-label="Next image"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -205,6 +257,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -218,41 +271,64 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
 
       {isModalOpen && (
         <div
-          className="fixed top-0 left-0 w-full h-full bg-black/80 z-888 flex items-center justify-center cursor-pointer"
+          className="fixed top-0 left-0 w-full h-full bg-black/80 z-50 flex items-center justify-center cursor-pointer"
           ref={modalRef}
           onClick={handleModalClick}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image gallery modal"
         >
           <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
-            <img
+            <Image
               ref={imageRef}
               src={currentImage}
-              alt={`Large Image ${currentIndex + 1}`}
+              alt={`Large Image ${currentIndex + 1} of ${images.length}`}
               className={`transition-transform duration-300 cursor-grab`}
               style={{ transform: `scale(${zoomLevel}) translate(${position.x}px, ${position.y}px)` }}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseLeave}
+              width={500}
+              height={500}
+              quality={100}
+              priority
             />
             <div className="absolute top-2 right-2 flex space-x-2">
-              {/* <button
+              <button
                 onClick={zoomIn}
                 className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 focus:outline-none"
+                aria-label="Zoom in"
               >
                 <MagnifyingGlassPlusIcon className="h-5 w-5" />
               </button>
               <button
                 onClick={zoomOut}
                 className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 focus:outline-none"
+                aria-label="Zoom out"
               >
                 <MagnifyingGlassMinusIcon className="h-5 w-5" />
-              </button> */}
+              </button>
               <button
                 onClick={closeModal}
                 className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 focus:outline-none"
+                aria-label="Close modal"
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>
+            </div>
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={cn(
+                    "w-2 h-2 rounded-full",
+                    index === currentIndex ? "bg-white" : "bg-white/50"
+                  )}
+                  aria-label={`Go to image ${index + 1}`}
+                />
+              ))}
             </div>
           </div>
         </div>

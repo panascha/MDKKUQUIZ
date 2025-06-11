@@ -15,6 +15,8 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { LoaderIcon } from 'react-hot-toast';
 import { Role_type } from '@/config/role';
+import AddQuizModal from '@/components/quiz/Modal/AddQuizModal';
+import { useUser } from '@/hooks/useUser';
 
 const QuestionPage = () => {
     const router = useRouter();
@@ -24,10 +26,12 @@ const QuestionPage = () => {
     const { data: session } = useSession();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showAddModal, setShowAddModal] = useState(false);
 
     const [questions, setQuestions] = useState<Quiz[]>([]);
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+    const { user } = useUser();
 
     // Search and filter
     const [searchTerm, setSearchTerm] = useState('');
@@ -218,10 +222,25 @@ const QuestionPage = () => {
                     </Link>
                 </div>
                 <div className='absolute top-22 md:top-25 right-4 md:right-15'>
-                    <button onClick={() => router.push(FrontendRoutes.QUESTION_CREATE)} className="border-1 mb-4 hover:bg-green-600 hover:text-white pl-2 p-3 rounded-sm transition duration-300 ease-in-out hover:opacity-60 cursor-pointer">
+                    <button 
+                        onClick={() => setShowAddModal(true)} 
+                        className="border-1 mb-4 hover:bg-green-600 hover:text-white pl-2 p-3 rounded-sm transition duration-300 ease-in-out hover:opacity-60 cursor-pointer"
+                    >
                         + Create
                     </button>
                 </div>
+
+                {/* Add Quiz Modal */}
+                {user && (
+                    <AddQuizModal
+                        showModal={showAddModal}
+                        setShowModal={setShowAddModal}
+                        userProp={user}
+                        subject={subjects}
+                        category={categories}
+                    />
+                )}
+
                 <h1 className="text-3xl font-bold text-center mb-4">Question List</h1>
 
                 {/* Search and filter section */}

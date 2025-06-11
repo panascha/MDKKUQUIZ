@@ -51,6 +51,18 @@ export default function Navbar() {
                                 Home
                             </button>
                             <button
+                                onClick={() => router.push(FrontendRoutes.QUESTION)}
+                                className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
+                            >
+                                Question
+                            </button>
+                            <button
+                                onClick={() => router.push(FrontendRoutes.KEYWORD)}
+                                className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
+                            >
+                                Keyword
+                            </button>
+                            <button
                                 onClick={() => router.push(FrontendRoutes.PROFILE)}
                                 className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
                             >
@@ -125,6 +137,22 @@ export default function Navbar() {
                                     router.push(FrontendRoutes.HOMEPAGE);
                                 }}>
                                 Home
+                            </button>
+                            <button
+                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    router.push(FrontendRoutes.QUESTION);
+                                }}>
+                                Question
+                            </button>
+                            <button
+                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    router.push(FrontendRoutes.KEYWORD);
+                                }}>
+                                Keyword
                             </button>
                             <button
                                 onClick={handleLogout}

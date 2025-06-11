@@ -15,10 +15,8 @@ import ProtectedPage from '@/components/ProtectPage';
 
 
 const QuestionDetail = () => {
-    const router = useRouter();
     const params = useParams();
     const questionID = params.questionID;
-    const subjectID = params.subjectID;
 
     const { data: session } = useSession();
     const [isLoading, setIsLoading] = useState(true);
@@ -156,7 +154,7 @@ useEffect(() => {
         <ProtectedPage>
         <div className="flex flex-col items-center justify-center p-4 mt-20 min-h-screen">
             <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
-            <Link href={`${FrontendRoutes.HOMEPAGE}/${subjectID}/question`}>
+            <Link href={FrontendRoutes.QUESTION}>
                 <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
                 <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
                 </button>
@@ -183,8 +181,11 @@ useEffect(() => {
                     <div className="flex flex-col items-center space-y-2 mt-4">
                     <span className="text-base md:text-lg self-start">Image:</span>
                     <div className="flex flex-wrap justify-center gap-2">
-                                    <ImageGallery images={Array.isArray(question.img) ? question.img : [question.img]} />
-                                    {/* {<ImageGallery images={images} />} */}
+                        <ImageGallery 
+                            images={Array.isArray(question.img) 
+                                ? question.img.map(img => `http://localhost:5000${img}`) 
+                                : [`http://localhost:5000${question.img}`]} 
+                        />
                     </div>
                     </div>
                 )}

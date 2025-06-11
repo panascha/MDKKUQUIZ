@@ -13,6 +13,7 @@ export interface CreateQuizData {
   question: string;
   type: string;
   status: 'pending' | 'approved' | 'rejected' | 'reported';
+  images?: File[];
 }
 
 export const useCreateQuiz = () => {
@@ -21,10 +22,34 @@ export const useCreateQuiz = () => {
         mutationFn: async (quizData: CreateQuizData) => {
             if (!session?.data?.user.token) throw new Error("Authentication required");
 
-            const response = await axios.post(BackendRoutes.QUIZ, quizData, {
+            const formData = new FormData();
+            formData.append("user", quizData.user);
+            formData.append("question", quizData.question);
+            formData.append("subject", quizData.subject);
+            formData.append("category", quizData.category);
+            formData.append("type", quizData.type);
+            formData.append("status", quizData.status);
+            
+            // Handle choices and correct answers
+            quizData.choice.forEach((choice, index) => {
+                formData.append(`choice[${index}]`, choice);
+            });
+            
+            quizData.correctAnswer.forEach((answer, index) => {
+                formData.append(`correctAnswer[${index}]`, answer);
+            });
+
+            // Handle multiple images if present
+            if (quizData.images && quizData.images.length > 0) {
+                quizData.images.forEach((image, index) => {
+                    formData.append(`images`, image);
+                });
+            }
+
+            const response = await axios.post(BackendRoutes.QUIZ, formData, {
                 headers: {
-                Authorization: `Bearer ${session.data.user.token}`,
-                "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${session.data.user.token}`,
+                    "Content-Type": "multipart/form-data",
                 },
             });
 
