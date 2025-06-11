@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { IoIosArrowBack } from 'react-icons/io';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Category } from '@/types/api/Category';
-import { useGetKeywords } from '@/hooks/keyword/useGetKeywordOnlyApproved';
+import { useGetKeywords } from '@/hooks/keyword/useGetKeyword';
 import { useGetSubject } from '@/hooks/subject/useGetSubject';
 import { useGetCategory } from '@/hooks/category/useGetCategory';
 import AddKeywordModal from '@/components/keyword/AddKeywordModal';
@@ -41,6 +41,7 @@ const KeywordPage = () => {
 
     // Check if user is admin or S-admin
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
+    const isSAdmin = user?.role === Role_type.SADMIN;
 
     // Search and filter
     const [searchTerm, setSearchTerm] = useState('');
@@ -105,6 +106,15 @@ const KeywordPage = () => {
                 if (!currentKeywords || currentKeywords.length === 0) {
                     return [];
                 }
+
+                // First filter by user role
+                let roleFilteredKeywords = currentKeywords;
+                if (!isAdmin && !isSAdmin) {
+                    roleFilteredKeywords = currentKeywords.filter(k => k.status === "approved");
+                } else if (isAdmin && !isSAdmin) {
+                    roleFilteredKeywords = currentKeywords.filter(k => k.status !== "reported");
+                }
+
                 const operators = ['and', 'or', 'not'];
                 const searchTerms =
                     currentSearchTerm
@@ -118,10 +128,10 @@ const KeywordPage = () => {
                 };
 
                 if (!searchTerms.length) {
-                    return currentKeywords.filter(q => subjectFilter(q) && categoryFilter(q));
+                    return roleFilteredKeywords.filter(q => subjectFilter(q) && categoryFilter(q));
                 }
 
-                return currentKeywords.filter(q => {
+                return roleFilteredKeywords.filter(q => {
                     let includeQuestion: boolean | null = null;
                     let currentOperator = 'or';
 
@@ -150,7 +160,7 @@ const KeywordPage = () => {
                     return !!includeQuestion && subjectFilter(q) && categoryFilter(q);
                 });
             },
-            []
+            [isAdmin, isSAdmin]
         );
 
         useEffect(() => {
@@ -335,7 +345,7 @@ const KeywordPage = () => {
                                                     ? "Pending"
                                                     : "Rejected"}
                                             </Badge>
-                                            {isAdmin && (
+                                            {isSAdmin && (
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();

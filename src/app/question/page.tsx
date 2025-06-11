@@ -42,6 +42,7 @@ const QuestionPage = () => {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     // Check if user is admin or S-admin
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
+    const isSAdmin = user?.role === Role_type.SADMIN;
     
 
     const deleteQuizMutation = useDeleteQuiz();
@@ -403,7 +404,7 @@ const QuestionPage = () => {
                                                             ? "Pending"
                                                             : "Rejected"}
                                                     </Badge>
-                                                    {isAdmin && (
+                                                    {isSAdmin && (
                                                         <button
                                                             onClick={(e) => {
                                                                 e.preventDefault();
