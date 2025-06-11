@@ -8,23 +8,26 @@ import { SubjectActions } from "@/components/subjects/Detail/SubjectActions";
 import { SubjectTopics } from "@/components/subjects/Detail/SubjectTopics";
 import { useQuery } from "@tanstack/react-query";
 import { Category } from "@/types/api/Category";
+import { use } from 'react';
 
 export default function SubjectDetailPage({
     params,
 }: {
-    params: { subjectID: string };
+    params: Promise<{ subjectID: string }>;
 }) {
+    const { subjectID } = use(params);
+
     const { data: subject, isLoading, error } = useQuery({
-        queryKey: ["subject", params.subjectID],
-        queryFn: () => useGetSubjectByID(params.subjectID),
-        enabled: !!params.subjectID
+        queryKey: ["subject", subjectID],
+        queryFn: () => useGetSubjectByID(subjectID),
+        enabled: !!subjectID
     });
 
-    const getCategoryFn = useGetCategoryBySubjectID(params.subjectID);
+    const getCategoryFn = useGetCategoryBySubjectID(subjectID);
     const { data: categories, isLoading: isCategoryLoading, error: categoryError } = useQuery<Category[]>({
-        queryKey: ["categories", params.subjectID],
+        queryKey: ["categories", subjectID],
         queryFn: getCategoryFn,
-        enabled: !!params.subjectID
+        enabled: !!subjectID
     });
 
     if (isLoading || isCategoryLoading) {
@@ -53,7 +56,7 @@ export default function SubjectDetailPage({
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <BackButton />
                 <SubjectDetailHeader subject={subject} />
-                <SubjectActions subjectId={params.subjectID} />
+                <SubjectActions subjectId={subjectID} />
                 <SubjectTopics categories={categories} />
             </div>
         </div>

@@ -12,8 +12,10 @@ import { Card } from '@/components/ui/Card';
 import ImageGallery from '@/components/magicui/ImageGallery';
 import { LoaderIcon } from 'react-hot-toast';
 import ProtectedPage from '@/components/ProtectPage';
-import AddReportModal from '@/components/Report/AddReportModal';
+import AddReportModal from '@/components/Report/AddQuizReportModal';
 import { useUser } from '@/hooks/useUser';
+import { Badge } from '@/components/ui/Badge';
+import { Role_type } from '@/config/role';
 
 const QuestionDetail = () => {
     const params = useParams();
@@ -24,7 +26,7 @@ const QuestionDetail = () => {
     const [error, setError] = useState<string | null>(null);
     const [question, setQuestion] = useState<Quiz | null>(null);
     const [showReportModal, setShowReportModal] = useState(false);
-
+    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
     // Fetch question details
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -113,6 +115,30 @@ const QuestionDetail = () => {
 
                     {/* Question Info Card */}
                     <Card className="bg-white shadow-lg rounded-xl p-6 mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-semibold text-gray-900">Question Information</h2>
+                            {isAdmin && (
+                                <Badge
+                                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                                        question.status === "approved"
+                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                                        : question.status === "pending"
+                                        ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                                        : question.status === "reported"
+                                        ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100"
+                                        : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
+                                    }`}
+                                >
+                                    {question.status === "approved" 
+                                        ? "Approved" 
+                                        : question.status === "pending"
+                                        ? "Pending"
+                                        : question.status === "reported"
+                                        ? "Reported"
+                                        : "Rejected"}
+                                </Badge>
+                            )}
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="p-4 bg-gray-50 rounded-lg">
                                 <p className="text-sm text-gray-500 mb-1">Subject</p>
@@ -129,12 +155,14 @@ const QuestionDetail = () => {
                                 </p>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setShowReportModal(true)}
-                            className="mt-4 w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg shadow-sm transition-colors duration-200 flex items-center justify-center gap-2"
-                        >
-                            Report Question
-                        </button>
+                        {question.status === 'approved' && (
+                            <button
+                                onClick={() => setShowReportModal(true)}
+                                className="mt-4 w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg shadow-sm transition-colors duration-200 flex items-center justify-center gap-2"
+                            >
+                                Report Question
+                            </button>
+                        )}
                     </Card>
 
                     {/* Question Content Card */}

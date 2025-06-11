@@ -42,6 +42,7 @@ const QuestionPage = () => {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     // Check if user is admin or S-admin
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
+    const isSAdmin = user?.role === Role_type.SADMIN;
     
 
     const deleteQuizMutation = useDeleteQuiz();
@@ -387,36 +388,42 @@ const QuestionPage = () => {
                                                         {question.subject.name}
                                                     </p>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge
-                                                        className={`transition-colors duration-300 ${
-                                                            question.status === "approved"
-                                                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                                            : question.status === "pending"
-                                                            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                                                            : "bg-red-100 text-red-800 hover:bg-red-200"
-                                                        }`}
-                                                    >
-                                                        {question.status === "approved" 
-                                                            ? "Approved" 
-                                                            : question.status === "pending"
-                                                            ? "Pending"
-                                                            : "Rejected"}
-                                                    </Badge>
-                                                    {isAdmin && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                handleDeleteQuiz(question._id);
-                                                            }}
-                                                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200 opacity-0 group-hover:opacity-100"
-                                                            title="Delete question"
+                                                {isAdmin && (
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge
+                                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                                                                question.status === "approved"
+                                                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                                                                : question.status === "pending"
+                                                                ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                                                                : question.status === "reported"
+                                                                ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100"
+                                                                : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
+                                                            }`}
                                                         >
-                                                            <Trash2 className="w-5 h-5" />
-                                                        </button>
-                                                    )}
-                                                </div>
+                                                            {question.status === "approved" 
+                                                                ? "Approved" 
+                                                                : question.status === "pending"
+                                                                ? "Pending"
+                                                                : question.status === "reported"
+                                                                ? "Reported"
+                                                                : "Rejected"}
+                                                        </Badge>
+                                                        {isSAdmin && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    handleDeleteQuiz(question._id);
+                                                                }}
+                                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200 opacity-0 group-hover:opacity-100"
+                                                                title="Delete question"
+                                                            >
+                                                                <Trash2 className="w-5 h-5" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="mt-4 space-y-1 text-sm text-gray-600">
                                                 <p className="font-medium">Choices:</p>

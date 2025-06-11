@@ -92,7 +92,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     // Validate file types
     const invalidFiles = files.filter(file => 
       !file.type.startsWith('image/') || 
@@ -258,14 +258,14 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                     {category
                       .filter(c => c.subject._id === formData.subject)
                       .map((c) => (
-                        <DropdownMenuItem
-                          key={c._id}
-                          className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
-                          onClick={() => setFormData(prev => ({ ...prev, category: c._id }))}
-                        >
-                          {c.category}
-                        </DropdownMenuItem>
-                      ))}
+                  <DropdownMenuItem
+                    key={c._id}
+                    className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
+                    onClick={() => setFormData(prev => ({ ...prev, category: c._id }))}
+                  >
+                    {c.category}
+                  </DropdownMenuItem>
+                ))}
                   </>
                 )}
               </DropdownMenuContent>

@@ -137,6 +137,7 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
         User: user._id,
         originalQuiz: originalQuiz,
         suggestedChanges: quizResult,
+        type: 'quiz',
         status: 'pending',
         reason: ''
       };

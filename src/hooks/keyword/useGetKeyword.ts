@@ -26,17 +26,15 @@ export const useGetKeywords = (): UseGetKeywordsResult => {
         const fetchKeywords = async () => {
             try {
                 setIsLoading(true);
-                const response = await axios.get(BackendRoutes.KEYWORD_APP, {
+                const response = await axios.get(BackendRoutes.KEYWORD, {
                     headers: {
                         Authorization: `Bearer ${session.user.token}`,
                     },
                 });
                 // Filter keywords based on user role
-                const filteredKeywords = isAdmin 
-                    ? response.data.data 
-                    : response.data.data.filter((k: Keyword) => k.status === "approved");
-                setKeywords(filteredKeywords);
-                console.log("Fetched keywords:", filteredKeywords);
+                const Keywords = response.data.data 
+                setKeywords(Keywords);
+                console.log("Fetched keywords:", Keywords);
                 setIsLoading(false);
             }
             catch (err) {
