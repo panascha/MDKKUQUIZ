@@ -19,6 +19,7 @@ const QuizResultPage = () => {
     const [score, setScore] = useState<UserScore>();
     const [showDropdown, setShowDropdown] = useState(false);
     const [filter, setFilter] = useState<'all' | 'correct' | 'incorrect'>('all');
+    const [bookmarkFilter, setBookmarkFilter] = useState<boolean>(false);
     const [searchTerm, setSearchTerm] = useState('');
     const toggleDropdown = () => setShowDropdown(!showDropdown);
 
@@ -36,8 +37,13 @@ const QuizResultPage = () => {
             (filter === 'correct' && question.isCorrect) || 
             (filter === 'incorrect' && !question.isCorrect);
 
+        let bookmarkMatch = true;
+        if (bookmarkFilter) {
+            bookmarkMatch = question.isBookmarked;
+        }
+
         // Then apply search if there's a search term
-        if (!searchTerm.trim()) return filterMatch;
+        if (!searchTerm.trim()) return filterMatch && bookmarkMatch;
 
         const searchTerms = searchTerm.toLowerCase().split(' ');
         const questionText = question.Quiz.question.toLowerCase();
@@ -46,7 +52,7 @@ const QuizResultPage = () => {
         const choiceText = question.Quiz.choice.map(choice => choice.toLowerCase()).join(' ');
         const correctAnswerText = question.Quiz.correctAnswer.join(' ').toLowerCase();
 
-        return filterMatch && searchTerms.every(term => 
+        return filterMatch && bookmarkMatch && searchTerms.every(term => 
             questionText.includes(term) || 
             answerText.includes(term) || 
             categoryText.includes(term) ||
@@ -77,6 +83,7 @@ const QuizResultPage = () => {
         fetchQuestion();
     }, [scoreID, session?.data?.user.token]);
 
+
     return (
         <div className="container mx-auto mt-24 pt-20 md:mt-16 flex flex-col items-center justify-center">
             <QuizResultHeader score={score} formatTime={formatTime} />
@@ -88,6 +95,8 @@ const QuizResultPage = () => {
                 setFilter={setFilter}
                 showDropdown={showDropdown}
                 toggleDropdown={toggleDropdown}
+                bookmarkFilter={bookmarkFilter}
+                setBookmarkFilter={setBookmarkFilter}
             />
 
             <section className="grid grid-cols-1 gap-6 mx-4 p-4 md:p-6 sm:mx-10 w-full md:w-2/3">

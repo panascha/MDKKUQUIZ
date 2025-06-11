@@ -22,10 +22,10 @@ export const QuizQuestionCard = ({ question, index }: QuizQuestionCardProps) => 
         // Reset form state
         setShowModal(false);
     };
-
     return (
         <div
-            className={`card ${!question.isCorrect ? 'bg-red-100' : 'bg-green-100'} shadow-md rounded-lg p-6 border-gray-400 border-2 relative`}
+            className={`card ${!question.isCorrect ? 'bg-red-100' : 'bg-green-100'} shadow-md rounded-lg p-6 border-gray-400 border-2 relative
+            ${question.isBookmarked ? 'border-yellow-400 border-3' : ''}`}
         >
             <div className={`absolute top-0 left-0 h-full w-1.5 ${!question.isCorrect ? 'bg-red-600' : 'bg-green-600'} rounded-l-md`} />
             <h3 className="text-lg font-bold mb-1 question-text">Question {index + 1}</h3>

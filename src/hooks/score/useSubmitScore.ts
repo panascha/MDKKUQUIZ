@@ -14,6 +14,7 @@ interface SubmitScoreData {
         Quiz: string;
         Answer: string;
         isCorrect: boolean;
+        isBookmarked: boolean;
     }>;
     timeTaken: number;
 }
