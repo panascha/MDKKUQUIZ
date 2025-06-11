@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { UserCog, Ban } from 'lucide-react';
 
 interface User {
     id: string;
