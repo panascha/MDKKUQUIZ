@@ -12,7 +12,7 @@ interface UseGetQuestionsProps {
     questionCount: number;
 }
 
-export const useGetQuestionsOnlyApproved = ({ subjectID, selectCategory, selectedQuestionTypes, questionCount }: UseGetQuestionsProps) => {
+export const useGetQuestionsBySubjectOnlyApproved = ({ subjectID, selectCategory, selectedQuestionTypes, questionCount }: UseGetQuestionsProps) => {
     const { data: session } = useSession();
 
     const fetchQuestions = async () => {

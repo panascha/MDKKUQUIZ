@@ -2,19 +2,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { BackendRoutes, FrontendRoutes } from '@/config/apiRoutes';
 import { Subject } from '@/types/api/Subject';
 import { Keyword } from '@/types/api/Keyword';
-import KeywordCard from '@/components/keyword/KeywordCard';
 import ProtectedPage from '@/components/ProtectPage';
 import Link from 'next/link';
 import { IoIosArrowBack } from 'react-icons/io';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Category } from '@/types/api/Category';
 import { useGetKeywords } from '@/hooks/keyword/useGetKeyword';
-import { useGetSubject } from '@/hooks/subject/useGetSubject';
-import { useGetCategory } from '@/hooks/category/useGetCategory';
 import AddKeywordModal from '@/components/keyword/AddKeywordModal';
 import { useUser } from '@/hooks/useUser';
 import { useDeleteKeyword } from '@/hooks/keyword/useDeleteKeyword';
@@ -231,7 +228,7 @@ const KeywordPage = () => {
                         <label htmlFor="search" className="text-sm md:text-md text-center md:text-left">
                             Search:
                             <small className="ml-2 text-gray-500">
-                                Try Pubmed search e.g. "strongyloides" and/or/not "hookworm"
+                                Try Pubmed search e.g. &quot"strongyloides" and/or/not "hookworm"
                             </small>
                         </label>
                         <input

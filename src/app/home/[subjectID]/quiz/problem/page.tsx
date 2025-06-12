@@ -12,7 +12,7 @@ import ImageGallery from '@/components/magicui/ImageGallery';
 import { useGetQuestions } from '@/hooks/quiz/useGetQuizzes';
 import { useSubmitScore } from '@/hooks/score/useSubmitScore';
 import { useQuery } from '@tanstack/react-query';
-import { useGetQuestionsOnlyApproved } from '@/hooks/quiz/useGetQuizzesOnlyApproved';
+import { useGetQuestionsBySubjectOnlyApproved } from '@/hooks/quiz/useGetQuizzesBySubjectOnlyApproved';
 
 export default function Problem() {
     const session = useSession();
@@ -41,7 +41,7 @@ export default function Problem() {
     const allQuestionsAnswered = showQuestion.every(q => q.isAnswered);
     const allQuestionsSubmitted = showQuestion.every(q => q.isSubmitted);
 
-    const getQuestionsFn = useGetQuestionsOnlyApproved({
+    const getQuestionsFn = useGetQuestionsBySubjectOnlyApproved({
         subjectID,
         selectCategory,
         selectedQuestionTypes: selectedQuestionTypes || '',

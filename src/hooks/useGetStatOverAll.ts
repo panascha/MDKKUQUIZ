@@ -1,5 +1,4 @@
 import { BackendRoutes } from "@/config/apiRoutes";
-import { Quiz } from "@/types/api/Quiz";
 import { Stat } from "@/types/api/Stat";
 import axios from "axios";
 import { useSession } from "next-auth/react";
