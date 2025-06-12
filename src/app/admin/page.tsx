@@ -20,15 +20,22 @@ import KeywordsTab from '@/components/admin/KeywordsTab';
 import QuizzesTab from '@/components/admin/QuizzesTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import UsersTab from '@/components/admin/UsersTab';
+import { useRouter } from 'next/router';
+import { FrontendRoutes } from '@/config/apiRoutes';
 
 const AdminPanel = () => {
     const { data: session } = useSession();
     const { user } = useUser();
     const [stats, setStats] = useState<any>(null);
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const getStats = useGetStatOverAll();
+    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
 
     useEffect(() => {
+        if(!isAdmin) {
+            router.push(FrontendRoutes.HOMEPAGE);
+        }
         const fetchStats = async () => {
             try {
                 const response = await getStats();
@@ -159,10 +166,6 @@ const AdminPanel = () => {
                                 <AlertTriangle className="w-4 h-4 mr-1 sm:mr-2" />
                                 Reports
                             </TabsTrigger>
-                            <TabsTrigger value="users" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
-                                <Users className="w-4 h-4 mr-1 sm:mr-2" />
-                                Users
-                            </TabsTrigger>
                         </TabsList>
 
                         {/* Tab Contents */}
@@ -191,14 +194,6 @@ const AdminPanel = () => {
                                     reports={mockReports}
                                     onReview={handleReportReview}
                                     onDismiss={handleReportDismiss}
-                                />
-                            </TabsContent>
-
-                            <TabsContent value="users">
-                                <UsersTab 
-                                    users={mockUsers}
-                                    onEdit={handleUserEdit}
-                                    onBan={handleUserBan}
                                 />
                             </TabsContent>
                         </div>
