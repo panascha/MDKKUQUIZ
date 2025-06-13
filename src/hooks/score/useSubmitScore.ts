@@ -1,5 +1,6 @@
 import { BackendRoutes } from "@/config/apiRoutes";
 import { Question } from "@/types/api/Question";
+import { UserScore } from "@/types/api/Score";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -35,7 +36,7 @@ export const useSubmitScore = () => {
         return response.data.data;
     };
 
-    const mutation = useMutation({
+    const mutation = useMutation<UserScore, Error, SubmitScoreData>({
         mutationFn: submitScore,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["scores"] });
@@ -63,7 +64,7 @@ export const useSubmitScore = () => {
     };
 
     return {
-        submitScore: mutation.mutate,
+        submitScore: mutation.mutateAsync,
         calculateScore,
         isLoading: mutation.isPending,
         error: mutation.error,

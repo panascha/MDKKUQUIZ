@@ -21,7 +21,7 @@ import QuizzesTab from '@/components/admin/QuizzesTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import { useRouter } from 'next/navigation';
 import { FrontendRoutes } from '@/config/apiRoutes';
-import { useGetQuizzesOnlyPending } from '@/hooks/quiz/useGetQuizzesOnlyPending';
+import { useGetQuizzes } from "@/hooks/quiz/useGetQuizzes";
 import useApprovedReport from '@/hooks/Approved/useApprovedReport';
 import useApprovedQuiz from '@/hooks/Approved/useApprovedQuiz';
 import useApprovedKeyword from '@/hooks/Approved/useApprovedKeyword';
@@ -29,26 +29,24 @@ import { toast } from 'react-hot-toast';
 import { useGetKeyword } from '@/hooks/keyword/useGetKeyword';
 import { useGetReport } from '@/hooks/report/useGetReport';
 
-const AdminPanel = () => {
-    const { user, loading: userLoading } = useUser();
-    const router = useRouter();
-
+export default function AdminPanel() {
+    const { data: session, status } = useSession();
     const { data: stats, isLoading: isStatsLoading } = useGetStatOverAll();
     const { data: keywords = [], isLoading: isKeywordsLoading } = useGetKeyword({ status: 'pending' });
-    const { data: quiz = [], isLoading: isQuizLoading } = useGetQuizzesOnlyPending();
+    const { data: quizzes = [], isLoading: isQuizLoading } = useGetQuizzes({ status: 'pending' });
     const { data: reports = [], isLoading: isReportsLoading } = useGetReport({ status: 'pending' });
     const { mutate: approveReport } = useApprovedReport();
     const { mutate: approveQuiz } = useApprovedQuiz();
     const { mutate: approveKeyword } = useApprovedKeyword();
+    const router = useRouter();
 
-    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
+    const isAdmin = session?.user?.role === Role_type.ADMIN || session?.user?.role === Role_type.SADMIN;
 
     useEffect(() => {
-        if (userLoading) return;
-        if(!isAdmin) {
+        if (status === "unauthenticated") {
             router.push(FrontendRoutes.HOMEPAGE);
         }
-    }, [router, user, isAdmin, userLoading]);
+    }, [status, router]);
 
     // Handler functions
     const handleReportApprove = (id: string) => handleReportAction(id, true);
@@ -103,86 +101,90 @@ const AdminPanel = () => {
         );
     };
 
+    if (status === "loading" || isStatsLoading || isKeywordsLoading || isQuizLoading || isReportsLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <LoaderIcon className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (status === "unauthenticated") {
+        return null;
+    }
+
     return (
         <ProtectedPage>
-            {userLoading || isStatsLoading || isKeywordsLoading || isQuizLoading || isReportsLoading? (
-                <div className="min-h-screen flex items-center justify-center">
-                    <LoaderIcon className="w-8 h-8 animate-spin text-primary" />
-                </div>
-            ) : (
-                <div className="min-h-screen pt-12 sm:pt-16 bg-gray-50">
-                    {/* Header */}
-                    <div className="bg-white border-b">
-                        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-                                <div className="flex items-center gap-2 sm:gap-4">
-                                    <Badge className="px-2 sm:px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm">
-                                        {user?.role === Role_type.SADMIN ? 'Super Admin' : 'Admin'}
-                                    </Badge>
-                                </div>
+            <div className="min-h-screen pt-12 sm:pt-16 bg-gray-50">
+                {/* Header */}
+                <div className="bg-white border-b">
+                    <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                            <div className="flex items-center gap-2 sm:gap-4">
+                                <Badge className="px-2 sm:px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm">
+                                    {session?.user?.role === Role_type.SADMIN ? 'Super Admin' : 'Admin'}
+                                </Badge>
                             </div>
                         </div>
                     </div>
-
-                    {/* Main Content */}
-                    <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
-                        {/* Tabs */}
-                        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
-                            <TabsList className="bg-white p-1 rounded-lg shadow-sm overflow-x-auto flex whitespace-nowrap">
-                                <TabsTrigger value="overview" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
-                                    <BarChart3 className="w-4 h-4 mr-1 sm:mr-2" />
-                                    Overview
-                                </TabsTrigger>
-                                <TabsTrigger value="quizzes" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
-                                    <FileText className="w-4 h-4 mr-1 sm:mr-2" />
-                                    Quizzes
-                                </TabsTrigger>
-                                <TabsTrigger value="keywords" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
-                                    <FileText className="w-4 h-4 mr-1 sm:mr-2" />
-                                    Keywords
-                                </TabsTrigger>
-                                <TabsTrigger value="reports" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
-                                    <AlertTriangle className="w-4 h-4 mr-1 sm:mr-2" />
-                                    Reports
-                                </TabsTrigger>
-                            </TabsList>
-
-                            {/* Tab Contents */}
-                            <div className="mt-4 sm:mt-6">
-                                <TabsContent value="overview">
-                                    <StatsOverview stat={stats}/>
-                                </TabsContent>
-                                <TabsContent value="keywords">
-                                    <KeywordsTab 
-                                        keywords={keywords}
-                                        onApprove={handleKeywordApprove}
-                                        onReject={handleKeywordReject}
-                                    />
-                                </TabsContent>
-
-                                <TabsContent value="quizzes">
-                                    <QuizzesTab 
-                                        quizzes={quiz}
-                                        onApprove={handleQuizApprove}
-                                        onReject={handleQuizReject}
-                                    />
-                                </TabsContent>
-
-                                <TabsContent value="reports">
-                                    <ReportsTab 
-                                        reports={reports}
-                                        onReview={handleReportApprove}
-                                        onDismiss={handleReportReject}
-                                    />
-                                </TabsContent>
-                            </div>
-                        </Tabs>
-                    </div>
                 </div>
-            )}
+
+                {/* Main Content */}
+                <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
+                    {/* Tabs */}
+                    <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+                        <TabsList className="bg-white p-1 rounded-lg shadow-sm overflow-x-auto flex whitespace-nowrap">
+                            <TabsTrigger value="overview" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
+                                <BarChart3 className="w-4 h-4 mr-1 sm:mr-2" />
+                                Overview
+                            </TabsTrigger>
+                            <TabsTrigger value="quizzes" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
+                                <FileText className="w-4 h-4 mr-1 sm:mr-2" />
+                                Quizzes
+                            </TabsTrigger>
+                            <TabsTrigger value="keywords" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
+                                <FileText className="w-4 h-4 mr-1 sm:mr-2" />
+                                Keywords
+                            </TabsTrigger>
+                            <TabsTrigger value="reports" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
+                                <AlertTriangle className="w-4 h-4 mr-1 sm:mr-2" />
+                                Reports
+                            </TabsTrigger>
+                        </TabsList>
+
+                        {/* Tab Contents */}
+                        <div className="mt-4 sm:mt-6">
+                            <TabsContent value="overview">
+                                <StatsOverview stat={stats}/>
+                            </TabsContent>
+                            <TabsContent value="keywords">
+                                <KeywordsTab 
+                                    keywords={keywords}
+                                    onApprove={handleKeywordApprove}
+                                    onReject={handleKeywordReject}
+                                />
+                            </TabsContent>
+
+                            <TabsContent value="quizzes">
+                                <QuizzesTab 
+                                    quizzes={quizzes}
+                                    onApprove={handleQuizApprove}
+                                    onReject={handleQuizReject}
+                                />
+                            </TabsContent>
+
+                            <TabsContent value="reports">
+                                <ReportsTab 
+                                    reports={reports}
+                                    onReview={handleReportApprove}
+                                    onDismiss={handleReportReject}
+                                />
+                            </TabsContent>
+                        </div>
+                    </Tabs>
+                </div>
+            </div>
         </ProtectedPage>
     );
-};
-
-export default AdminPanel;
+}

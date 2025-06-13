@@ -1,81 +1,45 @@
-import { BackendRoutes } from "@/config/apiRoutes";
-import { Question } from "@/types/api/Question";
+import { BackendRoutes, getQuizByFilter } from "@/config/apiRoutes";
 import { Quiz } from "@/types/api/Quiz";
-import { Subject } from "@/types/api/Subject";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 
-interface UseGetQuestionsProps {
-    subjectID: string;
-    selectCategory: string[];
-    selectedQuestionTypes: string;
-    questionCount: number;
+interface UseGetQuizzesProps {
+  subjectID?: string;
+  status?: 'pending' | 'approved' | 'rejected' | 'reported';
+  categoryID?: string;
+  transformData?: (quizzes: Quiz[]) => any;
 }
 
-export const useGetQuestions = ({ subjectID, selectCategory, selectedQuestionTypes, questionCount }: UseGetQuestionsProps) => {
-    const { data: session } = useSession();
+export const useGetQuizzes = ({ 
+  subjectID, 
+  status, 
+  categoryID,
+  transformData 
+}: UseGetQuizzesProps = {}) => {
+  const { data: session } = useSession();
+  
+  return useQuery({
+    queryKey: ['quizzes', { subjectID, status, categoryID }],
+    queryFn: async () => {
+      if (!session?.user.token) throw new Error("Authentication required");
+      
+      const url = getQuizByFilter(subjectID, categoryID);
+      const finalUrl = status ? `${url}?status=${status}` : url;
+      
+      const response = await axios.get(finalUrl, {
+        headers: { Authorization: `Bearer ${session.user.token}` },
+      });
 
-    const fetchQuestions = async () => {
-        if (!session?.user.token) throw new Error("Authentication required");
-
-        const [quizResponse, subjectResponse] = await Promise.all([
-            axios.get(
-                BackendRoutes.QUIZ_FILTER.replace(":subjectID", String(subjectID)),
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session.user.token}`,
-                    },
-                }
-            ),
-            axios.get(
-                `${BackendRoutes.SUBJECT}/${subjectID}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${session.user.token}`,
-                    },
-                }
-            )
-        ]);
-
-        const mapToQuestion = (data: Quiz[]): Question[] => {
-            return data.map((item) => ({
-                quiz: item,
-                select: null,
-                isBookmarked: false,
-                isAnswered: false,
-                isSubmitted: false,
-                isCorrect: null,
-            }));
-        };
-
-        const shuffleArray = <T,>(array: T[]): T[] => {
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-            }
-            return newArray;
-        };
-
-        const allQuestions = mapToQuestion(quizResponse.data.data);
-
-        const filteredQuestions = allQuestions.filter((q) => {
-            const categoryMatch = selectCategory.includes(q.quiz.category._id);
-            const typeMatch = selectedQuestionTypes === 'mcq' ? 
-                q.quiz.type === 'choice' : 
-                q.quiz.type === "written";
-            return categoryMatch && typeMatch;
-        });
-
-        const shuffledQuestions = shuffleArray(filteredQuestions);
-        const limitedQuestions = shuffledQuestions.slice(0, questionCount);
-
-        return {
-            questions: limitedQuestions,
-            subject: subjectResponse.data.data as Subject
-        };
-    };
-
-    return fetchQuestions;
+      const quizzes = response.data.data as Quiz[];
+      
+      // Apply transformation if provided
+      if (transformData) {
+        return transformData(quizzes);
+      }
+      
+      return quizzes;
+    },
+    enabled: !!session?.user.token,
+  });
 }; 

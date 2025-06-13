@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { LoaderIcon } from "react-hot-toast";
-import { useGetQuizBySubjectId } from "@/hooks/quiz/useGetQuizBySubjectID";
+import { useGetQuizzes } from "@/hooks/quiz/useGetQuizzes";
 import { useQuery } from "@tanstack/react-query";
 import { useGetSubjectByID } from "@/hooks/subject/useGetSubjectByID";
 import { useGetCategoryBySubjectID } from "@/hooks/category/useGetCategoryBySubjectID";
@@ -40,10 +40,9 @@ export default function Quiz() {
         isLoading,
         isError,
         error
-    } = useQuery({
-        queryKey: ["quiz", subjectID],
-        queryFn: useGetQuizBySubjectId(subjectID),
-        enabled: !!subjectID
+    } = useGetQuizzes({
+        subjectID,
+        status: 'approved'
     });
 
     const {
