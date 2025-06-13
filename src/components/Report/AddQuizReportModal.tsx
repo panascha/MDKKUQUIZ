@@ -32,7 +32,7 @@ interface AddReportModalProps {
   userProp: UserProps;
 }
 
-const AddReportModal: React.FC<AddReportModalProps> = ({
+const AddQuizReportModal: React.FC<AddReportModalProps> = ({
   showModal,
   setShowModal,
   originalQuiz,
@@ -354,4 +354,4 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
   );
 };
 
-export default AddReportModal; 
+export default AddQuizReportModal; 

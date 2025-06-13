@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Report } from '@/types/api/Report';
+import { useState } from 'react';
 
 interface ReportsTabProps {
     reports: Report[];
@@ -11,6 +12,12 @@ interface ReportsTabProps {
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss }) => {
+    const [expandedReport, setExpandedReport] = useState<string | null>(null);
+
+    const toggleExpand = (reportId: string) => {
+        setExpandedReport(expandedReport === reportId ? null : reportId);
+    };
+
     if (reports.length === 0) {
         return (
             <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
@@ -25,26 +32,96 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                 <Card key={report._id} className="p-4 sm:p-6 bg-white shadow-sm">
                     <div className="flex flex-col gap-3 sm:gap-4">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-                            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                                {report.type === 'quiz' ? report.originalQuiz?.question : report.originalKeyword?.name}
-                            </h3>
-                            <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-orange-100 text-orange-800">
-                                Reported by: {report.User.name}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <AlertTriangle className="w-5 h-5 text-orange-500" />
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                                    {report.type === 'quiz' ? report.originalQuiz?.question : report.originalKeyword?.name}
+                                </h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-orange-100 text-orange-800">
+                                    Reported by: {report.User.name}
+                                </span>
+                                <Button
+                                    onClick={() => toggleExpand(report._id)}
+                                    className="p-1 hover:bg-gray-100 rounded-full"
+                                    textButton={expandedReport === report._id ? "▲" : "▼"}
+                                />
+                            </div>
                         </div>
+
                         <p className="text-sm sm:text-base text-gray-600">{report.reason}</p>
-                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                            <Button
-                                onClick={() => onReview(report._id)}
-                                className="flex-1 sm:flex-none bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
-                                textButton="Review"
-                            />
-                            <Button
-                                onClick={() => onDismiss(report._id)}
-                                className="flex-1 sm:flex-none bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
-                                textButton="Dismiss"
-                            />
-                        </div>
+
+                        {expandedReport === report._id && (
+                            <div className="mt-2 space-y-4 border-t pt-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-gray-700">Original Content</h4>
+                                        {report.type === 'quiz' ? (
+                                            <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                                                <p className="font-medium">Question: {report.originalQuiz?.question}</p>
+                                                <p>Answer: {report.originalQuiz?.correctAnswer}</p>
+                                                <p>Category: {report.originalQuiz?.category?.category}</p>
+                                                <p>Subject: {report.originalQuiz?.subject?.name}</p>
+                                                {report.originalQuiz?.img && report.originalQuiz.img.length > 0 && (
+                                                    <p className="text-sm text-gray-500">Contains {report.originalQuiz.img.length} image(s)</p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                                                <p className="font-medium">Keyword: {report.originalKeyword?.name}</p>
+                                                <p>Category: {report.originalKeyword?.category?.category}</p>
+                                                <p>Subject: {report.originalKeyword?.subject?.name}</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-gray-700">Suggested Changes</h4>
+                                        {report.type === 'quiz' ? (
+                                            <div className="bg-emerald-50 p-3 rounded-lg space-y-2">
+                                                <p className="font-medium">Question: {report.suggestedChanges?.question}</p>
+                                                <p>Answer: {report.suggestedChanges?.correctAnswer}</p>
+                                                <p>Category: {report.suggestedChanges?.category?.category}</p>
+                                                <p>Subject: {report.suggestedChanges?.subject?.name}</p>
+                                                {report.suggestedChanges?.img && report.suggestedChanges.img.length > 0 && (
+                                                    <p className="text-sm text-gray-500">Contains {report.suggestedChanges.img.length} image(s)</p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="bg-emerald-50 p-3 rounded-lg space-y-2">
+                                                <p className="font-medium">Keyword: {report.suggestedChangesKeyword?.name}</p>
+                                                <p>Category: {report.suggestedChangesKeyword?.category?.category}</p>
+                                                <p>Subject: {report.suggestedChangesKeyword?.subject?.name}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 p-3 rounded-lg">
+                                    <h4 className="font-medium text-gray-700 mb-2">Report Details</h4>
+                                    <div className="space-y-1 text-sm">
+                                        <p><span className="font-medium">Report Type:</span> {report.type}</p>
+                                        <p><span className="font-medium">Status:</span> {report.status}</p>
+                                        <p><span className="font-medium">Reported At:</span> {new Date(report.createdAt).toLocaleString()}</p>
+                                        <p><span className="font-medium">Reason:</span> {report.reason}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-2">
+                                    <Button
+                                        onClick={() => onReview(report._id)}
+                                        className="flex-1 sm:flex-none bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+                                        textButton="Review"
+                                    />
+                                    <Button
+                                        onClick={() => onDismiss(report._id)}
+                                        className="flex-1 sm:flex-none bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
+                                        textButton="Dismiss"
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </Card>
             ))}
