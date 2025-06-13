@@ -22,120 +22,90 @@ import ReportsTab from '@/components/admin/ReportsTab';
 import { useRouter } from 'next/navigation';
 import { FrontendRoutes } from '@/config/apiRoutes';
 import { useGetQuizzesOnlyPending } from '@/hooks/quiz/useGetQuizzesOnlyPending';
+import useApprovedReport from '@/hooks/Approved/useApprovedReport';
+import useApprovedQuiz from '@/hooks/Approved/useApprovedQuiz';
+import useApprovedKeyword from '@/hooks/Approved/useApprovedKeyword';
+import { toast } from 'react-hot-toast';
+import { useGetKeyword } from '@/hooks/keyword/useGetKeyword';
+import { useGetReport } from '@/hooks/report/useGetReport';
 
 const AdminPanel = () => {
     const { user, loading: userLoading } = useUser();
-    const [stats, setStats] = useState<any>(null);
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(true);
 
-    const getStats = useGetStatOverAll();
-    const {data:quiz, isLoading:isQuizLoading} = useGetQuizzesOnlyPending();
+    const { data: stats, isLoading: isStatsLoading } = useGetStatOverAll();
+    const { data: keywords = [], isLoading: isKeywordsLoading } = useGetKeyword({ status: 'pending' });
+    const { data: quiz = [], isLoading: isQuizLoading } = useGetQuizzesOnlyPending();
+    const { data: reports = [], isLoading: isReportsLoading } = useGetReport({ status: 'pending' });
+    const { mutate: approveReport } = useApprovedReport();
+    const { mutate: approveQuiz } = useApprovedQuiz();
+    const { mutate: approveKeyword } = useApprovedKeyword();
 
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
 
     useEffect(() => {
-        if (userLoading || isQuizLoading) {
-            return;
-        }
+        if (userLoading) return;
         if(!isAdmin) {
             router.push(FrontendRoutes.HOMEPAGE);
         }
-        const fetchStats = async () => {
-            try {
-                const Statresponse = await getStats();
-                setStats(Statresponse);
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-                setStats(null);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        if (user?.token) {
-            fetchStats();
-        }
-    }, [ router, user, isQuizLoading ]);
-
-    // Mock data for each tab
-    const mockKeywords = [
-        { id: '1', name: 'Strongyloides stercoralis', subject: 'Medicine', category: 'Parasitology' }
-    ];
-
-    const mockQuizzes = [
-        { id: '1', title: 'Parasitology Quiz #1', subject: 'Medicine', type: 'MCQ' }
-    ];
-
-    const mockReports = [
-        { 
-            id: '1', 
-            title: 'Incorrect Information', 
-            reporter: 'John Doe',
-            description: 'The information about Strongyloides lifecycle is incorrect...',
-            status: 'pending' as const
-        }
-    ];
-
-    const mockUsers = [
-        { id: '1', name: 'John Doe', email: 'john@example.com', role: 'User' }
-    ];
-
-    const mockSettings = [
-        {
-            id: '1',
-            name: 'Auto-approve Keywords',
-            description: 'Automatically approve keywords from trusted users',
-            enabled: false
-        },
-        {
-            id: '2',
-            name: 'Email Notifications',
-            description: 'Send email notifications for new reports',
-            enabled: true
-        }
-    ];
+    }, [router, user, isAdmin, userLoading]);
 
     // Handler functions
-    const handleKeywordApprove = (id: string) => {
-        console.log('Approve keyword:', id);
+    const handleReportApprove = (id: string) => handleReportAction(id, true);
+    const handleReportReject = (id: string) => handleReportAction(id, false);
+    const handleKeywordApprove = (id: string) => handleKeywordAction(id, true);
+    const handleKeywordReject = (id: string) => handleKeywordAction(id, false);
+    const handleQuizApprove = (id: string) => handleQuizAction(id, true);
+    const handleQuizReject = (id: string) => handleQuizAction(id, false);
+
+    const handleKeywordAction = (id: string, isApproved: boolean) => {
+        approveKeyword(
+            { keywordID: id, isApproved },
+            {
+                onSuccess: () => {
+                    toast.success(`Keyword has been ${isApproved ? 'approved' : 'rejected'}`);
+                },
+                onError: (error) => {
+                    toast.error(`Failed to ${isApproved ? 'approve' : 'reject'} keyword`);
+                    console.error(`Error ${isApproved ? 'approving' : 'rejecting'} keyword:`, error);
+                }
+            }
+        );
     };
 
-    const handleKeywordReject = (id: string) => {
-        console.log('Reject keyword:', id);
+    const handleQuizAction = (id: string, isApproved: boolean) => {
+        approveQuiz(
+            { quizID: id, isApproved },
+            {
+                onSuccess: () => {
+                    toast.success(`Quiz has been ${isApproved ? 'approved' : 'rejected'}`);
+                },
+                onError: (error) => {
+                    toast.error(`Failed to ${isApproved ? 'approve' : 'reject'} quiz`);
+                    console.error(`Error ${isApproved ? 'approving' : 'rejecting'} quiz:`, error);
+                }
+            }
+        );
     };
 
-    const handleQuizApprove = (id: string) => {
-        console.log('Approve quiz:', id);
+    const handleReportAction = (id: string, isApproved: boolean) => {
+        approveReport(
+            { reportID: id, isApproved },
+            {
+                onSuccess: () => {
+                    toast.success(`Report has been ${isApproved ? 'approved' : 'rejected'}`);
+                },
+                onError: (error) => {
+                    toast.error(`Failed to ${isApproved ? 'approve' : 'reject'} report`);
+                    console.error(`Error ${isApproved ? 'approving' : 'rejecting'} report:`, error);
+                }
+            }
+        );
     };
 
-    const handleQuizReject = (id: string) => {
-        console.log('Reject quiz:', id);
-    };
-
-    const handleReportReview = (id: string) => {
-        console.log('Review report:', id);
-    };
-
-    const handleReportDismiss = (id: string) => {
-        console.log('Dismiss report:', id);
-    };
-
-    const handleUserEdit = (id: string) => {
-        console.log('Edit user:', id);
-    };
-
-    const handleUserBan = (id: string) => {
-        console.log('Ban user:', id);
-    };
-
-    const handleSettingToggle = (id: string) => {
-        console.log('Toggle setting:', id);
-    };
-       
     return (
         <ProtectedPage>
-            {isLoading || userLoading ? (
+            {userLoading || isStatsLoading || isKeywordsLoading || isQuizLoading || isReportsLoading? (
                 <div className="min-h-screen flex items-center justify-center">
                     <LoaderIcon className="w-8 h-8 animate-spin text-primary" />
                 </div>
@@ -185,7 +155,7 @@ const AdminPanel = () => {
                                 </TabsContent>
                                 <TabsContent value="keywords">
                                     <KeywordsTab 
-                                        keywords={mockKeywords}
+                                        keywords={keywords}
                                         onApprove={handleKeywordApprove}
                                         onReject={handleKeywordReject}
                                     />
@@ -193,7 +163,7 @@ const AdminPanel = () => {
 
                                 <TabsContent value="quizzes">
                                     <QuizzesTab 
-                                        quizzes={quiz || []}
+                                        quizzes={quiz}
                                         onApprove={handleQuizApprove}
                                         onReject={handleQuizReject}
                                     />
@@ -201,9 +171,9 @@ const AdminPanel = () => {
 
                                 <TabsContent value="reports">
                                     <ReportsTab 
-                                        reports={mockReports}
-                                        onReview={handleReportReview}
-                                        onDismiss={handleReportDismiss}
+                                        reports={reports}
+                                        onReview={handleReportApprove}
+                                        onDismiss={handleReportReject}
                                     />
                                 </TabsContent>
                             </div>

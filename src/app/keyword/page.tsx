@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { IoIosArrowBack } from 'react-icons/io';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Category } from '@/types/api/Category';
-import { useGetKeywords } from '@/hooks/keyword/useGetKeyword';
+import { useGetKeyword } from '@/hooks/keyword/useGetKeyword';
 import AddKeywordModal from '@/components/keyword/AddKeywordModal';
 import { useUser } from '@/hooks/useUser';
 import { useDeleteKeyword } from '@/hooks/keyword/useDeleteKeyword';
@@ -26,7 +26,7 @@ const KeywordPage = () => {
     const subjectFromUrl = searchParams.get('subject');
     
     const { data: session } = useSession();
-    const { keywords, isLoading: keywordsLoading, error: keywordsError } = useGetKeywords();
+    const { data: keywords = [], isLoading: keywordsLoading, error: keywordsError } = useGetKeyword();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -197,7 +197,9 @@ const KeywordPage = () => {
     if (keywordsError || error) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-                <h1 className="text-2xl font-bold mb-4 text-red-500">{keywordsError || error}</h1>
+                <h1 className="text-2xl font-bold mb-4 text-red-500">
+                    {keywordsError?.toString() || error?.toString() || 'An error occurred'}
+                </h1>
             </div>
         );
     }

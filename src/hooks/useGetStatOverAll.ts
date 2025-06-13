@@ -1,20 +1,27 @@
-import { BackendRoutes } from "@/config/apiRoutes";
-import { Stat } from "@/types/api/Stat";
-import axios from "axios";
-import { useSession } from "next-auth/react";
+import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
+import { BackendRoutes } from '@/config/apiRoutes';
+import { Stat } from '@/types/api/Stat';
 
 export interface StatsOverviewProps {
     stat: Stat;
 }
+
 export const useGetStatOverAll = () => {
-  const { data: session } = useSession();
-  
-  return async () => {
-    if (!session?.user.token) throw new Error("Authentication required");
-    
-    const response = await axios.get(`${BackendRoutes.STAT}`, {
-      headers: { Authorization: `Bearer ${session.user.token}` },
+    const { data: session } = useSession();
+
+    return useQuery({
+        queryKey: ['stats'],
+        queryFn: async () => {
+            if (!session) throw new Error('No session');
+            const response = await axios.get(BackendRoutes.STAT, {
+                headers: {
+                    Authorization: `Bearer ${session.user.token}`,
+                },
+            });
+            return response.data.data;
+        },
+        enabled: !!session,
     });
-    return response.data.data as StatsOverviewProps;
-  };
 };

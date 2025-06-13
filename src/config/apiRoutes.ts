@@ -23,6 +23,9 @@ export enum BackendRoutes {
   SCORE_USERID = `${BackendRootRoutes}/score/user/:UserID`,
   REPORT = `${BackendRootRoutes}/report`,
   STAT = `${BackendRootRoutes}/stat/overall`,
+  APPROVED_QUIZ = `${BackendRootRoutes}/approved/quiz`,
+  APPROVED_KEYWORD = `${BackendRootRoutes}/approved/keyword`,
+  APPROVED_REPORT = `${BackendRootRoutes}/approved/report`,
 }
 
 export const getQuizByFilter = (subjectID?: string, categoryID?: string): string => {
