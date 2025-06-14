@@ -137,7 +137,6 @@ export default function Problem() {
 
         submitScore(scoreData);
         if (scoreId) {
-            console.log(scoreData);
             router.push(`/profile/${scoreId}`);
         }
     };
@@ -255,7 +254,13 @@ export default function Problem() {
                     {currentQuestion && (
                         <div className="mb-8 sm:mb-12 flex flex-col md:flex-row justify-center items-center gap-6 w-full">
                             {currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 && (
-                                <ImageGallery images={currentQuestion.quiz.img} />
+                                <div className="flex justify-center">
+                                    <ImageGallery
+                                        images={Array.isArray(currentQuestion.quiz.img)
+                                            ? currentQuestion.quiz.img.map(img => `http://localhost:5000${img}`)
+                                            : [`http://localhost:5000${currentQuestion.quiz.img}`]}
+                                    />
+                                </div>
                             )}
                             <div className={`w-full md:w-1/2 ${currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 ? 'md:pl-8' : ''} flex flex-col items-center justify-center px-6`}>
                                 <div className="flex justify-between w-full items-center mb-4">
@@ -416,7 +421,7 @@ export default function Problem() {
                                 </div>
                             </div>
                         
-                            <div className={`grid ${questionViewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4' : 'flex flex-col gap-3'}`}>
+                            <div className={`grid ${questionViewMode === 'grid' ? 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4' : 'flex flex-col gap-3'}`}>
                                 {showQuestion.map((q, index) => (
                                     <button
                                         key={index}
@@ -429,12 +434,13 @@ export default function Problem() {
                                                     : q.isCorrect === false ? 'bg-red-100 text-red-800 border border-red-300'
                                                         : 'bg-yellow-100 text-yellow-800 border border-yellow-300'
                                                 : ''}
-                                            ${questionViewMode === 'list' ? 'block w-full' : ''}
+                                            ${questionViewMode === 'list' ? 'block w-full' : 'inline-block w-full'}
                                             `}
                                         onClick={() => navigateToQuestion(index)}
                                     >
                                         {/* {index + 1}. {q.problem.substring(0, 50)}{q.problem.length > 50 ? '...' : ''} */}
-                                        {index + 1}. {q.quiz.question.substring(0, 25)}{q.quiz.question.length > 25 ? '...' : ''}
+                                        {/* {index + 1}. {q.quiz.question.substring(0, 25)}{q.quiz.question.length > 25 ? '...' : ''} */}
+                                        {questionViewMode === 'grid' ? index + 1 : `${index + 1}. ${q.quiz.question.substring(0, 40)}${q.quiz.question.length > 40 ? '...' : ''}`}
                                     </button>
                                 ))}
                             </div>

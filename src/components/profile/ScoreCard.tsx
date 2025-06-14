@@ -57,7 +57,8 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ scores }) => {
       <CardContent className="p-4 sm:p-6">
         <div className="space-y-8 sm:space-y-10">
           {Object.entries(scoresBySubject).map(([subjectName, subjectScores]) => {
-        const visibleScores = showAll ? subjectScores.slice().reverse() : subjectScores.slice().reverse().slice(0, 3);
+            const reversedScores = subjectScores.slice().reverse();
+        const visibleScores = showAll ? reversedScores : reversedScores.slice(0, 3);
 
         return (
           <div key={subjectName} className="space-y-3 sm:space-y-4">
