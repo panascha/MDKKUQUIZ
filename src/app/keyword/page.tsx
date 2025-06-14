@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios, { AxiosError } from 'axios';
@@ -44,6 +44,75 @@ const KeywordPage = () => {
     const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectFromUrl);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+    // Memoize filter options
+    const filterOptions = useMemo(() => ({
+        searchTerm,
+        selectedSubject,
+        selectedCategory,
+    }), [searchTerm, selectedSubject, selectedCategory]);
+
+    // Filter keywords
+    const filteredKeywords = useMemo(() => {
+        if (!keywords || keywords.length === 0) {
+            return [];
+        }
+
+        // First filter by user role
+        let roleFilteredKeywords = keywords;
+        if (!isAdmin && !isSAdmin) {
+            roleFilteredKeywords = keywords.filter((k: Keyword) => k.status === "approved");
+        } else if (isAdmin && !isSAdmin) {
+            roleFilteredKeywords = keywords.filter((k: Keyword) => k.status !== "reported");
+        }
+
+        const operators = ['and', 'or', 'not'];
+        const searchTerms =
+            searchTerm
+                .match(/(?:[^\s"“"]+|"[^"]*"|"[^"]*")+/g)
+                ?.map(term => term.replace(/["""]/g, '').toLowerCase()) || [];
+
+        const subjectFilter = (k: Keyword) => {
+            return !selectedSubject || (k.subject._id === selectedSubject);
+        };
+
+        const categoryFilter = (k: Keyword) => {
+            return !selectedCategory || (k.category._id === selectedCategory);
+        };
+
+        if (!searchTerms.length) {
+            return roleFilteredKeywords.filter((k: Keyword) => subjectFilter(k) && categoryFilter(k));
+        }
+
+        return roleFilteredKeywords.filter((k: Keyword) => {
+            let includeKeyword: boolean | null = null;
+            let currentOperator = 'or';
+
+            for (let i = 0; i < searchTerms.length; i++) {
+                const term = searchTerms[i];
+
+                if (operators.includes(term)) {
+                    currentOperator = term;
+                    continue;
+                }
+
+                const termInKeyword =
+                    (k.name && k.name.toLowerCase().includes(term)) ||
+                    (Array.isArray(k.keywords) && k.keywords.some((c: string) => c.toLowerCase().includes(term)));
+
+                if (includeKeyword === null) {
+                    includeKeyword = termInKeyword;
+                } else if (currentOperator === 'and') {
+                    includeKeyword = includeKeyword && termInKeyword;
+                } else if (currentOperator === 'or') {
+                    includeKeyword = includeKeyword || termInKeyword;
+                } else if (currentOperator === 'not') {
+                    includeKeyword = includeKeyword && !termInKeyword;
+                }
+            }
+            return !!includeKeyword && subjectFilter(k) && categoryFilter(k);
+        });
+    }, [keywords, searchTerm, selectedSubject, selectedCategory, isAdmin, isSAdmin]);
+
     useEffect(() => {
         if (!session) return;
 
@@ -79,100 +148,6 @@ const KeywordPage = () => {
             router.push('/keyword');
         }
     }, [selectedSubject, router]);
-
-    type FilterOptions = {
-        searchTerm: string;
-        selectedSubject: string | null;
-        selectedCategory: string | null;
-    };
-
-    const useFilteredKeywords = (
-        keywords: Keyword[] | null,
-        { searchTerm, selectedSubject, selectedCategory }: FilterOptions
-    ) => {
-        const [filteredKeywords, setFilteredKeywords] = useState<Keyword[]>([]);
-
-        const filterKeywords = useCallback(
-            (
-                currentKeywords: Keyword[] | null,
-                currentSearchTerm: string,
-                currentSubject: string | null,
-                currentCategory: string | null
-            ) => {
-                if (!currentKeywords || currentKeywords.length === 0) {
-                    return [];
-                }
-
-                // First filter by user role
-                let roleFilteredKeywords = currentKeywords;
-                if (!isAdmin && !isSAdmin) {
-                    roleFilteredKeywords = currentKeywords.filter(k => k.status === "approved");
-                } else if (isAdmin && !isSAdmin) {
-                    roleFilteredKeywords = currentKeywords.filter(k => k.status !== "reported");
-                }
-
-                const operators = ['and', 'or', 'not'];
-                const searchTerms =
-                    currentSearchTerm
-                        .match(/(?:[^\s"“"]+|"[^"]*"|"[^"]*")+/g)
-                        ?.map(term => term.replace(/["""]/g, '').toLowerCase()) || [];
-                const subjectFilter = (q: Keyword) => {
-                    return !currentSubject || (q.subject._id === currentSubject);
-                };
-                const categoryFilter = (q: Keyword) => {
-                    return !currentCategory || (q.category._id === currentCategory);
-                };
-
-                if (!searchTerms.length) {
-                    return roleFilteredKeywords.filter(q => subjectFilter(q) && categoryFilter(q));
-                }
-
-                return roleFilteredKeywords.filter(q => {
-                    let includeQuestion: boolean | null = null;
-                    let currentOperator = 'or';
-
-                    for (let i = 0; i < searchTerms.length; i++) {
-                        const term = searchTerms[i];
-
-                        if (operators.includes(term)) {
-                            currentOperator = term;
-                            continue;
-                        }
-
-                        const termInQuestion =
-                            (q.name && q.name.toLowerCase().includes(term)) ||
-                            (Array.isArray(q.keywords) && q.keywords.some(c => c.toLowerCase().includes(term)))
-
-                        if (includeQuestion === null) {
-                            includeQuestion = termInQuestion;
-                        } else if (currentOperator === 'and') {
-                            includeQuestion = includeQuestion && termInQuestion;
-                        } else if (currentOperator === 'or') {
-                            includeQuestion = includeQuestion || termInQuestion;
-                        } else if (currentOperator === 'not') {
-                            includeQuestion = includeQuestion && !termInQuestion;
-                        }
-                    }
-                    return !!includeQuestion && subjectFilter(q) && categoryFilter(q);
-                });
-            },
-            [isAdmin, isSAdmin]
-        );
-
-        useEffect(() => {
-            setFilteredKeywords(
-                filterKeywords(keywords, searchTerm, selectedSubject, selectedCategory)
-            );
-        }, [keywords, searchTerm, selectedSubject, selectedCategory, filterKeywords]);
-
-        return filteredKeywords;
-    };
-
-    const filteredKeywords = useFilteredKeywords(keywords, {
-        searchTerm,
-        selectedSubject,
-        selectedCategory,
-    });
 
     const handleDeleteKeyword = async (keywordId: string) => {
         if (!window.confirm('Are you sure you want to delete this keyword?')) {
@@ -314,7 +289,7 @@ const KeywordPage = () => {
                     </div>
                 </section>
                 <div className="grid gap-6 w-full max-w-5xl">
-                    {filteredKeywords.map((keyword) => (
+                    {filteredKeywords.map((keyword: Keyword) => (
                         <div key={keyword._id} className="relative group">
                             <Link href={`/keyword/${keyword._id}`} className="block">
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
@@ -367,7 +342,7 @@ const KeywordPage = () => {
                                     <div className="mt-4 space-y-1 text-sm text-gray-600">
                                         <p className="font-medium">Keywords:</p>
                                         <div className="flex flex-wrap gap-2">
-                                            {keyword.keywords.map((kw, index) => (
+                                            {keyword.keywords.map((kw: string, index: number) => (
                                                 <span key={index} className="px-2 py-1 bg-gray-100 rounded-md">
                                                     {kw}
                                                 </span>

@@ -15,10 +15,10 @@ export const useGetKeyword = (options?: UseGetKeywordOptions) => {
         queryKey: ['keywords', options?.status],
         queryFn: async () => {
             if (!session) throw new Error('No session');
-            const response = await axios.get(BackendRoutes.KEYWORD, {
-                headers: {
-                    Authorization: `Bearer ${session.user.token}`,
-                },
+                const response = await axios.get(BackendRoutes.KEYWORD, {
+                    headers: {
+                        Authorization: `Bearer ${session.user.token}`,
+                    },
                 params: {
                     status: options?.status
                 }

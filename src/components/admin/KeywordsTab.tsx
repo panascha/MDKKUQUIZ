@@ -27,7 +27,7 @@ const KeywordsTab: React.FC<KeywordsTabProps> = ({ keywords, onApprove, onReject
                         {/* Header with name and status */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div className="space-y-1">
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">{keyword.name}</h3>
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900">{keyword.name}</h3>
                                 <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <User className="w-4 h-4" />
                                     <span>Created by: {keyword.user?.name || 'Unknown'}</span>
@@ -66,7 +66,7 @@ const KeywordsTab: React.FC<KeywordsTabProps> = ({ keywords, onApprove, onReject
                                         className="px-2 py-1 bg-gray-100 rounded-md text-sm text-gray-700"
                                     >
                                         {kw}
-                                    </span>
+                                </span>
                                 ))}
                             </div>
                         </div>
@@ -74,17 +74,17 @@ const KeywordsTab: React.FC<KeywordsTabProps> = ({ keywords, onApprove, onReject
                         {/* Action Buttons */}
                         {keyword.status === 'pending' && (
                             <div className="flex gap-2 sm:gap-3 mt-2">
-                                <Button
+                            <Button
                                     onClick={() => onApprove(keyword._id)}
-                                    className="flex-1 sm:flex-none bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
-                                    textButton="Approve"
-                                />
-                                <Button
+                                className="flex-1 sm:flex-none bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+                                textButton="Approve"
+                            />
+                            <Button
                                     onClick={() => onReject(keyword._id)}
-                                    className="flex-1 sm:flex-none bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
-                                    textButton="Reject"
-                                />
-                            </div>
+                                className="flex-1 sm:flex-none bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
+                                textButton="Reject"
+                            />
+                        </div>
                         )}
                     </div>
                 </Card>

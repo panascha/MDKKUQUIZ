@@ -4,6 +4,7 @@ import Button from '@/components/ui/Button';
 import { CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Report } from '@/types/api/Report';
 import { useState } from 'react';
+import ImageGallery from '../magicui/ImageGallery';
 
 interface ReportsTabProps {
     reports: Report[];
@@ -63,8 +64,31 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                 <p>Answer: {report.originalQuiz?.correctAnswer}</p>
                                                 <p>Category: {report.originalQuiz?.category?.category}</p>
                                                 <p>Subject: {report.originalQuiz?.subject?.name}</p>
+                                                {report.originalQuiz?.choice && report.originalQuiz.choice.length > 0 && (
+                                                    <div className="mt-2">
+                                                        <p className="font-medium mb-1">Choices:</p>
+                                                        <ul className="list-disc pl-5 space-y-1">
+                                                            {report.originalQuiz.choice.map((choice, index) => (
+                                                                <li key={index} className="text-sm">
+                                                                    {String.fromCharCode(65 + index)}. {choice}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
                                                 {report.originalQuiz?.img && report.originalQuiz.img.length > 0 && (
-                                                    <p className="text-sm text-gray-500">Contains {report.originalQuiz.img.length} image(s)</p>
+                                                    <div className="mt-2">
+                                                        <p className="font-medium mb-1">Images:</p>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {report.originalQuiz.img.map((img, index) => (
+                                                                <div key={index} className="relative aspect-square">
+                                                                    <ImageGallery
+                                                                        images={[`http://localhost:5000${img}`]}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                         ) : (
@@ -84,8 +108,31 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                 <p>Answer: {report.suggestedChanges?.correctAnswer}</p>
                                                 <p>Category: {report.suggestedChanges?.category?.category}</p>
                                                 <p>Subject: {report.suggestedChanges?.subject?.name}</p>
+                                                {report.suggestedChanges?.choice && report.suggestedChanges.choice.length > 0 && (
+                                                    <div className="mt-2">
+                                                        <p className="font-medium mb-1">Choices:</p>
+                                                        <ul className="list-disc pl-5 space-y-1">
+                                                            {report.suggestedChanges.choice.map((choice, index) => (
+                                                                <li key={index} className="text-sm">
+                                                                    {String.fromCharCode(65 + index)}. {choice}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
                                                 {report.suggestedChanges?.img && report.suggestedChanges.img.length > 0 && (
-                                                    <p className="text-sm text-gray-500">Contains {report.suggestedChanges.img.length} image(s)</p>
+                                                    <div className="mt-2">
+                                                        <p className="font-medium mb-1">Images:</p>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {report.suggestedChanges.img.map((img, index) => (
+                                                                <div key={index} className="relative aspect-square">
+                                                                    <ImageGallery
+                                                                        images={[`http://localhost:5000${img}`]}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                         ) : (

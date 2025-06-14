@@ -17,13 +17,13 @@ export const useGetQuizzes = ({
   categoryID,
   transformData 
 }: UseGetQuizzesProps = {}) => {
-  const { data: session } = useSession();
-  
+    const { data: session } = useSession();
+
   return useQuery({
     queryKey: ['quizzes', { subjectID, status, categoryID }],
     queryFn: async () => {
-      if (!session?.user.token) throw new Error("Authentication required");
-      
+        if (!session?.user.token) throw new Error("Authentication required");
+
       const url = getQuizByFilter(subjectID, categoryID);
       const finalUrl = status ? `${url}?status=${status}` : url;
       
