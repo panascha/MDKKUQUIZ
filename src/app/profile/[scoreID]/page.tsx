@@ -45,20 +45,48 @@ const QuizResultPage = () => {
         // Then apply search if there's a search term
         if (!searchTerm.trim()) return filterMatch && bookmarkMatch;
 
-        const searchTerms = searchTerm.toLowerCase().split(' ');
+        const operators = ['and', 'or', 'not'];
+        const searchTerms =
+            searchTerm
+                .match(/(?:[^\s"“"]+|"[^"]*"|"[^"]*")+/g)
+                ?.map(term => term.replace(/["""]/g, '').toLowerCase()) || [];
+
         const questionText = question.Quiz.question.toLowerCase();
         const answerText = question.Answer.toLowerCase();
         const categoryText = question.Quiz.category.category.toLowerCase();
         const choiceText = question.Quiz.choice.map(choice => choice.toLowerCase()).join(' ');
         const correctAnswerText = question.Quiz.correctAnswer.join(' ').toLowerCase();
 
-        return filterMatch && bookmarkMatch && searchTerms.every(term => 
-            questionText.includes(term) || 
-            answerText.includes(term) || 
-            categoryText.includes(term) ||
-            choiceText.includes(term) ||
-            correctAnswerText.includes(term)
-        );
+        let includeQuestion: boolean | null = null;
+        let currentOperator = 'or';
+
+        for (let i = 0; i < searchTerms.length; i++) {
+            const term = searchTerms[i];
+
+            if (operators.includes(term)) {
+                currentOperator = term;
+                continue;
+            }
+
+            const termInQuestion =
+                questionText.includes(term) ||
+                answerText.includes(term) ||
+                categoryText.includes(term) ||
+                choiceText.includes(term) ||
+                correctAnswerText.includes(term);
+
+            if (includeQuestion === null) {
+                includeQuestion = termInQuestion;
+            } else if (currentOperator === 'and') {
+                includeQuestion = includeQuestion && termInQuestion;
+            } else if (currentOperator === 'or') {
+                includeQuestion = includeQuestion || termInQuestion;
+            } else if (currentOperator === 'not') {
+                includeQuestion = includeQuestion && !termInQuestion;
+            }
+        }
+
+        return filterMatch && bookmarkMatch && (includeQuestion === null ? true : includeQuestion);
     });
 
     useEffect(() => {
