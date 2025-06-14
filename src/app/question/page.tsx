@@ -388,6 +388,13 @@ const QuestionPage = () => {
                                                         {question.subject.name}
                                                     </p>
                                                 </div>
+                                                <div className="absolute bottom-2 right-2">
+                                                    {question.img && question.img.length > 0 && (
+                                                        <Badge className="px-2 py-1 rounded-md text-xs font-medium border border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-300 transition-colors duration-300">
+                                                            Image
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                                 {isAdmin && (
                                                     <div className="flex items-center gap-2">
                                                         <Badge
@@ -425,11 +432,11 @@ const QuestionPage = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="mt-4 space-y-1 text-sm text-gray-600">
-                                                <p className="font-medium">Choices:</p>
-                                                {question.choice.map((choice, index) => (
+                                            <div className="mt-4 text-sm text-gray-600 flex flex-row">
+                                                <p className="font-medium">Answer:</p>
+                                                {question.correctAnswer.map((answer, index) => (
                                                     <p key={index} className="ml-4">
-                                                        {String.fromCharCode(65 + index)}. {choice}
+                                                        {answer}
                                                     </p>
                                                 ))}
                                             </div>
