@@ -7,6 +7,7 @@ import { IoMdNotificationsOutline } from "react-icons/io";
 import toast from "react-hot-toast";
 import { FrontendRoutes } from '@/config/apiRoutes';
 import { useRouter } from 'next/navigation';
+import { Role_type } from '@/config/role';
 
 export default function Navbar() {
     const { user, logout } = useUser();
@@ -33,6 +34,7 @@ export default function Navbar() {
 
     const toggleMenu = () => setIsMenuOpen(prev => !prev);
     const toggleProfile = () => setIsProfileOpen(prev => !prev);
+    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
 
     return (
         <div className="fixed top-0 left-0 w-full z-[200]">
@@ -68,6 +70,14 @@ export default function Navbar() {
                             >
                                 Profile
                             </button>
+                            {isAdmin && (
+                                <button
+                                    onClick={() => router.push(FrontendRoutes.ADMIN)}
+                                    className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
+                                >
+                                    Admin
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

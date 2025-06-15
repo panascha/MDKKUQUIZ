@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
@@ -40,10 +40,17 @@ const QuestionPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectFromUrl);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    
+    // Memoize filter options
+    const filterOptions = useMemo(() => ({
+        searchTerm,
+        selectedSubject,
+        selectedCategory,
+    }), [searchTerm, selectedSubject, selectedCategory]);
+
     // Check if user is admin or S-admin
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
     const isSAdmin = user?.role === Role_type.SADMIN;
-    
 
     const deleteQuizMutation = useDeleteQuiz();
 
@@ -66,7 +73,7 @@ const QuestionPage = () => {
                 });
                 // Filter questions based on user role
                 const filteredQuestions = isAdmin 
-                    ? response.data.data 
+                    ? response.data.data.filter((q: Quiz) => q.status !== "reported")
                     : response.data.data.filter((q: Quiz) => q.status === "approved");
                 setQuestions(filteredQuestions);
                 console.log("Fetched questions:", filteredQuestions);
@@ -118,91 +125,60 @@ const QuestionPage = () => {
         }
     }, [selectedSubject, router]);
 
-    type FilterOptions = {
-        searchTerm: string;
-        selectedSubject: string | null;
-        selectedCategory: string | null;
-    };
+    // Filter questions
+    const filteredQuestions = useMemo(() => {
+        if (!questions || questions.length === 0) {
+            return [];
+        }
 
-    const useFilteredQuestions = (
-        questions: Quiz[] | null,
-        { searchTerm, selectedSubject, selectedCategory }: FilterOptions
-    ) => {
-        const [filteredQuestions, setFilteredQuestions] = useState<Quiz[]>([]);
+        const operators = ['and', 'or', 'not'];
+        const searchTerms =
+            searchTerm
+                .match(/(?:[^\s"“"]+|"[^"]*"|"[^"]*")+/g)
+                ?.map(term => term.replace(/["""]/g, '').toLowerCase()) || [];
 
-        const filterQuestions = useCallback(
-            (
-                currentQuestions: Quiz[] | null,
-                currentSearchTerm: string,
-                currentSubject: string | null,
-                currentCategory: string | null
-            ) => {
-                if (!currentQuestions || currentQuestions.length === 0) {
-                    return [];
-                }
-                const operators = ['and', 'or', 'not'];
-                const searchTerms =
-                    currentSearchTerm
-                        .match(/(?:[^\s"“"]+|"[^"]*"|"[^"]*")+/g)
-                        ?.map(term => term.replace(/["""]/g, '').toLowerCase()) || [];
-                const subjectFilter = (q: Quiz) => {
-                    return !currentSubject || (q.subject._id === currentSubject);
-                };
-                const categoryFilter = (q: Quiz) => {
-                    return !currentCategory || (q.category._id === currentCategory);
-                };
+        const subjectFilter = (q: Quiz) => {
+            return !selectedSubject || (q.subject._id === selectedSubject);
+        };
 
-                if (!searchTerms.length) {
-                    return currentQuestions.filter(q => subjectFilter(q) && categoryFilter(q));
+        const categoryFilter = (q: Quiz) => {
+            return !selectedCategory || (q.category._id === selectedCategory);
+        };
+
+        if (!searchTerms.length) {
+            return questions.filter(q => subjectFilter(q) && categoryFilter(q));
+        }
+
+        return questions.filter(q => {
+            let includeQuestion: boolean | null = null;
+            let currentOperator = 'or';
+
+            for (let i = 0; i < searchTerms.length; i++) {
+                const term = searchTerms[i];
+
+                if (operators.includes(term)) {
+                    currentOperator = term;
+                    continue;
                 }
 
-                return currentQuestions.filter(q => {
-                    let includeQuestion: boolean | null = null;
-                    let currentOperator = 'or';
+                const termInQuestion =
+                    (q.question && q.question.toLowerCase().includes(term)) ||
+                    (Array.isArray(q.choice) && q.choice.some(c => c.toLowerCase().includes(term))) ||
+                    (Array.isArray(q.correctAnswer) && q.correctAnswer.some(a => a.toLowerCase().includes(term)));
 
-                    for (let i = 0; i < searchTerms.length; i++) {
-                        const term = searchTerms[i];
-
-                        if (operators.includes(term)) {
-                            currentOperator = term;
-                            continue;
-                        }
-
-                        const termInQuestion =
-                            (q.question && q.question.toLowerCase().includes(term)) ||
-                            (Array.isArray(q.choice) && q.choice.some(c => c.toLowerCase().includes(term))) ||
-                            (Array.isArray(q.correctAnswer) && q.correctAnswer.some(a => a.toLowerCase().includes(term)));
-
-                        if (includeQuestion === null) {
-                            includeQuestion = termInQuestion;
-                        } else if (currentOperator === 'and') {
-                            includeQuestion = includeQuestion && termInQuestion;
-                        } else if (currentOperator === 'or') {
-                            includeQuestion = includeQuestion || termInQuestion;
-                        } else if (currentOperator === 'not') {
-                            includeQuestion = includeQuestion && !termInQuestion;
-                        }
-                    }
-                    return !!includeQuestion && subjectFilter(q) && categoryFilter(q);
-                });
-            },
-            []
-        );
-
-        useEffect(() => {
-            setFilteredQuestions(
-                filterQuestions(questions, searchTerm, selectedSubject, selectedCategory)
-            );
-        }, [questions, searchTerm, selectedSubject, selectedCategory, filterQuestions]);
-
-        return filteredQuestions;
-    };
-
-    const filteredQuestions = useFilteredQuestions(questions, {
-        searchTerm,
-        selectedSubject,
-        selectedCategory,
-    });
+                if (includeQuestion === null) {
+                    includeQuestion = termInQuestion;
+                } else if (currentOperator === 'and') {
+                    includeQuestion = includeQuestion && termInQuestion;
+                } else if (currentOperator === 'or') {
+                    includeQuestion = includeQuestion || termInQuestion;
+                } else if (currentOperator === 'not') {
+                    includeQuestion = includeQuestion && !termInQuestion;
+                }
+            }
+            return !!includeQuestion && subjectFilter(q) && categoryFilter(q);
+        });
+    }, [questions, searchTerm, selectedSubject, selectedCategory]);
 
     const handleDeleteQuiz = async (quizId: string) => {
         if (!window.confirm('Are you sure you want to delete this question?')) {
@@ -222,7 +198,7 @@ const QuestionPage = () => {
                 },
             });
             const filteredQuestions = isAdmin 
-                ? response.data.data 
+                ? response.data.data.filter((q: Quiz) => q.status !== "reported")
                 : response.data.data.filter((q: Quiz) => q.status === "approved");
             setQuestions(filteredQuestions);
         } catch (error: any) {

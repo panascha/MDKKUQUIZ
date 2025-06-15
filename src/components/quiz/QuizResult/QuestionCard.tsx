@@ -3,6 +3,7 @@ import AddReportModal from '@/components/Report/AddQuizReportModal';
 import { Question } from '@/types/api/Score';
 import { useState } from 'react';
 import { useUser } from '@/hooks/useUser';
+import transformUrl from '@/utils/transformUrl';
 
 interface QuizQuestionCardProps {
     question: Question;
@@ -34,7 +35,9 @@ export const QuizQuestionCard = ({ question, index }: QuizQuestionCardProps) => 
                 {question.Quiz.question}
             </p>
             <div className="flex flex-col md:flex-row items-center gap-8 ml-4 md:gap-6 md:justify-between">
-                <ImageGallery images={question.Quiz.img} />
+                {question.Quiz.img && question.Quiz.img.length > 0 && (
+                    <ImageGallery images={question.Quiz.img.map(img => `http://localhost:5000${img}`)} />
+                )}
                 <div className="md:order-2 md:w-2/3">
                     <p className="mb-1"><strong>Your Answer: </strong>{question.Answer}</p>
                     <p className="mb-1"><strong>Correct answer: </strong>{question.Quiz.correctAnswer}</p>

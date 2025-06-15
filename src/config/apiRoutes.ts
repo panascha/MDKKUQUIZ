@@ -23,6 +23,9 @@ export enum BackendRoutes {
   SCORE_USERID = `${BackendRootRoutes}/score/user/:UserID`,
   REPORT = `${BackendRootRoutes}/report`,
   STAT = `${BackendRootRoutes}/stat/overall`,
+  APPROVED_QUIZ = `${BackendRootRoutes}/approved/quiz`,
+  APPROVED_KEYWORD = `${BackendRootRoutes}/approved/keyword`,
+  APPROVED_REPORT = `${BackendRootRoutes}/approved/report`,
 }
 
 export const getQuizByFilter = (subjectID?: string, categoryID?: string): string => {
@@ -60,6 +63,7 @@ export enum FrontendRootRoutes {
   QUESTION = "/question",
   KEYWORD = "/keyword",
   QUESTION_CREATE = "/question/create",
+  ADMIN = "/admin",
 }
 export enum FrontendRoutes {
   HOMEPAGE = FrontendRootRoutes.HOMEPAGE,
@@ -70,4 +74,5 @@ export enum FrontendRoutes {
   QUESTION = `${FrontendRootRoutes.QUESTION}`,
   KEYWORD = `${FrontendRootRoutes.KEYWORD}`,
   QUESTION_CREATE = `${FrontendRootRoutes.QUESTION_CREATE}`,
+  ADMIN = `${FrontendRootRoutes.ADMIN}`,
 }

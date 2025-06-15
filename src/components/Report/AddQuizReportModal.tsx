@@ -32,7 +32,7 @@ interface AddReportModalProps {
   userProp: UserProps;
 }
 
-const AddReportModal: React.FC<AddReportModalProps> = ({
+const AddQuizReportModal: React.FC<AddReportModalProps> = ({
   showModal,
   setShowModal,
   originalQuiz,
@@ -235,98 +235,95 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
           )}
 
           {/* Suggested Changes Section */}
-          <div className="border-b pb-4">
-            <div>
-              <label className="mb-1 block text-sm font-semibold">Question</label>
-              <input
-                type="text"
-                name="question"
-                value={formData.question}
-                onChange={handleInputChange}
-                required
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-              />
-            </div>
+          <div>
+            <label className="mb-1 block text-sm font-semibold">Question</label>
+            <input
+              type="text"
+              name="question"
+              value={formData.question}
+              onChange={handleInputChange}
+              required
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+            />
+          </div>
 
-            {/* Choices */}
-            {originalQuiz.choice ? (
-              <div>
-                <label className="mb-1 block text-sm font-semibold">Choices</label>
-                {formData.choice.map((choice, index) => (
-                  <div key={index} className="mb-2">
-                    <input
-                      type="text"
-                      value={choice}
-                      onChange={(e) => handleChoiceChange(index, e.target.value)}
-                      required
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : null}
-
-            {/* Correct Answers */}
+          {/* Choices */}
+          {originalQuiz.choice ? (
             <div>
-              <label className="mb-1 block text-sm font-semibold">Correct Answers</label>
-              {formData.correctAnswer.map((answer, index) => (
+              <label className="mb-1 block text-sm font-semibold">Choices</label>
+              {formData.choice.map((choice, index) => (
                 <div key={index} className="mb-2">
                   <input
                     type="text"
-                    value={answer}
-                    onChange={(e) => handleCorrectAnswerChange(index, e.target.value)}
+                    value={choice}
+                    onChange={(e) => handleChoiceChange(index, e.target.value)}
                     required
                     className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                   />
                 </div>
               ))}
             </div>
+          ) : null}
 
-            {/* New Image Upload */}
-            <div>
-              <label htmlFor="image" className="mb-1 block text-sm font-semibold">
-                Upload New Image (optional)
-              </label>
-              <input
-                type="file"
-                name="image"
-                id="image"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-              />
-              {newImage && (
-                <div className="mt-2">
-                  <div className="relative aspect-square w-32">
-                    <Image
-                      src={URL.createObjectURL(newImage)}
-                      alt="New image preview"
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeNewImage}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-1">{newImage.name}</p>
+          {/* Correct Answers */}
+          <div>
+            <label className="mb-1 block text-sm font-semibold">Correct Answers</label>
+            {formData.correctAnswer.map((answer, index) => (
+              <div key={index} className="mb-2">
+                <input
+                  type="text"
+                  value={answer}
+                  onChange={(e) => handleCorrectAnswerChange(index, e.target.value)}
+                  required
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* New Image Upload */}
+          <div>
+            <label htmlFor="image" className="mb-1 block text-sm font-semibold">
+              Upload New Image (optional)
+            </label>
+            <input
+              type="file"
+              name="image"
+              id="image"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+            />
+            {newImage && (
+              <div className="mt-2">
+                <div className="relative aspect-square w-32">
+                  <Image
+                    src={URL.createObjectURL(newImage)}
+                    alt="New image preview"
+                    fill
+                    className="object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeNewImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
                 </div>
-              )}
-            </div>
+                <p className="text-sm text-gray-600 mt-1">{newImage.name}</p>
+              </div>
+            )}
           </div>
 
           {/* Error Message */}
           {error && (
             <p className="text-red-500 text-sm">{error}</p>
           )}
-        </form>
 
-        {/* Buttons - Fixed at bottom */}
-        <DialogFooter className="flex justify-between pt-4 mt-auto border-t">
+          {/* Submit Button */}
           <Button
+            type="submit"
             textButton="Submit Report"
             disabled={createQuizMutation.isPending || createReportMutation.isPending}
             className="bg-blue-500 hover:bg-blue-600"
@@ -340,18 +337,18 @@ const AddReportModal: React.FC<AddReportModalProps> = ({
               "Submit Report"
             )}
           </Button>
+        </form>
 
-          <DialogClose asChild>
-            <Button
-              textButton="Cancel"
-              className="bg-red-500 hover:bg-red-800"
-              onClick={resetForm}
-            />
-          </DialogClose>
-        </DialogFooter>
+        <DialogClose asChild>
+          <Button
+            textButton="Cancel"
+            className="bg-red-500 hover:bg-red-800"
+            onClick={resetForm}
+          />
+        </DialogClose>
       </DialogContent>
     </Dialog>
   );
 };
 
-export default AddReportModal; 
+export default AddQuizReportModal; 

@@ -13,9 +13,6 @@ interface ScoreCardProps {
 }
 
 const ScoreCard: React.FC<ScoreCardProps> = ({ scores }) => {
-  const {user} = useUser();
-  const admin = user?.role == Role_type.SADMIN;
-
   const deleteScore = useDeleteScore();
   // Group scores by subject
   const scoresBySubject = scores.reduce((acc, score) => {
@@ -50,7 +47,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ scores }) => {
   const [showAll, setShowAll] = useState(false);
 
   return (
-    <Card className="w-full shadow-xl transition-all duration-300 hover:shadow-2xl bg-white/50 backdrop-blur-sm">
+    <Card className="w-full shadow-xl transition-all duration-300 hover:shadow-2xl bg-white/50 backdrop-blur-sm ">
       <CardHeader className="border-b border-gray-100 px-4 sm:px-6">
         <CardTitle className="text-xl sm:text-2xl font-bold text-sky-800">Your Scores</CardTitle>
       </CardHeader>

@@ -10,7 +10,7 @@ const ProtectedPage = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.replace(FrontendRoutes.HOMEPAGE);
+      router.push(FrontendRoutes.MAIN);
     }
   }, [status, router]);
 

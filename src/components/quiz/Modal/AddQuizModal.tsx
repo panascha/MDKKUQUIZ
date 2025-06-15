@@ -200,13 +200,13 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
+      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Quiz</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit}
-          className="w-full space-y-4"
+          className="w-full space-y-4 pb-4"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Subject Selection */}
@@ -359,10 +359,10 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
               accept="image/*"
               onChange={handleImageChange}
               multiple
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
+              className="w-full border border-gray-300 rounded-lg px-2 sm:px-3 py-2 text-sm file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
             />
             {imageFiles.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                 {imageFiles.map((file, index) => (
                   <div key={index} className="relative group">
                     <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
@@ -376,9 +376,9 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     </button>
                     <p className="mt-1 text-xs text-gray-600 truncate">{file.name}</p>
                   </div>
@@ -396,10 +396,10 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
           )}
 
           {/* Buttons */}
-          <DialogFooter className="flex justify-between pt-4">
+          <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4 pt-4 sticky bottom-0 bg-white">
             <Button
               textButton="Submit"
-              className="bg-blue-500 hover:bg-blue-600"
+              className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
             >
               Submit
             </Button>
@@ -407,7 +407,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
             <DialogClose asChild>
               <Button
                 textButton="Cancel"
-                className="bg-red-500 hover:bg-red-800"
+                className="w-full sm:w-auto bg-red-500 hover:bg-red-800"
                 onClick={resetForm}
               />
             </DialogClose>

@@ -16,6 +16,7 @@ import AddReportModal from '@/components/Report/AddQuizReportModal';
 import { useUser } from '@/hooks/useUser';
 import { Badge } from '@/components/ui/Badge';
 import { Role_type } from '@/config/role';
+import AddQuizReportModal from '@/components/Report/AddQuizReportModal';
 
 const QuestionDetail = () => {
     const params = useParams();
@@ -225,7 +226,7 @@ const QuestionDetail = () => {
             </div>
 
             {/* Report Modal */}
-            <AddReportModal
+            <AddQuizReportModal
                 showModal={showReportModal}
                 setShowModal={setShowReportModal}
                 originalQuiz={question}

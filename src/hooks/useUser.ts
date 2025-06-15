@@ -13,7 +13,7 @@ const getUserProfile = async (token: string) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data.data;
+    return {...response.data.data, token};
   } catch (error) {
     throw new Error(
       "Failed to get user profile: " + (error as AxiosError).message,

@@ -2,23 +2,23 @@ import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import { BackendRoutes } from '@/config/apiRoutes';
-import { Keyword } from '@/types/api/Keyword';
+import { Report } from '@/types/api/Report';
 
-interface UseGetKeywordOptions {
-    status?: 'pending' | 'approved' | 'rejected' | 'reported';
+interface UseGetReportOptions {
+    status?: 'pending' | 'approved' | 'rejected';
 }
 
-export const useGetKeyword = (options?: UseGetKeywordOptions) => {
+export const useGetReport = (options?: UseGetReportOptions) => {
     const { data: session } = useSession();
 
     return useQuery({
-        queryKey: ['keywords', options?.status],
+        queryKey: ['reports', options?.status],
         queryFn: async () => {
             if (!session) throw new Error('No session');
-                const response = await axios.get(BackendRoutes.KEYWORD, {
-                    headers: {
-                        Authorization: `Bearer ${session.user.token}`,
-                    },
+            const response = await axios.get(BackendRoutes.REPORT, {
+                headers: {
+                    Authorization: `Bearer ${session.user.token}`,
+                },
                 params: {
                     status: options?.status
                 }
