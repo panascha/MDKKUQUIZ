@@ -120,12 +120,12 @@ const Page = () => {
 
     return (
         <main className="space-y-10 px-4 md:px-10 pt-20">
-            <section className="flex w-full flex-col items-center justify-center pt-10">
+            <section className="flex w-full flex-col items-center justify-center">
                 <p className="text-3xl font-semibold text-gray-800">Your Profile</p>
             </section>
 
             {/* Profile Information Card */}
-            <section className="flex w-full justify-center px-4">
+            <section className="flex w-full justify-center px-4 ">
                 <ProfileInfoCard
                     user={user}
                     isEditing={isEditing}
@@ -140,7 +140,7 @@ const Page = () => {
             </section>
 
             {/* Scores Section */}
-            <section className="flex w-full justify-center px-4">
+            <section className="flex w-full justify-center px-4 ">
                 <ScoresSection
                     isLoading={isLoadingScores}
                     scores={score}
