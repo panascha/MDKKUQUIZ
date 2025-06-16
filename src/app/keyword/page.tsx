@@ -288,6 +288,14 @@ const KeywordPage = () => {
                         </div>
                     </div>
                 </section>
+
+                {/* Total count display */}
+                <div className="w-full max-w-5xl mb-4 text-right">
+                    <p className="text-gray-600">
+                        Total Keywords: <span className="font-semibold">{filteredKeywords.length}</span>
+                    </p>
+                </div>
+
                 <div className="grid gap-6 w-full max-w-5xl">
                     {filteredKeywords.map((keyword: Keyword) => (
                         <div key={keyword._id} className="relative group">

@@ -344,6 +344,13 @@ const QuestionPage = () => {
                     </div>
                 </section>
 
+                {/* Total count display */}
+                <div className="w-full max-w-5xl mb-4 text-right">
+                    <p className="text-gray-600">
+                        Total Questions: <span className="font-semibold">{filteredQuestions.length}</span>
+                    </p>
+                </div>
+
                 {/* Question List */}
                 <Card className="w-full shadow-xl transition-all duration-300 max-w-5xl">
                     <CardContent className="p-6">

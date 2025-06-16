@@ -76,11 +76,14 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
     }));
   };
 
-  const handleCorrectAnswerChange = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      correctAnswer: prev.correctAnswer.map((answer, i) => i === index ? value : answer)
-    }));
+  const handleCorrectAnswerChange = (index: number, choice: string) => {
+    // Only allow setting correct answer if the choice is not empty
+    if (choice.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        correctAnswer: [choice]
+      }));
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,17 +167,17 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] flex flex-col mt-8">
+      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Report Quiz</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit}
-          className="w-full space-y-4 overflow-y-auto pr-2"
+          className="w-full space-y-4 pb-4"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Original Question Section */}
-          <div className="border-b pb-4">
+          <div className="border-b pb-4 space-y-4">
             <div>
               <label className="mb-1 block text-sm font-semibold">Subject</label>
               <input
@@ -208,26 +211,30 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
           {originalQuiz.img && originalQuiz.img.length > 0 && (
             <div className="border-b pb-4">
               <label className="mb-2 block text-sm font-semibold">Original Images</label>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                 {Array.isArray(originalQuiz.img) ? (
                   originalQuiz.img.map((img, index) => (
-                    <div key={index} className="relative w-24 h-24">
-                      <Image
-                        src={`http://localhost:5000${img}`}
-                        alt={`Original image ${index + 1}`}
-                        fill
-                        className="object-cover rounded-lg"
-                      />
+                    <div key={index} className="relative group">
+                      <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                        <Image
+                          src={`http://localhost:5000${img}`}
+                          alt={`Original image ${index + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     </div>
                   ))
                 ) : (
-                  <div className="relative w-24 h-24">
-                    <Image
-                      src={`http://localhost:5000${originalQuiz.img}`}
-                      alt="Original image"
-                      fill
-                      className="object-cover rounded-lg"
-                    />
+                  <div className="relative group">
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      <Image
+                        src={`http://localhost:5000${originalQuiz.img}`}
+                        alt="Original image"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -237,13 +244,14 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
           {/* Suggested Changes Section */}
           <div>
             <label className="mb-1 block text-sm font-semibold">Question</label>
-            <input
-              type="text"
+            <textarea
               name="question"
               value={formData.question}
               onChange={handleInputChange}
               required
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              placeholder="Enter your question"
+              rows={3}
             />
           </div>
 
@@ -252,34 +260,27 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
             <div>
               <label className="mb-1 block text-sm font-semibold">Choices</label>
               {formData.choice.map((choice, index) => (
-                <div key={index} className="mb-2">
+                <div key={index} className="mb-2 flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="correctAnswer"
+                    checked={formData.correctAnswer.includes(choice)}
+                    onChange={() => handleCorrectAnswerChange(index, choice)}
+                    disabled={!choice.trim()}
+                    className={`w-4 h-4 ${!choice.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  />
                   <input
                     type="text"
                     value={choice}
                     onChange={(e) => handleChoiceChange(index, e.target.value)}
                     required
-                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+                    placeholder={`Choice ${index + 1}`}
                   />
                 </div>
               ))}
             </div>
           ) : null}
-
-          {/* Correct Answers */}
-          <div>
-            <label className="mb-1 block text-sm font-semibold">Correct Answers</label>
-            {formData.correctAnswer.map((answer, index) => (
-              <div key={index} className="mb-2">
-                <input
-                  type="text"
-                  value={answer}
-                  onChange={(e) => handleCorrectAnswerChange(index, e.target.value)}
-                  required
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                />
-              </div>
-            ))}
-          </div>
 
           {/* New Image Upload */}
           <div>
@@ -292,26 +293,28 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
               id="image"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className="w-full border border-gray-300 rounded-lg px-2 sm:px-3 py-2 text-sm file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
             />
             {newImage && (
-              <div className="mt-2">
-                <div className="relative aspect-square w-32">
-                  <Image
-                    src={URL.createObjectURL(newImage)}
-                    alt="New image preview"
-                    fill
-                    className="object-cover rounded-lg"
-                  />
+              <div className="mt-4">
+                <div className="relative group">
+                  <div className="relative aspect-square w-32 rounded-lg overflow-hidden bg-gray-100">
+                    <Image
+                      src={URL.createObjectURL(newImage)}
+                      alt="New image preview"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={removeNewImage}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X size={16} />
                   </button>
+                  <p className="mt-1 text-xs text-gray-600 truncate">{newImage.name}</p>
                 </div>
-                <p className="text-sm text-gray-600 mt-1">{newImage.name}</p>
               </div>
             )}
           </div>
@@ -321,31 +324,33 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
             <p className="text-red-500 text-sm">{error}</p>
           )}
 
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            textButton="Submit Report"
-            disabled={createQuizMutation.isPending || createReportMutation.isPending}
-            className="bg-blue-500 hover:bg-blue-600"
-          >
-            {createQuizMutation.isPending || createReportMutation.isPending ? (
-              <>
-                <LoaderIcon className="mr-2 inline animate-spin" size={16} />
-                Submitting...
-              </>
-            ) : (
-              "Submit Report"
-            )}
-          </Button>
-        </form>
+          {/* Buttons */}
+          <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4 pt-4 sticky bottom-0 bg-white">
+            <Button
+              type="submit"
+              textButton="Submit Report"
+              disabled={createQuizMutation.isPending || createReportMutation.isPending}
+              className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
+            >
+              {createQuizMutation.isPending || createReportMutation.isPending ? (
+                <>
+                  <LoaderIcon className="mr-2 inline animate-spin" size={16} />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Report"
+              )}
+            </Button>
 
-        <DialogClose asChild>
-          <Button
-            textButton="Cancel"
-            className="bg-red-500 hover:bg-red-800"
-            onClick={resetForm}
-          />
-        </DialogClose>
+            <DialogClose asChild>
+              <Button
+                textButton="Cancel"
+                className="w-full sm:w-auto bg-red-500 hover:bg-red-800"
+                onClick={resetForm}
+              />
+            </DialogClose>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
