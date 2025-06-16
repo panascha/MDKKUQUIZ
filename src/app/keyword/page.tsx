@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios, { AxiosError } from 'axios';
@@ -368,4 +368,10 @@ const KeywordPage = () => {
     );
 }
 
-export default KeywordPage; 
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <KeywordPage />
+    </Suspense>
+  );
+} 

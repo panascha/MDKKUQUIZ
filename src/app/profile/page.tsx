@@ -5,7 +5,7 @@ import { useUser } from "@/hooks/useUser";
 import { UserScore } from "@/types/api/Score";
 import { User } from "@/types/User";
 import axios from "axios";
-import { LoaderCircleIcon } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -103,7 +103,7 @@ const Page = () => {
         return (
             <div className="place-items-center pt-20">
                 <Skeleton className="h-72 w-lg place-items-center pt-5 shadow-lg">
-                    <LoaderCircleIcon className="animate-spin" />
+                    <Loader2Icon className="animate-spin" />
                 </Skeleton>
             </div>
         );
@@ -113,7 +113,7 @@ const Page = () => {
         return (
             <div className="place-items-center pt-20">
                 <Skeleton className="h-72 w-lg place-items-center pt-5 shadow-lg">
-                    <LoaderCircleIcon className="animate-spin" />
+                    <Loader2Icon className="animate-spin" />
                 </Skeleton>
             </div>
         );
