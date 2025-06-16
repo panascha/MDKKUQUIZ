@@ -10,7 +10,10 @@ export const useGetCategoryBySubjectID = (subjectID: string) => {
         if (!session?.user.token) throw new Error("Authentication required");
         
         const response = await axios.get(`${BackendRoutes.CATEGORY}/subject/${subjectID}`, {
-            headers: { Authorization: `Bearer ${session.user.token}` },
+            headers: {
+                Authorization: `Bearer ${session.user.token}`,
+                "ngrok-skip-browser-warning": "true"
+            },
         });
         return response.data.data as Category[];
     };

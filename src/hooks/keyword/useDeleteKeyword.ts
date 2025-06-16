@@ -10,7 +10,10 @@ export const useDeleteKeyword = () => {
         mutationFn: async (id: string) => {
             if (!session?.data?.user.token) throw new Error("Authentication required");
             await axios.delete(`${BackendRoutes.KEYWORD}/${id}`, {
-                headers: { Authorization: `Bearer ${session.data.user.token}` },
+                headers: {
+                    Authorization: `Bearer ${session.data.user.token}`,
+                    "ngrok-skip-browser-warning": "true"
+                },
             });
         },
         onSuccess: () => {

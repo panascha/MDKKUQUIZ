@@ -30,7 +30,10 @@ const useApprovedReport = (): UseMutationResult<ApprovedResponse, AxiosError, Ap
             Approved: isApproved
           },
           {
-            headers: { Authorization: `Bearer ${user.token}` },
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+              "ngrok-skip-browser-warning": "true"
+            }
           }
         );
         return response.data;

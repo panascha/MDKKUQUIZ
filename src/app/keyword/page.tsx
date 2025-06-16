@@ -121,6 +121,7 @@ const KeywordPage = () => {
                 const response = await axios.get(BackendRoutes.SUBJECT, {
                     headers: {
                         Authorization: `Bearer ${session.user.token}`,
+                        "ngrok-skip-browser-warning": "true"
                     },
                 });
                 setSubjects(response.data.data);
@@ -128,6 +129,7 @@ const KeywordPage = () => {
                 const categoryResponse = await axios.get(BackendRoutes.CATEGORY, {
                     headers: {
                         Authorization: `Bearer ${session.user.token}`,
+                        "ngrok-skip-browser-warning": "true"
                     },
                 });
                 setCategories(categoryResponse.data.data);

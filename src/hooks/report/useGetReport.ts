@@ -18,6 +18,7 @@ export const useGetReport = (options?: UseGetReportOptions) => {
             const response = await axios.get(BackendRoutes.REPORT, {
                 headers: {
                     Authorization: `Bearer ${session.user.token}`,
+                    "ngrok-skip-browser-warning": "true"
                 },
                 params: {
                     status: options?.status

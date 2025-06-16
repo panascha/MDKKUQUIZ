@@ -9,11 +9,13 @@ export function useDeleteScore() {
     const { data: session } = useSession();
     return useMutation({
         mutationFn: async (id: string) => {
-            const response = await axios.delete(`${BackendRoutes.SCORE}/${id}`,{
-            headers: {
-                Authorization: `Bearer ${session?.user.token}`,
-                "Content-Type": "application/json",
-            },});
+            const response = await axios.delete(`${BackendRoutes.SCORE}/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${session?.user.token}`,
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+            });
             return response.data;
         },
         onSuccess: () => {

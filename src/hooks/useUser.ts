@@ -11,6 +11,7 @@ const getUserProfile = async (token: string) => {
     const response = await axios.get(BackendRoutes.USER_INFO, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true"
       },
     });
     return {...response.data.data, token};
@@ -57,6 +58,7 @@ export const  useUser = () => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.user.token}`,
+            "ngrok-skip-browser-warning": "true"
           },
         },
       );

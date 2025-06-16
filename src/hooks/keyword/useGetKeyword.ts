@@ -18,6 +18,7 @@ export const useGetKeyword = (options?: UseGetKeywordOptions) => {
                 const response = await axios.get(BackendRoutes.KEYWORD, {
                     headers: {
                         Authorization: `Bearer ${session.user.token}`,
+                        "ngrok-skip-browser-warning": "true"
                     },
                 params: {
                     status: options?.status

@@ -86,6 +86,10 @@ const Page = () => {
       password: newPassword,
       year: year,
       role: "user",
+    }, {
+      headers: {
+        "ngrok-skip-browser-warning": "true"
+      }
     });
 
     toast.promise(registerPromise, {

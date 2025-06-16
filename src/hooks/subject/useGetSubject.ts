@@ -3,7 +3,11 @@ import { Subject } from "@/types/api/Subject";
 import axios from "axios";
 
 export const useGetSubject = async (): Promise<Array<Subject>> => {
-    const response = await axios.get(BackendRoutes.SUBJECT);
+    const response = await axios.get(BackendRoutes.SUBJECT, {
+      headers: {
+        "ngrok-skip-browser-warning": "true"
+      }
+    });
     if (Array.isArray(response.data.data)) {
       return response.data.data;
     }

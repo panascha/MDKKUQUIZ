@@ -36,6 +36,7 @@ const Page = () => {
                         headers: {
                             "Content-Type": "application/json",
                             Authorization: `Bearer ${session.data.user.token}`,
+                            "ngrok-skip-browser-warning": "true"
                         },
                     }
                 );

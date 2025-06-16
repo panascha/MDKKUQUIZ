@@ -28,7 +28,10 @@ export const useGetQuizzes = ({
       const finalUrl = status ? `${url}?status=${status}` : url;
       
       const response = await axios.get(finalUrl, {
-        headers: { Authorization: `Bearer ${session.user.token}` },
+        headers: {
+          Authorization: `Bearer ${session.user.token}`,
+          "ngrok-skip-browser-warning": "true"
+        }
       });
 
       const quizzes = response.data.data as Quiz[];

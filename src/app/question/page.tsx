@@ -66,6 +66,7 @@ const QuestionPage = () => {
                 const response = await axios.get(BackendRoutes.QUIZ, {
                     headers: {
                         Authorization: `Bearer ${session.user.token}`,
+                        "ngrok-skip-browser-warning": "true"
                     },
                     params: {
                         subjectID: selectedSubject,
@@ -91,6 +92,7 @@ const QuestionPage = () => {
                 const response = await axios.get(BackendRoutes.SUBJECT, {
                     headers: {
                         Authorization: `Bearer ${session.user.token}`,
+                        "ngrok-skip-browser-warning": "true"
                     },
                 });
                 setSubjects(response.data.data);
@@ -105,6 +107,7 @@ const QuestionPage = () => {
                 const response = await axios.get(BackendRoutes.CATEGORY, {
                     headers: {
                         Authorization: `Bearer ${session.user.token}`,
+                        "ngrok-skip-browser-warning": "true"
                     },
                 });
                 setCategories(response.data.data);
@@ -192,6 +195,7 @@ const QuestionPage = () => {
             const response = await axios.get(BackendRoutes.QUIZ, {
                 headers: {
                     Authorization: `Bearer ${session?.user.token}`,
+                    "ngrok-skip-browser-warning": "true"
                 },
                 params: {
                     subjectID: selectedSubject,

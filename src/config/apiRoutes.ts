@@ -1,5 +1,6 @@
 //const BACKEND_URL = "https://medquizbackend.onrender.com";
-const BACKEND_URL = "http://localhost:5000";
+//const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = "https://6ca3-125-25-205-35.ngrok-free.app";
 const BackendRootRoutes = `${BACKEND_URL}/api/v1`;
 
 export enum BackendRoutes {

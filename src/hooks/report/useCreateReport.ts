@@ -14,6 +14,7 @@ export const useCreateReport = () => {
                 headers: {
                     Authorization: `Bearer ${session.data.user.token}`,
                     "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
                 },
             });
 

@@ -23,6 +23,7 @@ export const useCreateSubject = () => {
                 headers: {
                 Authorization: `Bearer ${session.data.user.token}`,
                 "Content-Type": "multipart/form-data",
+                "ngrok-skip-browser-warning": "true"
                 },
             });
 

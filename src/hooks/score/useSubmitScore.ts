@@ -31,6 +31,7 @@ export const useSubmitScore = () => {
             headers: {
                 Authorization: `Bearer ${session.user.token}`,
                 "Content-Type": "application/json",
+                "ngrok-skip-browser-warning": "true"
             },
         });
         return response.data.data;

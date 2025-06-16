@@ -18,6 +18,7 @@ export const useGetStatOverAll = () => {
             const response = await axios.get(BackendRoutes.STAT, {
                 headers: {
                     Authorization: `Bearer ${session.user.token}`,
+                    "ngrok-skip-browser-warning": "true"
                 },
             });
             return response.data.data;

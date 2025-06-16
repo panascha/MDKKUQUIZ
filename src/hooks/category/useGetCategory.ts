@@ -7,7 +7,10 @@ export const useGetCategory = async (): Promise<Array<Category>> => {
     const { data: session } = useSession();
     if (!session?.user.token) throw new Error("Authentication required");
     const response = await axios.get(BackendRoutes.CATEGORY, {
-            headers: { Authorization: `Bearer ${session.user.token}` },
+      headers: {
+        Authorization: `Bearer ${session.user.token}`,
+        "ngrok-skip-browser-warning": "true"
+      },
         });
     if (Array.isArray(response.data.data)) {
       return response.data.data;

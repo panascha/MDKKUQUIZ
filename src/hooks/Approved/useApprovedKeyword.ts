@@ -30,7 +30,10 @@ const useApprovedKeyword = (): UseMutationResult<ApprovedResponse, AxiosError, A
             Approved: isApproved
           },
           {
-            headers: { Authorization: `Bearer ${user.token}` },
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+              "ngrok-skip-browser-warning": "true"
+            }
           }
         );
         return response.data;
