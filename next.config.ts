@@ -2,7 +2,33 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['localhost'], // Allow loading images from your Node backend
+    domains: [
+      'localhost',
+      process.env.NEXT_PUBLIC_BACKEND_URL || '',
+      // Add your production backend URL here
+    ].filter(Boolean),
+  },
+  // Add security headers
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+    ];
   },
 };
 
