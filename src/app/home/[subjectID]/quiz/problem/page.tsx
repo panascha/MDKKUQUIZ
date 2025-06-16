@@ -249,6 +249,20 @@ export default function Problem() {
         Array.isArray(showQuestion) && showQuestion.length > 0 && showQuestion.every(q => q.isSubmitted)
     , [showQuestion]);
 
+    // Add shuffled choices memo
+    const shuffledChoices = useMemo(() => {
+        if (!currentQuestion || selectedQuestionTypes !== 'mcq') return [];
+        
+        // Create a copy of choices with their indices
+        const choicesWithIndices = currentQuestion.quiz.choice.map((choice, index) => ({
+            choice,
+            originalIndex: index
+        }));
+        
+        // Shuffle the choices
+        return [...choicesWithIndices].sort(() => Math.random() - 0.5);
+    }, [currentQuestion, selectedQuestionTypes]);
+
     if (isLoading || !quizData) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -350,10 +364,10 @@ export default function Problem() {
                                 </div>
                                 {selectedQuestionTypes === 'mcq' ? (
                                     <div className="flex flex-col items-center gap-4 w-full">
-                                        {currentQuestion.quiz.choice.map((choice: string, index: number) => (
+                                        {shuffledChoices.map(({ choice, originalIndex }) => (
                                             <button
-                                                key={index}
-                                                        className={`px-4 sm:px-6 py-3 rounded-lg text-left w-full font-medium transition-all duration-300
+                                                key={originalIndex}
+                                                className={`px-4 sm:px-6 py-3 rounded-lg text-left w-full font-medium transition-all duration-300
                                                     ${showQuestion[currentQuestionIndex].select === choice
                                                         ? 'bg-blue-600 text-white shadow-md'
                                                         : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}
@@ -365,7 +379,7 @@ export default function Problem() {
                                                 }}
                                                 disabled={showQuestion[currentQuestionIndex].isSubmitted}
                                             >
-                                                {String.fromCharCode(65 + index)}. {choice}
+                                                {String.fromCharCode(65 + originalIndex)}. {choice}
                                             </button>
                                         ))}
                                     </div>
