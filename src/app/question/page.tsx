@@ -361,14 +361,29 @@ const QuestionPage = () => {
                                         href={`/question/${question._id}`}
                                         className="block transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 rounded-lg"
                                     >
-                                        <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+                                        <div className={`rounded-lg border ${
+                                            question.type === 'choice' 
+                                                ? 'border-blue-200 bg-blue-50' 
+                                                : 'border-purple-200 bg-purple-50'
+                                        } p-5 shadow-sm transition-all duration-300 hover:shadow-md`}>
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="space-y-2">
-                                                    <p className="text-sm font-semibold text-gray-700">
-                                                        {question.question}
-                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-semibold text-gray-700">
+                                                            {question.question}
+                                                        </p>
+                                                        <Badge
+                                                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                                question.type === 'choice'
+                                                                    ? 'bg-blue-100 text-blue-700'
+                                                                    : 'bg-purple-100 text-purple-700'
+                                                            }`}
+                                                        >
+                                                            {question.type === 'choice' ? 'MCQ' : 'Written'}
+                                                        </Badge>
+                                                    </div>
                                                     <p className="text-sm text-gray-500">
-                                                        {question.subject.name}
+                                                        {question.subject.name} - {question.category.category}
                                                     </p>
                                                 </div>
                                                 {isAdmin && (
@@ -409,12 +424,25 @@ const QuestionPage = () => {
                                                 )}
                                             </div>
                                             <div className="mt-4 space-y-1 text-sm text-gray-600">
-                                                <p className="font-medium">Choices:</p>
-                                                {question.choice.map((choice, index) => (
-                                                    <p key={index} className="ml-4">
-                                                        {String.fromCharCode(65 + index)}. {choice}
-                                                    </p>
-                                                ))}
+                                                {question.type === 'choice' ? (
+                                                    <>
+                                                        <p className="font-medium">Choices:</p>
+                                                        {question.choice.map((choice, index) => (
+                                                            <p key={index} className="ml-4">
+                                                                {String.fromCharCode(65 + index)}. {choice}
+                                                            </p>
+                                                        ))}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <p className="font-medium">Correct Answers:</p>
+                                                        {question.correctAnswer.map((answer, index) => (
+                                                            <p key={index} className="ml-4">
+                                                                {index + 1}. {answer}
+                                                            </p>
+                                                        ))}
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </Link>

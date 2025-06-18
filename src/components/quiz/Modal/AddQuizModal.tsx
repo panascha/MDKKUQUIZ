@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
 import Button from '@/components/ui/Button';
-import { LoaderIcon, ImageIcon, X } from "lucide-react";
+import { LoaderIcon, ImageIcon, X, PlusIcon } from "lucide-react";
 import { UserProps } from '@/types/api/UserProps';
 import { Category } from '@/types/api/Category';
 import { Subject } from '@/types/api/Subject';
@@ -33,7 +33,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     category: '',
     type: 'choice', // default type
     choice: ['', '', '', ''], // default 4 choices for choice type
-    correctAnswer: [],
+    correctAnswer: [''], // Start with one empty correct answer
     img: [],
     status: 'pending'
   });
@@ -51,7 +51,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
         ...prev,
         [name]: value,
         choice: value === 'choice' ? ['', '', '', ''] : [],
-        correctAnswer: []
+        correctAnswer: value === 'choice' ? [] : [''] // Start with one empty answer for written type
       }));
     } else {
       setFormData(prev => ({
@@ -80,14 +80,30 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     });
   };
 
-  const handleCorrectAnswerChange = (value: string) => {
-    // Only allow setting correct answer if the choice is not empty
-    if (value.trim()) {
-      setFormData(prev => ({
+  const handleCorrectAnswerChange = (value: string, index: number) => {
+    setFormData(prev => {
+      const newAnswers = [...prev.correctAnswer];
+      newAnswers[index] = value;
+      // Remove empty answers
+      return {
         ...prev,
-        correctAnswer: [value]
-      }));
-    }
+        correctAnswer: newAnswers.filter(answer => answer.trim() !== '')
+      };
+    });
+  };
+
+  const addCorrectAnswer = () => {
+    setFormData(prev => ({
+      ...prev,
+      correctAnswer: [...prev.correctAnswer, '']
+    }));
+  };
+
+  const removeCorrectAnswer = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      correctAnswer: prev.correctAnswer.filter((_, i) => i !== index)
+    }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,7 +135,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
       category: '',
       type: 'choice',
       choice: ['', '', '', ''],
-      correctAnswer: [],
+      correctAnswer: [''], // Reset to one empty answer
       img: [],
       status: 'pending'
     });
@@ -310,7 +326,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                     type="radio"
                     name="correctAnswer"
                     checked={formData.correctAnswer.includes(choice)}
-                    onChange={() => handleCorrectAnswerChange(choice)}
+                    onChange={() => handleCorrectAnswerChange(choice, 0)}
                     disabled={!choice.trim()}
                     className={`w-4 h-4 ${!choice.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   />
@@ -334,16 +350,35 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
             </div>
           ) : (
             <div>
-              <label className="mb-1 block text-sm font-semibold">Correct Answer *</label>
-              <textarea
-                name="correctAnswer"
-                value={formData.correctAnswer[0] || ''}
-                onChange={(e) => handleCorrectAnswerChange(e.target.value)}
-                required
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                placeholder="Enter the correct answer"
-                rows={3}
-              />
+              <label className="mb-1 block text-sm font-semibold">Correct Answers *</label>
+              {formData.correctAnswer.map((answer, index) => (
+                <div key={index} className="mb-2 flex items-center gap-2">
+                  <textarea
+                    value={answer}
+                    onChange={(e) => handleCorrectAnswerChange(e.target.value, index)}
+                    required
+                    className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+                    placeholder={`Correct Answer ${index + 1}`}
+                    rows={2}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeCorrectAnswer(index)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                    title="Remove answer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addCorrectAnswer}
+                className="mt-2 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1"
+              >
+                <PlusIcon className="w-4 h-4" />
+                Add Another Answer
+              </button>
             </div>
           )}
 

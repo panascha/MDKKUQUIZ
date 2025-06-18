@@ -35,7 +35,6 @@ export default function Problem() {
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [zoomLevel] = useState(1);
     const [isQuestionTableOpen, setIsQuestionTableOpen] = useState(false);
     const [questionViewMode, setQuestionViewMode] = useState<'grid' | 'list'>('grid');
 

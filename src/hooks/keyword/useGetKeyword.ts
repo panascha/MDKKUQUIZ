@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import { BackendRoutes } from '@/config/apiRoutes';
-import { Keyword } from '@/types/api/Keyword';
 
 interface UseGetKeywordOptions {
     status?: 'pending' | 'approved' | 'rejected' | 'reported';

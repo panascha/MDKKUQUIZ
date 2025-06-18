@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
 import Button from '@/components/ui/Button';
-import { LoaderIcon, X } from "lucide-react";
+import { LoaderIcon, X, PlusIcon } from "lucide-react";
 import { UserProps } from '@/types/api/UserProps';
 import { Quiz } from '@/types/api/Quiz';
 import { useCreateQuiz } from '@/hooks/quiz/useCreateQuiz';
@@ -77,13 +77,40 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
   };
 
   const handleCorrectAnswerChange = (index: number, choice: string) => {
-    // Only allow setting correct answer if the choice is not empty
-    if (choice.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        correctAnswer: [choice]
-      }));
+    // For written type, allow multiple correct answers
+    if (formData.type === 'written') {
+      setFormData(prev => {
+        const newAnswers = [...prev.correctAnswer];
+        newAnswers[index] = choice;
+        // Remove empty answers
+        return {
+          ...prev,
+          correctAnswer: newAnswers.filter(answer => answer.trim() !== '')
+        };
+      });
+    } else {
+      // For choice type, only allow one correct answer
+      if (choice.trim()) {
+        setFormData(prev => ({
+          ...prev,
+          correctAnswer: [choice]
+        }));
+      }
     }
+  };
+
+  const addCorrectAnswer = () => {
+    setFormData(prev => ({
+      ...prev,
+      correctAnswer: [...prev.correctAnswer, '']
+    }));
+  };
+
+  const removeCorrectAnswer = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      correctAnswer: prev.correctAnswer.filter((_, i) => i !== index)
+    }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -255,8 +282,8 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
             />
           </div>
 
-          {/* Choices */}
-          {originalQuiz.choice ? (
+          {/* Choices or Written Answer */}
+          {formData.type === 'choice' ? (
             <div>
               <label className="mb-1 block text-sm font-semibold">Choices</label>
               {formData.choice.map((choice, index) => (
@@ -280,7 +307,39 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
                 </div>
               ))}
             </div>
-          ) : null}
+          ) : (
+            <div>
+              <label className="mb-1 block text-sm font-semibold">Correct Answers</label>
+              {formData.correctAnswer.map((answer, index) => (
+                <div key={index} className="mb-2 flex items-center gap-2">
+                  <textarea
+                    value={answer}
+                    onChange={(e) => handleCorrectAnswerChange(index, e.target.value)}
+                    required
+                    className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+                    placeholder={`Correct Answer ${index + 1}`}
+                    rows={2}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeCorrectAnswer(index)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                    title="Remove answer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addCorrectAnswer}
+                className="mt-2 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1"
+              >
+                <PlusIcon className="w-4 h-4" />
+                Add Another Answer
+              </button>
+            </div>
+          )}
 
           {/* New Image Upload */}
           <div>
