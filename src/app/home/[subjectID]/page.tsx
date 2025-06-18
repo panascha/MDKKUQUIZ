@@ -66,10 +66,10 @@ export default function SubjectDetailPage() {
                         {isAdmin && (
                             <button
                                 onClick={() => setShowAddCategoryModal(true)}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                className="p-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-full transition-colors shadow-md hover:shadow-lg"
                                 title="Add category"
                             >
-                                <PlusIcon className="w-5 h-5" />
+                                <PlusIcon className="w-6 h-6" />
                             </button>
                         )}
                     </div>
@@ -96,10 +96,10 @@ export default function SubjectDetailPage() {
                     {isAdmin && (
                         <button
                             onClick={() => setShowAddCategoryModal(true)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                            className="p-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-full transition-colors shadow-md hover:shadow-lg"
                             title="Add category"
                         >
-                            <PlusIcon className="w-5 h-5" />
+                            <PlusIcon className="w-6 h-6" />
                         </button>
                     )}
                 </div>

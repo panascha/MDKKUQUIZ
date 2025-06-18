@@ -1,5 +1,5 @@
-import Button from '@/components/ui/Button';
 import { YearFilter } from './YearFilter';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 interface SubjectHeaderProps {
     isAdmin: boolean;
@@ -16,16 +16,18 @@ export const SubjectHeader = ({
 }: SubjectHeaderProps) => {
     return (
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <h1 className="text-4xl font-extrabold text-sky-800">Subjects</h1>
-
-            {isAdmin && (
-                <Button
-                    textButton="Add Subject"
-                    className="bg-sky-600 hover:bg-sky-800 mt-2 py-2 px-5 rounded-xl text-white font-semibold shadow-md transition-all"
-                    onClick={onAddClick}
-                />
-            )}
-            
+            <div className="flex items-center gap-4">
+                <h1 className="text-4xl font-extrabold text-sky-800">Subjects</h1>
+                {isAdmin && (
+                    <button
+                        onClick={onAddClick}
+                        className="p-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-full transition-colors shadow-md hover:shadow-lg"
+                        title="Add subject"
+                    >
+                        <PlusIcon className="w-6 h-6" />
+                    </button>
+                )}
+            </div>
             <YearFilter selectedYear={selectedYear} onYearChange={onYearChange} />
         </div>
     );

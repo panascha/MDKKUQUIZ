@@ -3,7 +3,7 @@ import { Subject } from "@/types/api/Subject";
 import { useState } from "react";
 import EditCategoryModal from "@/components/category/EditCategoryModal";
 import { useDeleteCategory } from "@/hooks/category/useDeleteCategory";
-import { PencilIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, TrashIcon, PlusIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useUser } from "@/hooks/useUser";
 import { Role_type } from "@/config/role";
