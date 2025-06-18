@@ -42,15 +42,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
     setIsModalOpen(false);
   }, []);
 
-  const zoomIn = useCallback(() => {
-    setZoomLevel((prevZoom) => Math.min(prevZoom + 0.2, 3));
-  }, []);
-
-  const zoomOut = useCallback(() => {
-    setZoomLevel((prevZoom) => Math.max(prevZoom - 0.2, 1));
-    setPosition({ x: 0, y: 0 });
-  }, []);
-
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (zoomLevel > 1 && imageRef.current && modalRef.current) {
       setIsDragging(true);
@@ -174,14 +165,8 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
       case 'Escape':
         closeModal();
         break;
-      case '+':
-        zoomIn();
-        break;
-      case '-':
-        zoomOut();
-        break;
     }
-  }, [isModalOpen, goToPrevious, goToNext, closeModal, zoomIn, zoomOut]);
+  }, [isModalOpen, goToPrevious, goToNext, closeModal]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -295,20 +280,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
               priority
             />
             <div className="absolute top-2 right-2 flex space-x-2">
-              <button
-                onClick={zoomIn}
-                className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 focus:outline-none"
-                aria-label="Zoom in"
-              >
-                <MagnifyingGlassPlusIcon className="h-5 w-5" />
-              </button>
-              <button
-                onClick={zoomOut}
-                className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 focus:outline-none"
-                aria-label="Zoom out"
-              >
-                <MagnifyingGlassMinusIcon className="h-5 w-5" />
-              </button>
               <button
                 onClick={closeModal}
                 className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 focus:outline-none"
