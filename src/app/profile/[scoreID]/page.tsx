@@ -85,7 +85,7 @@ const QuizResultPage = () => {
 
 
     return (
-        <div className="container mx-auto mt-24 pt-20 md:mt-16 flex flex-col items-center justify-center">
+        <div className="container mx-auto mt-24 md:mt-16 flex flex-col items-center justify-center">
             <QuizResultHeader score={score} formatTime={formatTime} />
 
             <QuizResultFilter

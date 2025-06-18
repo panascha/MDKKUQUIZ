@@ -51,6 +51,21 @@ export default function SubjectDetailPage({
         );
     }
 
+    if (categories.length === 0) {
+        return (
+            <div className="min-h-screen bg-gray-50">
+                <div className="max-w-4xl mx-auto px-4 py-8">
+                    <BackButton />
+                    <SubjectDetailHeader subject={subject} />
+                    <div className="mt-8 text-center">
+                        <h2 className="text-xl font-semibold text-gray-700 mb-2">No Categories Available</h2>
+                        <p className="text-gray-500">There are no categories for this subject yet.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-4xl mx-auto px-4 py-8">

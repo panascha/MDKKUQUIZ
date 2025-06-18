@@ -214,7 +214,7 @@ const Main = () => {
 
     return (
       <ProtectedPage>
-        <div className="container mx-auto px-4 py-8 pt-24">
+        <div className="container mx-auto px-4 py-8">
           <SubjectHeader
             isAdmin={admin}
             onAddClick={() => setShowModal(true)}

@@ -149,7 +149,7 @@ export default function Quiz() {
 
     return (
         <ProtectedPage>
-            <div className="container max-w-5xl p-8 md:p-16 rounded-lg mt-6 mx-auto bg-white shadow-lg animate-fade-in pt-24">
+            <div className="container max-w-5xl p-8 md:p-16 rounded-lg mt-6 mx-auto bg-white shadow-lg animate-fade-in">
                 <Link href="/subjects" className="flex items-center gap-2 text-black hover:text-orange-800 transition duration-300 ease-in-out mb-6">
                     <h1 className="text-4xl font-bold text-center animate-slide-down">
                         Quiz for {subject?.name}

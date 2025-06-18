@@ -119,7 +119,7 @@ const Page = () => {
     }
 
     return (
-        <main className="space-y-10 px-4 md:px-10 pt-20">
+        <main className="space-y-10 px-4 md:px-10 pt-5">
             <section className="flex w-full flex-col items-center justify-center">
                 <p className="text-3xl font-semibold text-gray-800">Your Profile</p>
             </section>
