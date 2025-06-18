@@ -23,12 +23,7 @@ export default function SubjectDetailPage({
         enabled: !!subjectID
     });
 
-    const getCategoryFn = useGetCategoryBySubjectID(subjectID);
-    const { data: categories, isLoading: isCategoryLoading, error: categoryError } = useQuery<Category[]>({
-        queryKey: ["categories", subjectID],
-        queryFn: getCategoryFn,
-        enabled: !!subjectID
-    });
+    const { data: categories, isLoading: isCategoryLoading, error: categoryError } = useGetCategoryBySubjectID(subjectID);
 
     if (isLoading || isCategoryLoading) {
         return (
