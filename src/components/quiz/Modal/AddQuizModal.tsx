@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
 import Button from '@/components/ui/Button';
 import { LoaderIcon, ImageIcon, X, PlusIcon } from "lucide-react";
@@ -10,6 +10,8 @@ import { useUser } from '@/hooks/useUser';
 import toast from 'react-hot-toast';
 import { CreateQuizData, useCreateQuiz } from '@/hooks/quiz/useCreateQuiz';
 import Image from 'next/image';
+import { Keyword } from '@/types/api/Keyword';
+import { useGetKeyword } from '@/hooks/keyword/useGetKeyword';
 
 interface AddQuizModalProps {
   showModal: boolean;
@@ -17,6 +19,11 @@ interface AddQuizModalProps {
   userProp: UserProps;
   subject: Subject[];
   category: Category[];
+}
+
+// Helper for filtering keywords
+function filterKeywords(keywords: string[], value: string) {
+  return keywords.filter(k => k.toLowerCase().includes(value.toLowerCase())).slice(0, 10);
 }
 
 const AddQuizModal: React.FC<AddQuizModalProps> = ({
@@ -42,6 +49,13 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const createQuizMutation = useCreateQuiz();
     const { user } = useUser();
+    const getKeyword = useGetKeyword();
+    const [dropdown, setDropdown] = useState<{[key: string]: boolean}>({});
+    const keywordOptions = formData.category
+      ? getKeyword?.data
+          .filter((kw: Keyword) => kw.category && kw.category._id === formData.category)
+          .flatMap((kw: Keyword) => kw.keywords)
+      : [];
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -63,8 +77,6 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
   const handleChoiceChange = (index: number, value: string) => {
     setFormData(prev => {
       const newChoices = prev.choice.map((choice, i) => i === index ? value : choice);
-      // If the choice being edited is the correct answer and it's being cleared,
-      // remove it from correctAnswer
       if (prev.correctAnswer.includes(prev.choice[index]) && !value.trim()) {
         return {
           ...prev,
@@ -218,7 +230,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
       onOpenChange={(open) => {
         setShowModal(open);
         if (!open) {
-          resetForm();
+          resetForm(); 
         }
       }}
     >
@@ -247,7 +259,10 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                       setFormData(prev => ({ 
                         ...prev, 
                         subject: s._id,
-                        category: '' 
+                        category: '',
+                        choice: ['', '', '', ''],
+                        correctAnswer: [''],
+                        img: [],
                       }));
                     }}
                   >
@@ -283,7 +298,13 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                   <DropdownMenuItem
                     key={c._id}
                     className="cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out"
-                    onClick={() => setFormData(prev => ({ ...prev, category: c._id }))}
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      category: c._id,
+                      choice: ['', '', '', ''],
+                      correctAnswer: [''],
+                      img: [],
+                    }))}
                   >
                     {c.category}
                   </DropdownMenuItem>
@@ -295,17 +316,35 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
           </div>
 
           {/* Question */}
-          <div>
+          <div className="relative">
             <label className="mb-1 block text-sm font-semibold">Question *</label>
-            <textarea
+            <input
               name="question"
               value={formData.question}
               onChange={handleInputChange}
+              onFocus={() => setDropdown(d => ({ ...d, question: true }))}
+              onBlur={() => setTimeout(() => setDropdown(d => ({ ...d, question: false })), 150)}
               required
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               placeholder="Enter your question"
-              rows={3}
+              autoComplete="off"
             />
+            {dropdown.question && filterKeywords(keywordOptions, formData.question).length > 0 && (
+              <div className="absolute z-50 bg-white border border-gray-200 rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full">
+                {filterKeywords(keywordOptions, formData.question).map((keyword, idx) => (
+                  <div
+                    key={idx}
+                    className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800"
+                    onMouseDown={() => {
+                      handleInputChange({ target: { name: 'question', value: keyword } } as any);
+                      setDropdown(d => ({ ...d, question: false }));
+                    }}
+                  >
+                    {keyword}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Question Type */}
@@ -323,6 +362,18 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
             </select>
           </div>
 
+          {/* Prepare keyword options for datalist */}
+          {formData.category && (
+            <datalist id="keyword-options">
+              {getKeyword?.data
+                .filter((kw: Keyword) => kw.category && kw.category._id === formData.category)
+                .flatMap((kw: Keyword) => kw.keywords)
+                .map((keyword: string, idx: number) => (
+                  <option value={keyword} key={idx} />
+                ))}
+            </datalist>
+          )}
+
           {formData.type === 'choice' || formData.type === 'both'? (
             <div>
               <label className="mb-1 block text-sm font-semibold">Choices *</label>
@@ -336,14 +387,35 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                     disabled={!choice.trim()}
                     className={`w-4 h-4 ${!choice.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   />
-                  <input
-                    type="text"
-                    value={choice}
-                    onChange={(e) => handleChoiceChange(index, e.target.value)}
-                    required
-                    className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
-                    placeholder={`Choice ${index + 1}`}
-                  />
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={choice}
+                      onChange={e => handleChoiceChange(index, e.target.value)}
+                      onFocus={() => setDropdown(d => ({ ...d, ['choice' + index]: true }))}
+                      onBlur={() => setTimeout(() => setDropdown(d => ({ ...d, ['choice' + index]: false })), 150)}
+                      required
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                      placeholder={`Choice ${index + 1}`}
+                      autoComplete="off"
+                    />
+                    {dropdown['choice' + index] && filterKeywords(keywordOptions, choice).length > 0 && (
+                      <div className="absolute z-50 bg-white border border-gray-200 rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full">
+                        {filterKeywords(keywordOptions, choice).map((keyword, kidx) => (
+                          <div
+                            key={kidx}
+                            className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800"
+                            onMouseDown={() => {
+                              handleChoiceChange(index, keyword);
+                              setDropdown(d => ({ ...d, ['choice' + index]: false }));
+                            }}
+                          >
+                            {keyword}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
               <button
@@ -356,21 +428,41 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
             </div>
           ) : null}
 
-          {/* For type 'written' or 'both', show textarea for multiple correct answers */}
           {(formData.type === 'written' || formData.type === 'both') && (
             <div>
               <label className="mb-1 block text-sm font-semibold">Correct Answers *</label>
               {formData.correctAnswer.map((answer, index) => (
                 <div key={index} className="mb-2 flex items-center gap-2">
-                  <textarea
-                    value={answer}
-                    onChange={(e) => handleCorrectAnswerChange(e.target.value, index)}
-                    required
-                    className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
-                    placeholder={`Correct Answer ${index + 1}`}
-                    rows={2}
-                    disabled={formData.type === 'both' && index === 0}
-                  />
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={answer}
+                      onChange={e => handleCorrectAnswerChange(e.target.value, index)}
+                      onFocus={() => setDropdown(d => ({ ...d, ['answer' + index]: true }))}
+                      onBlur={() => setTimeout(() => setDropdown(d => ({ ...d, ['answer' + index]: false })), 150)}
+                      required
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                      placeholder={`Correct Answer ${index + 1}`}
+                      autoComplete="off"
+                      disabled={formData.type === 'both' && index === 0}
+                    />
+                    {dropdown['answer' + index] && filterKeywords(keywordOptions, answer).length > 0 && (
+                      <div className="absolute z-50 bg-white border border-gray-200 rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full">
+                        {filterKeywords(keywordOptions, answer).map((keyword, kidx) => (
+                          <div
+                            key={kidx}
+                            className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800"
+                            onMouseDown={() => {
+                              handleCorrectAnswerChange(keyword, index);
+                              setDropdown(d => ({ ...d, ['answer' + index]: false }));
+                            }}
+                          >
+                            {keyword}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={() => removeCorrectAnswer(index)}
