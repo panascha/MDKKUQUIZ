@@ -5,17 +5,25 @@ import { useGetCategoryBySubjectID } from "@/hooks/category/useGetCategoryBySubj
 import { BackButton } from "@/components/subjects/Detail/BackButton";
 import { SubjectDetailHeader } from "@/components/subjects/Detail/SubjectDetailHeader";
 import { SubjectActions } from "@/components/subjects/Detail/SubjectActions";
-import { SubjectTopics } from "@/components/subjects/Detail/SubjectTopics";
 import { useQuery } from "@tanstack/react-query";
-import { Category } from "@/types/api/Category";
 import { use } from 'react';
+import { useState } from 'react';
+import AddCategoryModal from "@/components/category/AddCategoryModal";
+import Button from "@/components/ui/Button";
+import { useUser } from '@/hooks/useUser';
+import { Role_type } from '@/config/role';
+import { PlusIcon } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import SubjectTopics from '@/components/subjects/Detail/SubjectTopics';
 
-export default function SubjectDetailPage({
-    params,
-}: {
-    params: Promise<{ subjectID: string }>;
-}) {
-    const { subjectID } = use(params);
+export default function SubjectDetailPage() {
+    const params = useParams();
+    const subjectID = typeof params.subjectID === 'string' ? params.subjectID : '';
+    const { data: session } = useSession();
+    const { user } = useUser();
+    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
+    const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
 
     const { data: subject, isLoading, error } = useQuery({
         queryKey: ["subject", subjectID],
@@ -23,12 +31,7 @@ export default function SubjectDetailPage({
         enabled: !!subjectID
     });
 
-    const getCategoryFn = useGetCategoryBySubjectID(subjectID);
-    const { data: categories, isLoading: isCategoryLoading, error: categoryError } = useQuery<Category[]>({
-        queryKey: ["categories", subjectID],
-        queryFn: getCategoryFn,
-        enabled: !!subjectID
-    });
+    const { data: categories = [], isLoading: isCategoryLoading, error: categoryError } = useGetCategoryBySubjectID(subjectID);
 
     if (isLoading || isCategoryLoading) {
         return (
@@ -38,7 +41,7 @@ export default function SubjectDetailPage({
         );
     }
 
-    if (error || categoryError || !subject || !categories) {
+    if (error || categoryError || !subject) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
@@ -51,14 +54,61 @@ export default function SubjectDetailPage({
         );
     }
 
+    if (categories.length === 0) {
+        return (
+            <div className="min-h-screen bg-gray-50">
+                <div className="max-w-4xl mx-auto px-4 py-8">
+                    <BackButton />
+                    <SubjectDetailHeader subject={subject} />
+                    <div className="mt-8 text-center">
+                        <h2 className="text-xl font-semibold text-gray-700 mb-2">No Categories Available</h2>
+                        <p className="text-gray-500 mb-4">There are no categories for this subject yet.</p>
+                        {isAdmin && (
+                            <button
+                                onClick={() => setShowAddCategoryModal(true)}
+                                className="p-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-full transition-colors shadow-md hover:shadow-lg"
+                                title="Add category"
+                            >
+                                <PlusIcon className="w-6 h-6" />
+                            </button>
+                        )}
+                    </div>
+                </div>
+                <AddCategoryModal
+                    showModal={showAddCategoryModal}
+                    setShowModal={setShowAddCategoryModal}
+                    subject={subject}
+                />
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <BackButton />
                 <SubjectDetailHeader subject={subject} />
                 <SubjectActions subjectId={subjectID} />
-                <SubjectTopics categories={categories} />
+                <div className="flex justify-between items-start gap-4 mt-6">
+                    <div className="flex-1">
+                        <SubjectTopics categories={categories} subject={subject} />
+                    </div>
+                    {isAdmin && (
+                        <button
+                            onClick={() => setShowAddCategoryModal(true)}
+                            className="p-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-full transition-colors shadow-md hover:shadow-lg"
+                            title="Add category"
+                        >
+                            <PlusIcon className="w-6 h-6" />
+                        </button>
+                    )}
+                </div>
             </div>
+            <AddCategoryModal
+                showModal={showAddCategoryModal}
+                setShowModal={setShowAddCategoryModal}
+                subject={subject}
+            />
         </div>
     );
 }

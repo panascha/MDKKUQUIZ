@@ -37,97 +37,98 @@ export default function Navbar() {
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
 
     return (
-        <div className="fixed top-0 left-0 w-full z-[200]">
-            <nav className="flex items-center justify-between h-16 px-6 bg-blue-950 text-white shadow-md">
-                {/* Logo and Home */}
-                <div className="flex items-center gap-4">
-                    <a href="/" className="flex items-center gap-2 hover:opacity-80 transition duration-300 ease-in-out">
-                        <img src={"/MSEBlogowhite.svg"} alt="Logo" className="h-16 w-28 object-contain" />
-                    </a>
-                    {user && (
-                        <div className="hidden lg:flex gap-3 ml-4">
-                            <button
-                                onClick={() => router.push(FrontendRoutes.HOMEPAGE)}
-                                className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
-                            >
-                                Home
-                            </button>
-                            <button
-                                onClick={() => router.push(FrontendRoutes.QUESTION)}
-                                className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
-                            >
-                                Question
-                            </button>
-                            <button
-                                onClick={() => router.push(FrontendRoutes.KEYWORD)}
-                                className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
-                            >
-                                Keyword
-                            </button>
-                            <button
-                                onClick={() => router.push(FrontendRoutes.PROFILE)}
-                                className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
-                            >
-                                Profile
-                            </button>
-                            {isAdmin && (
+        <>
+            <div className="fixed top-0 left-0 w-full z-[200]">
+                <nav className="flex items-center justify-between h-16 px-6 bg-blue-950 text-white shadow-md">
+                    {/* Logo and Home */}
+                    <div className="flex items-center gap-4">
+                        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition duration-300 ease-in-out">
+                            <img src={"/MSEBlogowhite.svg"} alt="Logo" className="h-16 w-28 object-contain" />
+                        </a>
+                        {user && (
+                            <div className="hidden lg:flex gap-3 ml-4">
                                 <button
-                                    onClick={() => router.push(FrontendRoutes.ADMIN)}
+                                    onClick={() => router.push(FrontendRoutes.HOMEPAGE)}
                                     className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
                                 >
-                                    Admin
+                                    Home
                                 </button>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                {/* Desktop Right Menu */}
-                <div className="hidden lg:flex items-center gap-4">
-                    {user ? (
-                        <>
-                            <button className="p-2 hover:bg-gray-100 hover:text-blue-950 rounded-full transition duration-300 ease-in-out cursor-pointer">
-                                <IoMdNotificationsOutline size={22} />
-                            </button>
-                            <div className="relative">
                                 <button
-                                    onClick={toggleProfile}
-                                    className="px-4 py-1.5 hover:bg-gray-100 hover:text-blue-950 rounded-md transition duration-300 ease-in-out font-medium cursor-pointer"
+                                    onClick={() => router.push(FrontendRoutes.QUESTION)}
+                                    className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
                                 >
-                                    {user.name}
+                                    Question
                                 </button>
-                                <div
-                                    className={`absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md overflow-hidden transition-all duration-300 transform ${
-                                        isProfileOpen ? 'scale-y-100 opacity-100' : 'scale-y-95 opacity-0 pointer-events-none'
-                                    } origin-top`}
+                                <button
+                                    onClick={() => router.push(FrontendRoutes.KEYWORD)}
+                                    className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
                                 >
+                                    Keyword
+                                </button>
+                                <button
+                                    onClick={() => router.push(FrontendRoutes.PROFILE)}
+                                    className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
+                                >
+                                    Profile
+                                </button>
+                                {isAdmin && (
                                     <button
-                                        onClick={handleLogout}
-                                        className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                                        onClick={() => router.push(FrontendRoutes.ADMIN)}
+                                        className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
                                     >
-                                        Logout
+                                        Admin
                                     </button>
-                                </div>
+                                )}
                             </div>
-                        </>
-                    ) : (
-                        <button
-                            onClick={() => router.push(FrontendRoutes.LOGIN)}
-                            className="px-4 py-1.5 bg-gray-100 hover:bg-gray-300 text-blue-950 hover:text-blue-900 font-medium rounded-md transition duration-300 ease-in-out cursor-pointer"
-                        >
-                            Sign in
+                        )}
+                    </div>
+
+                    {/* Desktop Right Menu */}
+                    <div className="hidden lg:flex items-center gap-4">
+                        {user ? (
+                            <>
+                                <button className="p-2 hover:bg-gray-100 hover:text-blue-950 rounded-full transition duration-300 ease-in-out cursor-pointer">
+                                    <IoMdNotificationsOutline size={22} />
+                                </button>
+                                <div className="relative">
+                                    <button
+                                        onClick={toggleProfile}
+                                        className="px-4 py-1.5 hover:bg-gray-100 hover:text-blue-950 rounded-md transition duration-300 ease-in-out font-medium cursor-pointer"
+                                    >
+                                        {user.name}
+                                    </button>
+                                    <div
+                                        className={`absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md overflow-hidden transition-all duration-300 transform ${
+                                            isProfileOpen ? 'scale-y-100 opacity-100' : 'scale-y-95 opacity-0 pointer-events-none'
+                                        } origin-top`}
+                                    >
+                                        <button
+                                            onClick={handleLogout}
+                                            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <button
+                                onClick={() => router.push(FrontendRoutes.LOGIN)}
+                                className="px-4 py-1.5 bg-gray-100 hover:bg-gray-300 text-blue-950 hover:text-blue-900 font-medium rounded-md transition duration-300 ease-in-out cursor-pointer"
+                            >
+                                Sign in
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Mobile Menu Icon */}
+                    <div className="lg:hidden">
+                        <button onClick={toggleMenu} className="text-xl md:text-2xl hover:text-gray-200 transition">
+                            {isMenuOpen ? <FaXmark /> : <FaBars />}
                         </button>
-                    )}
-                </div>
-
-                {/* Mobile Menu Icon */}
-                <div className="lg:hidden">
-                    <button onClick={toggleMenu} className="text-xl md:text-2xl hover:text-gray-200 transition">
-                        {isMenuOpen ? <FaXmark /> : <FaBars />}
-                    </button>
-                </div>
-            </nav>
-
+                    </div>
+                </nav>
+            </div>
             {/* Mobile Dropdown */}
             <div
                 className={`lg:hidden transition-all duration-300 ease-in-out origin-top bg-white text-black shadow-md rounded-b-sm overflow-hidden ${
@@ -184,6 +185,8 @@ export default function Navbar() {
                     )}
                 </div>
             </div>
-        </div>
+            {/* Spacer div to prevent content overlap */}
+            <div className="h-16"></div>
+        </>
     );
 }

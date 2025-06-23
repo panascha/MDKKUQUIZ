@@ -12,7 +12,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-10 pt-16 sm:pt-20">
+    <div className="flex flex-col min-h-screen bg-gray-10">
       <main className="flex-grow"> {/* Use flex-grow to push the footer to the bottom */}
         {/* Hero Section */}
         <motion.section

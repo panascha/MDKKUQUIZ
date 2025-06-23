@@ -7,20 +7,17 @@ interface UseGetKeywordOptions {
     status?: 'pending' | 'approved' | 'rejected' | 'reported';
 }
 
-export const useGetKeyword = (options?: UseGetKeywordOptions) => {
+export const useGetKeywordByCateId = (CateId: string) => {
     const { data: session } = useSession();
 
     return useQuery({
-        queryKey: ['keywords', options?.status],
+        queryKey: ['keywords'],
         queryFn: async () => {
             if (!session) throw new Error('No session');
-                const response = await axios.get(BackendRoutes.KEYWORD, {
-                    headers: {
-                        Authorization: `Bearer ${session.user.token}`,
-                    },
-                params: {
-                    status: options?.status
-                }
+            const response = await axios.get(`${BackendRoutes.KEYWORD}/cate/${CateId}`, {
+                headers: {
+                    Authorization: `Bearer ${session.user.token}`,
+                },
             });
             return response.data.data;
         },

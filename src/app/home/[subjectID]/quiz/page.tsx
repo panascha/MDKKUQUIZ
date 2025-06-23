@@ -23,7 +23,7 @@ export default function Quiz() {
     type AnswerModes = "reveal-at-end"| "reveal-after-each"
     const quizTypes: QuizType[] = ["chillquiz", "realtest", "custom"];
     const answerModes: AnswerModes[] = ["reveal-at-end", "reveal-after-each"];
-    const questionTypes = ["mcq", "shortanswer"];
+    const questionTypes = ["mcq", "shortanswer", "both"];
 
     const [quizType, setQuizType] = useState('');
     const [answerMode, setAnswerMode] = useState('');
@@ -35,39 +35,23 @@ export default function Quiz() {
     const router = useRouter();
     const subjectID = params.subjectID as string;
 
-    const {
-        data: quiz = [],
-        isLoading,
-        isError,
-        error
-    } = useGetQuizzes({
-        subjectID,
-        status: 'approved'
-    });
-
-    const {
-        data: subject,
-    } = useQuery({
+    const { data: subject, isLoading: isSubjectLoading, error: subjectError } = useQuery({
         queryKey: ["subject", subjectID],
         queryFn: () => useGetSubjectByID(subjectID),
         enabled: !!subjectID
     });
 
-    const {
-        data: category = [] as Category[],
-        isLoading: isCategoryLoading,
-        isError: isCategoryError,
-        error: categoryError
-    } = useQuery({
-        queryKey: ["category", subjectID],
-        queryFn: useGetCategoryBySubjectID(subjectID),
-        enabled: !!subjectID
+    const { data: categories = [], isLoading: isCategoryLoading, error: categoryError } = useGetCategoryBySubjectID(subjectID);
+
+    const { data: quizzes = [], isLoading: isQuizzesLoading, error: quizzesError } = useGetQuizzes({
+        subjectID,
+        status: 'approved'
     });
 
     const filteredQuiz = useMemo(() => {
         if (!selectCategory.length) return [];
-        return quiz.filter((item: Quiz) => selectCategory.includes(item.category._id));
-    }, [quiz, selectCategory]);
+        return quizzes.filter((item: Quiz) => selectCategory.includes(item.category._id));
+    }, [quizzes, selectCategory]);
 
     // Default Values
     const defaultValues_AnswerMode = useMemo(() => ({
@@ -119,7 +103,7 @@ export default function Quiz() {
         router.push(`${FrontendRoutes.HOMEPAGE}/${subjectID}/quiz/problem?${queryParams}`);
     }, [quizType, selectCategory, answerMode, questionCount, selectedQuestionTypes, maxQuestions, subjectID, router]);
 
-    if (isLoading || isCategoryLoading) {
+    if (isSubjectLoading || isCategoryLoading || isQuizzesLoading) {
         return (
             <div className="flex items-center justify-center gap-3 pt-20">
                 <LoaderIcon /> Loading...
@@ -127,10 +111,10 @@ export default function Quiz() {
         );          
     }
     
-    if (isError || isCategoryError) {
+    if (subjectError || categoryError || quizzesError) {
         return (
             <div className="text-red-500 flex items-center gap-2 pt-20">
-                <span>Error:</span> {error?.message || categoryError?.message}
+                <span>Error:</span> {subjectError?.message || categoryError?.message || quizzesError?.message}
             </div>
         );          
     }
@@ -141,7 +125,7 @@ export default function Quiz() {
         );          
     }
 
-    if (!category.length) {
+    if (!categories.length) {
         return (
             <div className="text-red-500 pt-20">No categories found</div>
         );          
@@ -149,7 +133,7 @@ export default function Quiz() {
 
     return (
         <ProtectedPage>
-            <div className="container max-w-5xl p-8 md:p-16 rounded-lg mt-6 mx-auto bg-white shadow-lg animate-fade-in pt-24">
+            <div className="container max-w-5xl p-8 md:p-16 rounded-lg mt-6 mx-auto bg-white shadow-lg animate-fade-in">
                 <Link href="/subjects" className="flex items-center gap-2 text-black hover:text-orange-800 transition duration-300 ease-in-out mb-6">
                     <h1 className="text-4xl font-bold text-center animate-slide-down">
                         Quiz for {subject?.name}
@@ -157,11 +141,11 @@ export default function Quiz() {
                 </Link>
 
                 <TopicSelection
-                    category={category}
+                    category={categories}
                     selectCategory={selectCategory}
                     setSelectCategory={setSelectCategory}
                     setMaxQuestions={setMaxQuestions}
-                    quiz={quiz}
+                    quiz={quizzes}
                     selectedQuestionTypes={selectedQuestionTypes}
                 />
 
@@ -176,7 +160,7 @@ export default function Quiz() {
                     defaultValues_QuestionType={defaultValues_QuestionType}
                     defaultValues_AnswerMode={defaultValues_AnswerMode}
                     answerModes={answerModes}
-                    quiz={quiz}
+                    quiz={quizzes}
                     setMaxQuestions={setMaxQuestions}
                 />
 

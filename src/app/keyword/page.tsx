@@ -19,6 +19,7 @@ import { Trash2 } from 'lucide-react';
 import { Role_type } from '@/config/role';
 import { toast } from 'react-hot-toast';
 import { Badge } from '@/components/ui/Badge';
+import { useGetCategory } from "@/hooks/category/useGetCategory";
 
 const KeywordPage = () => {
     const router = useRouter();
@@ -124,13 +125,6 @@ const KeywordPage = () => {
                     },
                 });
                 setSubjects(response.data.data);
-
-                const categoryResponse = await axios.get(BackendRoutes.CATEGORY, {
-                    headers: {
-                        Authorization: `Bearer ${session.user.token}`,
-                    },
-                });
-                setCategories(categoryResponse.data.data);
                 setIsLoading(false);
             } catch (err) {
                 setError(`Failed to fetch data : ${err}`);
@@ -139,6 +133,17 @@ const KeywordPage = () => {
         };
         fetchData();
     }, [session]);
+
+    const { data: categoriesData, isLoading: isCategoriesLoading, error: categoriesError } = useGetCategory();
+
+    useEffect(() => {
+        if (categoriesData) {
+            setCategories(categoriesData);
+        }
+        if (categoriesError) {
+            setError(`Failed to fetch categories: ${categoriesError}`);
+        }
+    }, [categoriesData, categoriesError]);
 
     // Update URL when subject filter changes
     useEffect(() => {
@@ -161,7 +166,7 @@ const KeywordPage = () => {
         }
     };
 
-    if (keywordsLoading || isLoading) {
+    if (keywordsLoading || isLoading || isCategoriesLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
                 <h1 className="text-2xl font-bold mb-4">Loading...</h1>
