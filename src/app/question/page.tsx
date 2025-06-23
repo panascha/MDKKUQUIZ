@@ -364,7 +364,11 @@ const QuestionPage = () => {
                                         <div className={`rounded-lg border ${
                                             question.type === 'choice' 
                                                 ? 'border-blue-200 bg-blue-50' 
-                                                : 'border-purple-200 bg-purple-50'
+                                                : question.type === 'written'
+                                                ? 'border-purple-200 bg-purple-50'
+                                                : question.type === 'both'
+                                                ? 'border-blue-400 bg-blue-50'
+                                                : ''
                                         } p-5 shadow-sm transition-all duration-300 hover:shadow-md`}>
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="space-y-2">
@@ -376,10 +380,14 @@ const QuestionPage = () => {
                                                             className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                                                                 question.type === 'choice'
                                                                     ? 'bg-blue-100 text-blue-700'
-                                                                    : 'bg-purple-100 text-purple-700'
+                                                                    : question.type === 'written'
+                                                                    ? 'bg-purple-100 text-purple-700'
+                                                                    : question.type === 'both'
+                                                                    ? 'bg-blue-50 text-blue-700 border border-blue-400 font-bold'
+                                                                    : ''
                                                             }`}
                                                         >
-                                                            {question.type === 'choice' ? 'MCQ' : 'Written'}
+                                                            {question.type === 'choice' ? 'MCQ' : question.type === 'written' ? 'Written' : question.type === 'both' ? 'MCQ + Short Answer' : 'Unknown'}
                                                         </Badge>
                                                     </div>
                                                     <p className="text-sm text-gray-500">

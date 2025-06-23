@@ -31,9 +31,9 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     question: '',
     subject: '',
     category: '',
-    type: 'choice', // default type
-    choice: ['', '', '', ''], // default 4 choices for choice type
-    correctAnswer: [''], // Start with one empty correct answer
+    type: 'choice', 
+    choice: ['', '', '', ''], 
+    correctAnswer: [''], 
     img: [],
     status: 'pending'
   });
@@ -46,12 +46,11 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'type') {
-      // Reset choices and correct answer when type changes
       setFormData(prev => ({
         ...prev,
         [name]: value,
         choice: value === 'choice' ? ['', '', '', ''] : [],
-        correctAnswer: value === 'choice' ? [] : [''] // Start with one empty answer for written type
+        correctAnswer: value === 'choice' ? [] : [''] 
       }));
     } else {
       setFormData(prev => ({
@@ -82,12 +81,21 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
 
   const handleCorrectAnswerChange = (value: string, index: number) => {
     setFormData(prev => {
+      if (prev.type === 'both' && index === 0) {
+        // Only update the first correct answer, keep the rest
+        const newAnswers = [...prev.correctAnswer];
+        newAnswers[0] = value;
+        return {
+          ...prev,
+          correctAnswer: newAnswers
+        };
+      }
       const newAnswers = [...prev.correctAnswer];
       newAnswers[index] = value;
-      // Remove empty answers
+      // Remove empty answers except for type 'both' index 0
       return {
         ...prev,
-        correctAnswer: newAnswers.filter(answer => answer.trim() !== '')
+        correctAnswer: newAnswers.filter((answer, i) => prev.type === 'both' ? (i === 0 || answer.trim() !== '') : answer.trim() !== '')
       };
     });
   };
@@ -109,7 +117,6 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
-    // Validate file types
     const invalidFiles = files.filter(file => 
       !file.type.startsWith('image/') || 
       !['image/jpeg', 'image/png', 'image/gif'].includes(file.type)
@@ -162,7 +169,6 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
       return;
     }
 
-    // Type-specific validation
     if (formData.type === 'choice') {
       if (!formData.choice.some(c => c.trim())) {
         setError('At least one choice is required');
@@ -190,7 +196,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
         subject: formData.subject,
         category: formData.category,
         type: formData.type,
-        choice: formData.type === 'choice' ? formData.choice.map(c => c.trim()) : [],
+        choice: (formData.type === 'choice' || formData.type === 'both') ? formData.choice.map(c => c.trim()) : [],
         correctAnswer: formData.correctAnswer,
         img: [], // This will be handled by the backend
         status: 'pending',
@@ -241,7 +247,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                       setFormData(prev => ({ 
                         ...prev, 
                         subject: s._id,
-                        category: '' // Reset category when subject changes
+                        category: '' 
                       }));
                     }}
                   >
@@ -272,7 +278,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                 {formData.subject && (
                   <>
                     {category
-                      .filter(c => c.subject._id === formData.subject)
+                      .filter(c => c.subject && c.subject._id === formData.subject)
                       .map((c) => (
                   <DropdownMenuItem
                     key={c._id}
@@ -313,11 +319,11 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
             >
               <option value="choice">MCQ</option>
               <option value="written">Written Answer</option>
+              <option value="both">Both</option>
             </select>
           </div>
 
-          {/* Choices or Written Answer */}
-          {formData.type === 'choice' ? (
+          {formData.type === 'choice' || formData.type === 'both'? (
             <div>
               <label className="mb-1 block text-sm font-semibold">Choices *</label>
               {formData.choice.map((choice, index) => (
@@ -348,7 +354,10 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                 + Add Choice
               </button>
             </div>
-          ) : (
+          ) : null}
+
+          {/* For type 'written' or 'both', show textarea for multiple correct answers */}
+          {(formData.type === 'written' || formData.type === 'both') && (
             <div>
               <label className="mb-1 block text-sm font-semibold">Correct Answers *</label>
               {formData.correctAnswer.map((answer, index) => (
@@ -360,12 +369,14 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                     className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
                     placeholder={`Correct Answer ${index + 1}`}
                     rows={2}
+                    disabled={formData.type === 'both' && index === 0}
                   />
                   <button
                     type="button"
                     onClick={() => removeCorrectAnswer(index)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
                     title="Remove answer"
+                    disabled={formData.type === 'both' && index === 0}
                   >
                     <X className="w-5 h-5" />
                   </button>

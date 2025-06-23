@@ -23,7 +23,7 @@ export default function Quiz() {
     type AnswerModes = "reveal-at-end"| "reveal-after-each"
     const quizTypes: QuizType[] = ["chillquiz", "realtest", "custom"];
     const answerModes: AnswerModes[] = ["reveal-at-end", "reveal-after-each"];
-    const questionTypes = ["mcq", "shortanswer"];
+    const questionTypes = ["mcq", "shortanswer", "both"];
 
     const [quizType, setQuizType] = useState('');
     const [answerMode, setAnswerMode] = useState('');

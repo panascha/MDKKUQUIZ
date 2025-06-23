@@ -76,27 +76,25 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
     }));
   };
 
-  const handleCorrectAnswerChange = (index: number, choice: string) => {
-    // For written type, allow multiple correct answers
-    if (formData.type === 'written') {
-      setFormData(prev => {
+  const handleCorrectAnswerChange = (index: number, value: string) => {
+    setFormData(prev => {
+      if (prev.type === 'both' && index === 0) {
+        // Only update the first correct answer, keep the rest
         const newAnswers = [...prev.correctAnswer];
-        newAnswers[index] = choice;
-        // Remove empty answers
+        newAnswers[0] = value;
         return {
           ...prev,
-          correctAnswer: newAnswers.filter(answer => answer.trim() !== '')
+          correctAnswer: newAnswers
         };
-      });
-    } else {
-      // For choice type, only allow one correct answer
-      if (choice.trim()) {
-        setFormData(prev => ({
-          ...prev,
-          correctAnswer: [choice]
-        }));
       }
-    }
+      const newAnswers = [...prev.correctAnswer];
+      newAnswers[index] = value;
+      // Remove empty answers except for type 'both' index 0
+      return {
+        ...prev,
+        correctAnswer: newAnswers.filter((answer, i) => prev.type === 'both' ? (i === 0 || answer.trim() !== '') : answer.trim() !== '')
+      };
+    });
   };
 
   const addCorrectAnswer = () => {
@@ -283,7 +281,7 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
           </div>
 
           {/* Choices or Written Answer */}
-          {formData.type === 'choice' ? (
+          {(formData.type === 'choice' || formData.type === 'both') && (
             <div>
               <label className="mb-1 block text-sm font-semibold">Choices</label>
               {formData.choice.map((choice, index) => (
@@ -291,8 +289,8 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
                   <input
                     type="radio"
                     name="correctAnswer"
-                    checked={formData.correctAnswer.includes(choice)}
-                    onChange={() => handleCorrectAnswerChange(index, choice)}
+                    checked={formData.correctAnswer[0] === choice}
+                    onChange={() => handleCorrectAnswerChange(0, choice)}
                     disabled={!choice.trim()}
                     className={`w-4 h-4 ${!choice.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   />
@@ -307,7 +305,9 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
                 </div>
               ))}
             </div>
-          ) : (
+          )}
+
+          {(formData.type === 'written' || formData.type === 'both') && (
             <div>
               <label className="mb-1 block text-sm font-semibold">Correct Answers</label>
               {formData.correctAnswer.map((answer, index) => (
@@ -319,12 +319,14 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
                     className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
                     placeholder={`Correct Answer ${index + 1}`}
                     rows={2}
+                    disabled={formData.type === 'both' && index === 0}
                   />
                   <button
                     type="button"
                     onClick={() => removeCorrectAnswer(index)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
                     title="Remove answer"
+                    disabled={formData.type === 'both' && index === 0}
                   >
                     <X className="w-5 h-5" />
                   </button>

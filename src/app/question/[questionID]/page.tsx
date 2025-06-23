@@ -152,7 +152,17 @@ const QuestionDetail = () => {
                             <div className="p-4 bg-gray-50 rounded-lg">
                                 <p className="text-sm text-gray-500 mb-1">Question Type</p>
                                 <p className="font-semibold text-gray-900">
-                                    {question.type === "choice" ? "MCQ" : question.type === "written" ? "Short Answer" : "Unknown"}
+                                    {question.type === "choice"
+                                        ? "MCQ"
+                                        : question.type === "written"
+                                        ? "Short Answer"
+                                        : question.type === "both"
+                                        ? (
+                                            <span className="inline-block px-3 py-1 rounded-full border border-blue-400 bg-blue-50 text-blue-700 font-bold shadow-sm animate-pulse">
+                                                MCQ + Short Answer
+                                            </span>
+                                        )
+                                        : "Unknown"}
                                 </p>
                             </div>
                         </div>
@@ -192,33 +202,41 @@ const QuestionDetail = () => {
 
                             {/* Right Column - Choices and Answers */}
                             <div className="space-y-6">
-                                {question.choice && question.choice.length > 0 && (
+                                {(question.type === 'choice' || question.type === 'both') && (
                                     <div className="bg-gray-50 p-6 rounded-lg">
-                                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Choices</h2>
-                                        <ul className="space-y-2">
-                                            {question.choice.map((choice: string, idx: number) => (
-                                                <li key={idx} className="flex items-start gap-2">
-                                                    <span className="text-orange-500 font-semibold">{String.fromCharCode(65 + idx)}.</span>
-                                                    <span className="text-gray-700">{choice}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Choices (MCQ)</h2>
+                                        {question.choice && question.choice.length > 0 ? (
+                                            <ul className="space-y-2">
+                                                {question.choice.map((choice: string, idx: number) => (
+                                                    <li key={idx} className="flex items-start gap-2">
+                                                        <span className="text-orange-500 font-semibold">{String.fromCharCode(65 + idx)}.</span>
+                                                        <span className="text-gray-700">{choice}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-gray-400 italic">No choices provided.</p>
+                                        )}
                                     </div>
                                 )}
 
-                                <div className="bg-gray-50 p-6 rounded-lg">
-                                    <h2 className="text-lg font-semibold text-gray-900 mb-3">
-                                        Correct Answer{question.correctAnswer.length > 1 ? 's' : ''}
-                                    </h2>
-                                    <ul className="space-y-2">
-                                        {question.correctAnswer.map((ans: string, idx: number) => (
-                                            <li key={idx} className="flex items-start gap-2">
-                                                <span className="text-green-500 font-semibold">✓</span>
-                                                <span className="text-gray-700">{ans}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
+                                {(question.type === 'written' || question.type === 'both') && (
+                                    <div className="bg-gray-50 p-6 rounded-lg">
+                                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Correct Answers (Short Answer)</h2>
+                                        {question.correctAnswer && question.correctAnswer.length > 0 ? (
+                                            <ul className="space-y-2">
+                                                {question.correctAnswer.map((ans: string, idx: number) => (
+                                                    <li key={idx} className="flex items-start gap-2">
+                                                        <span className="text-green-500 font-semibold">✓</span>
+                                                        <span className="text-gray-700">{ans}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-gray-400 italic">No short answers provided.</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </Card>

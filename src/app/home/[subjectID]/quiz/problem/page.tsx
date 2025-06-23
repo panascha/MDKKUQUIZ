@@ -67,9 +67,9 @@ export default function Problem() {
 
             const filteredQuestions = allQuestions.filter((q) => {
                 const categoryMatch = selectCategory.includes(q.quiz.category._id);
-                const typeMatch = selectedQuestionTypes === 'mcq' ? 
-                    q.quiz.type === 'choice' : 
-                    q.quiz.type === "written";
+                const typeMatch = selectedQuestionTypes === 'mcq'
+                    ? (q.quiz.type === 'choice' || q.quiz.type === 'both')
+                    : (q.quiz.type === 'written' || q.quiz.type === 'both');
                 return categoryMatch && typeMatch;
             });
 
