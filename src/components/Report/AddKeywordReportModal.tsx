@@ -88,7 +88,7 @@ const AddKeywordReportModal: React.FC<AddKeywordReportModalProps> = ({
       toast.success("Keyword created successfully");
 
       // Create the report with the new keyword ID
-      const newReportData: Omit<Report, '_id' | 'createdAt'> = {
+      const newReportData: Omit<Report, '_id' | 'createdAt' | 'updatedAt'> = {
         User: user._id,
         originalKeyword: originalKeyword,
         suggestedChangesKeyword: keywordResult,

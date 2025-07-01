@@ -13,7 +13,7 @@ export const SubjectDetailHeader = ({ subject }: SubjectDetailHeaderProps) => {
 
             <div className="w-48 h-48 md:w-64 md:h-64 relative mx-auto rounded-full shadow-lg hover:scale-105 transition-transform duration-300 overflow-hidden cursor-pointer">
                 <Image
-                    src={`${BACKEND_URL}/${subject.img}`}
+                    src={`${BACKEND_URL}${subject.img}`}
                     alt={subject.name}
                     fill
                     className="object-cover rounded-full"

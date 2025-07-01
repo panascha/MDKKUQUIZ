@@ -3,8 +3,6 @@ import AddReportModal from '@/components/Report/AddQuizReportModal';
 import { Question } from '@/types/api/Score';
 import { useState } from 'react';
 import { useUser } from '@/hooks/useUser';
-import transformUrl from '@/utils/transformUrl';
-import { BACKEND_URL } from '@/config/apiRoutes';
 
 interface QuizQuestionCardProps {
     question: Question;

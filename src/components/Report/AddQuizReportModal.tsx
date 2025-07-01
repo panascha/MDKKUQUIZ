@@ -162,7 +162,7 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
       const quizResult = await createQuizMutation.mutateAsync(formData);
       toast.success("create quiz success");
       // Create the report with the new quiz ID
-      const newReportData: Omit<Report, '_id' | 'createdAt'> = {
+      const newReportData: Omit<Report, '_id' | 'createdAt' | 'updatedAt'> = {
         User: user._id,
         originalQuiz: originalQuiz,
         suggestedChanges: quizResult,
@@ -243,7 +243,7 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
                     <div key={index} className="relative group">
                       <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
                         <Image
-                          src={`${BACKEND_URL}/${img}`}
+                          src={`${BACKEND_URL}${img}`}
                           alt={`Original image ${index + 1}`}
                           fill
                           className="object-cover"
@@ -255,7 +255,7 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
                   <div className="relative group">
                     <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
                       <Image
-                        src={`${BACKEND_URL}/${originalQuiz.img}`}
+                        src={`${BACKEND_URL}${originalQuiz.img}`}
                         alt="Original image"
                         fill
                         className="object-cover"

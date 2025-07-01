@@ -2,7 +2,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { BACKEND_URL, FrontendRoutes } from '@/config/apiRoutes';
 import { useSession } from 'next-auth/react';
 import { Question } from '@/types/api/Question';
 import ProtectedPage from '@/components/ProtectPage';
@@ -12,8 +11,7 @@ import ImageGallery from '@/components/magicui/ImageGallery';
 import { useGetQuizzes } from '@/hooks/quiz/useGetQuizzes';
 import { useSubmitScore } from '@/hooks/score/useSubmitScore';
 import { Quiz } from '@/types/api/Quiz';
-import transformUrl from '@/utils/transformUrl';
-import { UserScore } from '@/types/api/Score';
+
 
 export default function Problem() {
     const session = useSession();

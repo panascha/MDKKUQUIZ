@@ -130,7 +130,7 @@ const Main = () => {
         description: formData.description,
         year: formData.year,
         img: formData.image as unknown as string,
-        Category: []
+        Category: [],
       },
       {
         onSuccess: () => {
@@ -188,7 +188,7 @@ const Main = () => {
         year: subject.year,
         image: null,
       });
-      setExistingImg(`${BACKEND_URL}/${subject.img}`);
+      setExistingImg(`${BACKEND_URL}${subject.img}`);
       setSelectedSubjectId(subject._id);
       setEditModal(true);
     };    

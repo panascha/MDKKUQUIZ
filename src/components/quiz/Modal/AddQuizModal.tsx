@@ -21,7 +21,6 @@ interface AddQuizModalProps {
   category: Category[];
 }
 
-// Helper for filtering keywords
 function filterKeywords(keywords: string[], value: string) {
   return keywords.filter(k => k.toLowerCase().includes(value.toLowerCase())).slice(0, 10);
 }
@@ -94,7 +93,6 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
   const handleCorrectAnswerChange = (value: string, index: number) => {
     setFormData(prev => {
       if (prev.type === 'both' && index === 0) {
-        // Only update the first correct answer, keep the rest
         const newAnswers = [...prev.correctAnswer];
         newAnswers[0] = value;
         return {
@@ -104,7 +102,6 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
       }
       const newAnswers = [...prev.correctAnswer];
       newAnswers[index] = value;
-      // Remove empty answers except for type 'both' index 0
       return {
         ...prev,
         correctAnswer: newAnswers.filter((answer, i) => prev.type === 'both' ? (i === 0 || answer.trim() !== '') : answer.trim() !== '')
@@ -210,9 +207,9 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
         type: formData.type,
         choice: (formData.type === 'choice' || formData.type === 'both') ? formData.choice.map(c => c.trim()) : [],
         correctAnswer: formData.correctAnswer,
-        img: [], // This will be handled by the backend
+        img: [],
         status: 'pending',
-        images: imageFiles // Add the image files to the quiz data
+        images: imageFiles 
       };
 
       await createQuizMutation.mutateAsync(quizData);

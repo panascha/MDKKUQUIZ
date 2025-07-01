@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 export const useCreateSubject = () => {
     const session = useSession();
     return useMutation({
-        mutationFn: async (newSubject: Omit<Subject, "_id"|"createAt">) => {
+        mutationFn: async (newSubject: Omit<Subject, "_id"|"createdAt" | "updatedAt">) => {
             if (!session?.data?.user.token) throw new Error("Authentication required");
 
             const formDataPayload = new FormData();

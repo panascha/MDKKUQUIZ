@@ -5,7 +5,6 @@ import { AlertTriangle } from 'lucide-react';
 import { Report } from '@/types/api/Report';
 import { useState } from 'react';
 import ImageGallery from '../magicui/ImageGallery';
-import { BACKEND_URL } from '@/config/apiRoutes';
 
 interface ReportsTabProps {
     reports: Report[];

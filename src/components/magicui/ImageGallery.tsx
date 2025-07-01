@@ -218,7 +218,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
           </div>
         )}
         <Image
-          src={currentImage}
+          src={`${BACKEND_URL}${currentImage}`}
           alt={`Image ${currentIndex + 1} of ${images.length}`}
           className={cn(
             "object-cover w-full h-full transition-transform duration-300 hover:scale-105",
@@ -267,7 +267,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
           <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
             <Image
               ref={imageRef}
-              src={`${BACKEND_URL}/${currentImage}`}
+              src={`${BACKEND_URL}${currentImage}`}
               alt={`Large Image ${currentIndex + 1} of ${images.length}`}
               className={`transition-transform duration-300 cursor-grab`}
               style={{ transform: `scale(${zoomLevel}) translate(${position.x}px, ${position.y}px)` }}

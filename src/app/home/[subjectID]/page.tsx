@@ -14,13 +14,11 @@ import { useUser } from '@/hooks/useUser';
 import { Role_type } from '@/config/role';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import SubjectTopics from '@/components/subjects/Detail/SubjectTopics';
 
 export default function SubjectDetailPage() {
     const params = useParams();
     const subjectID = typeof params.subjectID === 'string' ? params.subjectID : '';
-    const { data: session } = useSession();
     const { user } = useUser();
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
     const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);

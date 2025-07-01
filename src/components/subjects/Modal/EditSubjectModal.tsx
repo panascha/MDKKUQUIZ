@@ -139,7 +139,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
               <div className="mt-4 relative group">
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
                   <Image
-                    src={existingImg.startsWith("http") ? existingImg : `${BACKEND_URL}/${existingImg}`}
+                    src={existingImg.startsWith("http") ? existingImg : `${BACKEND_URL}${existingImg}`}
                     alt="Current Image"
                     fill
                     className="object-cover"
