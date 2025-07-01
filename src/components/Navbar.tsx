@@ -66,6 +66,12 @@ export default function Navbar() {
                                     Keyword
                                 </button>
                                 <button
+                                    onClick={() => router.push(FrontendRoutes.REPORT)}
+                                    className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
+                                >
+                                    Report
+                                </button>
+                                <button
                                     onClick={() => router.push(FrontendRoutes.PROFILE)}
                                     className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
                                 >
@@ -164,6 +170,14 @@ export default function Navbar() {
                                     router.push(FrontendRoutes.KEYWORD);
                                 }}>
                                 Keyword
+                            </button>
+                            <button
+                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    router.push(FrontendRoutes.REPORT);
+                                }}>
+                                Report
                             </button>
                             <button
                                 onClick={handleLogout}
