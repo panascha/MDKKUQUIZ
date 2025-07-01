@@ -50,9 +50,8 @@ export default function AdminPanel() {
         }
     }, [status, router, user?.role, isAdmin, user, isUserLoading]);
     
-    // Handler functions
-    const handleReportApprove = (id: string) => handleReportAction(id, true);
-    const handleReportReject = (id: string) => handleReportAction(id, false);
+    const handleReportApprove = (id: string, reason: string) => handleReportAction(id, true, reason);
+    const handleReportReject = (id: string, reason: string) => handleReportAction(id, false, reason);
     const handleKeywordApprove = (id: string) => handleKeywordAction(id, true);
     const handleKeywordReject = (id: string) => handleKeywordAction(id, false);
     const handleQuizApprove = (id: string) => handleQuizAction(id, true);
@@ -88,9 +87,9 @@ export default function AdminPanel() {
         );
     };
 
-    const handleReportAction = (id: string, isApproved: boolean) => {
+    const handleReportAction = (id: string, isApproved: boolean, reason: string) => {
         approveReport(
-            { reportID: id, isApproved },
+            { reportID: id, isApproved, reason },
             {
                 onSuccess: () => {
                     toast.success(`Report has been ${isApproved ? 'approved' : 'rejected'}`);
