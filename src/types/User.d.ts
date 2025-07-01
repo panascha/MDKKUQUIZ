@@ -1,9 +1,10 @@
 export interface User {
   _id: string;
-  createdAt: string;
   email: string;
   name: string;
   role: string;
   year: string;
+  createdAt: string;
   __v: number;
+  updatedAt: Date;
 }

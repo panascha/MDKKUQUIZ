@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Report } from '@/types/api/Report';
 import { useState } from 'react';
 import ImageGallery from '../magicui/ImageGallery';
@@ -9,12 +9,13 @@ import { BACKEND_URL } from '@/config/apiRoutes';
 
 interface ReportsTabProps {
     reports: Report[];
-    onReview: (id: string) => void;
-    onDismiss: (id: string) => void;
+    onReview: (id: string, reason: string) => void;
+    onDismiss: (id: string, reason: string) => void;
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss }) => {
     const [expandedReport, setExpandedReport] = useState<string | null>(null);
+    const [reason, setReason] = useState<{[id: string]: string}>({});
 
     const toggleExpand = (reportId: string) => {
         setExpandedReport(expandedReport === reportId ? null : reportId);
@@ -157,13 +158,25 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-2">
+                                    {expandedReport === report._id && (
+                                        <div className="mb-2 w-full">
+                                            <label className="block text-sm font-semibold mb-1">Reason</label>
+                                            <textarea
+                                                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                                                placeholder="Enter reason"
+                                                value={reason[report._id] || ''}
+                                                onChange={e => setReason(r => ({ ...r, [report._id]: e.target.value }))}
+                                                rows={2}
+                                            />
+                                        </div>
+                                    )}
                                     <Button
-                                        onClick={() => onReview(report._id)}
+                                        onClick={() => onReview(report._id, reason[report._id] || '')}
                                         className="flex-1 sm:flex-none bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
                                         textButton="Review"
                                     />
                                     <Button
-                                        onClick={() => onDismiss(report._id)}
+                                        onClick={() => onDismiss(report._id, reason[report._id] || '')}
                                         className="flex-1 sm:flex-none bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
                                         textButton="Dismiss"
                                     />

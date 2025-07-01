@@ -13,5 +13,6 @@ export interface Quiz {
     correctAnswer: Array<string>;
     img: Array<string>;
     status: 'pending' | 'approved' | 'rejected' | 'reported';
+    updatedAt: Date;
   }
   

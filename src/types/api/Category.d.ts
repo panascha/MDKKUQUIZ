@@ -5,5 +5,6 @@ export interface Category {
   subject: Subject;
   category: string;
   description: string;
+  updatedAt: Date;
 }
 
