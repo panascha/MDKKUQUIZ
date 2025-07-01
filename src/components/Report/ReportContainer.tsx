@@ -14,16 +14,20 @@ import { FrontendRoutes } from '@/config/apiRoutes';
 import { Report } from '@/types/api/Report';
 import ReportDetailDropdown from "./ReportDetailDropdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Trash2 } from 'lucide-react';
+import { useDeleteReport } from '@/hooks/report/useDeleteReport';
 
 const ReportContainer = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const { data: reports = [], isLoading, error } = useGetReport();
   const { user } = useUser();
+  const deleteReportMutation = useDeleteReport();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [openReportId, setOpenReportId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'status-az' | 'status-za'>('newest');
 
   const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
 
@@ -45,8 +49,22 @@ const ReportContainer = () => {
     return filtered;
   }, [reports, user?._id, isAdmin, searchTerm, selectedStatus]);
 
-  const quizReports = filteredReports.filter((r: Report) => r.type === 'quiz');
-  const keywordReports = filteredReports.filter((r: Report) => r.type === 'keyword');
+  const sortedReports = useMemo(() => {
+    let sorted = [...filteredReports];
+    if (sortBy === 'newest') {
+      sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (sortBy === 'oldest') {
+      sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    } else if (sortBy === 'status-az') {
+      sorted.sort((a, b) => a.status.localeCompare(b.status));
+    } else if (sortBy === 'status-za') {
+      sorted.sort((a, b) => b.status.localeCompare(a.status));
+    }
+    return sorted;
+  }, [filteredReports, sortBy]);
+
+  const quizReports = sortedReports.filter((r: Report) => r.type === 'quiz');
+  const keywordReports = sortedReports.filter((r: Report) => r.type === 'keyword');
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -66,7 +84,18 @@ const ReportContainer = () => {
           </Link>
         </div>
         <h1 className="text-3xl font-bold text-center mb-4">Report List</h1>
-        {/* Search and filter section */}
+        <div className="w-full max-w-5xl mb-4 flex justify-end">
+          <select
+            className="border border-gray-300 rounded-md p-2"
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as any)}
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="status-az">Status (A-Z)</option>
+            <option value="status-za">Status (Z-A)</option>
+          </select>
+        </div>
         <section className="flex flex-col gap-4 mt-3 mx-auto p-2 sm:p-4 md:p-6 w-full max-w-5xl items-center justify-center md:flex-row md:justify-between">
           <div className="flex flex-col gap-2 w-full md:w-7/12">
             <label htmlFor="search" className="text-sm md:text-md text-center md:text-left">Search:</label>
@@ -96,13 +125,11 @@ const ReportContainer = () => {
             </div>
           </div>
         </section>
-        {/* Total count display */}
         <div className="w-full max-w-5xl mb-4 text-right">
           <p className="text-gray-600">
             Total Reports: <span className="font-semibold">{filteredReports.length}</span>
           </p>
         </div>
-        {/* Tabs for Quiz and Keyword Reports */}
         <Tabs defaultValue="quiz" className="w-full max-w-5xl">
           <TabsList className="bg-white p-1 rounded-lg shadow-sm overflow-x-auto flex whitespace-nowrap mb-4">
             <TabsTrigger value="quiz" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
@@ -127,7 +154,34 @@ const ReportContainer = () => {
                     role="button"
                     aria-expanded={openReportId === report._id}
                   >
-                    <div className="flex items-center justify-between mb-4">
+                    {isAdmin && openReportId === report._id && (
+                      <Badge
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 absolute top-4 right-4 z-10 ${
+                          report.status === "approved"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                            : report.status === "pending"
+                            ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                            : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
+                        }`}
+                      >
+                        {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                      </Badge>
+                    )}
+                    {user?.role === 'S-admin' && openReportId === report._id && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (window.confirm('Are you sure you want to delete this report?')) {
+                            deleteReportMutation.mutate(report._id);
+                          }
+                        }}
+                        className="absolute top-4 right-28 z-10 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200"
+                        title="Delete report"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
+                    <div className="items-center justify-between mb-4">
                       <div className="space-y-2">
                         <p className="text-sm font-semibold text-gray-700">Quiz Report</p>
                         <p className="text-sm text-gray-500 truncate max-w-xs">{report.reason}</p>
@@ -135,7 +189,7 @@ const ReportContainer = () => {
                           <ReportDetailDropdown report={report} open={openReportId === report._id} />
                         </div>
                       </div>
-                      {isAdmin && (
+                      {isAdmin && openReportId !== report._id && (
                         <Badge
                           className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
                             report.status === "approved"
@@ -169,7 +223,34 @@ const ReportContainer = () => {
                     role="button"
                     aria-expanded={openReportId === report._id}
                   >
-                    <div className="flex items-center justify-between mb-4">
+                    {isAdmin && openReportId === report._id && (
+                      <Badge
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 absolute top-4 right-4 z-10 ${
+                          report.status === "approved"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                            : report.status === "pending"
+                            ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                            : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
+                        }`}
+                      >
+                        {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                      </Badge>
+                    )}
+                    {user?.role === 'S-admin' && openReportId === report._id && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (window.confirm('Are you sure you want to delete this report?')) {
+                            deleteReportMutation.mutate(report._id);
+                          }
+                        }}
+                        className="absolute top-4 right-28 z-10 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200"
+                        title="Delete report"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
+                    <div className="items-center justify-between mb-4">
                       <div className="space-y-2">
                         <p className="text-sm font-semibold text-gray-700">Keyword Report</p>
                         <p className="text-sm text-gray-500 truncate max-w-xs">{report.reason}</p>
@@ -177,7 +258,7 @@ const ReportContainer = () => {
                           <ReportDetailDropdown report={report} open={openReportId === report._id} />
                         </div>
                       </div>
-                      {isAdmin && (
+                      {isAdmin && openReportId !== report._id && (
                         <Badge
                           className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
                             report.status === "approved"
