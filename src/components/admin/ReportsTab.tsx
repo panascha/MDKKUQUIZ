@@ -84,7 +84,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                             {report.originalQuiz.img.map((img, index) => (
                                                                 <div key={index} className="relative aspect-square">
                                                                     <ImageGallery
-                                                                        images={[`${BACKEND_URL}/${img}`]}
+                                                                        images={[img]}
                                                                     />
                                                                 </div>
                                                             ))}
@@ -128,7 +128,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                             {report.suggestedChanges.img.map((img, index) => (
                                                                 <div key={index} className="relative aspect-square">
                                                                     <ImageGallery
-                                                                        images={[`${BACKEND_URL}/${img}`]}
+                                                                        images={[img]}
                                                                     />
                                                                 </div>
                                                             ))}

@@ -71,7 +71,7 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onApprove, onReject })
                                                     className="relative aspect-video cursor-pointer group"
                                                 >
                                                     <ImageGallery
-                                                        images={[`${BACKEND_URL}/${image}`]}
+                                                        images={[image]}
                                                     />
                                                 </div>
                                             ))}

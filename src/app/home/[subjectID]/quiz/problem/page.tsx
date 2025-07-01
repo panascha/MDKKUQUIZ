@@ -338,7 +338,7 @@ export default function Problem() {
                             {currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 && (
                                         <div className="w-full md:w-1/2 bg-gray-50 rounded-xl p-4 shadow-inner">
                                             <ImageGallery 
-                                                images={currentQuestion.quiz.img.map(img => `${BACKEND_URL}/${img}`)} 
+                                                images={currentQuestion.quiz.img} 
                                             />
                                         </div>
                             )}
@@ -545,7 +545,7 @@ export default function Problem() {
                             <div className="flex flex-col items-center justify-center h-full w-full">
                                 <div className="rounded-xl overflow-auto w-full h-full flex items-center justify-center relative bg-gray-50">
                                 <ImageGallery 
-                                    images={currentQuestion.quiz.img.map(img => transformUrl(img))}
+                                    images={currentQuestion.quiz.img}
                                     />
                                 </div>
                             </div>

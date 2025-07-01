@@ -192,8 +192,8 @@ const QuestionDetail = () => {
                                         <div className="flex justify-center">
                                             <ImageGallery 
                                                 images={Array.isArray(question.img) 
-                                                    ? question.img.map(img => `${BACKEND_URL}/${img}`) 
-                                                    : [`${BACKEND_URL}/${question.img}`]} 
+                                                    ? question.img 
+                                                    : question.img}
                                             />
                                         </div>
                                     </div>

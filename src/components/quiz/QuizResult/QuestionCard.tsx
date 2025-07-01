@@ -37,7 +37,7 @@ export const QuizQuestionCard = ({ question, index }: QuizQuestionCardProps) => 
             </p>
             <div className="flex flex-col md:flex-row items-center gap-8 ml-4 md:gap-6 md:justify-between">
                 {question.Quiz.img && question.Quiz.img.length > 0 && (
-                    <ImageGallery images={question.Quiz.img.map(img => `${BACKEND_URL}/${img}`)} />
+                    <ImageGallery images={question.Quiz.img} />
                 )}
                 <div className="md:order-2 md:w-2/3">
                     <p className="mb-1"><strong>Your Answer: </strong>{question.Answer}</p>

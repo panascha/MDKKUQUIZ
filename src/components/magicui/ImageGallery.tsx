@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { BACKEND_URL } from '@/config/apiRoutes';
 
 interface ImageGalleryProps {
   images: string[];
@@ -266,7 +267,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
           <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
             <Image
               ref={imageRef}
-              src={currentImage}
+              src={`${BACKEND_URL}/${currentImage}`}
               alt={`Large Image ${currentIndex + 1} of ${images.length}`}
               className={`transition-transform duration-300 cursor-grab`}
               style={{ transform: `scale(${zoomLevel}) translate(${position.x}px, ${position.y}px)` }}
