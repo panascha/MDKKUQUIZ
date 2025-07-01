@@ -2,7 +2,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { FrontendRoutes } from '@/config/apiRoutes';
+import { BACKEND_URL, FrontendRoutes } from '@/config/apiRoutes';
 import { useSession } from 'next-auth/react';
 import { Question } from '@/types/api/Question';
 import ProtectedPage from '@/components/ProtectPage';
@@ -338,7 +338,7 @@ export default function Problem() {
                             {currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 && (
                                         <div className="w-full md:w-1/2 bg-gray-50 rounded-xl p-4 shadow-inner">
                                             <ImageGallery 
-                                                images={currentQuestion.quiz.img.map(img => `http://localhost:5000${img}`)} 
+                                                images={currentQuestion.quiz.img.map(img => `${BACKEND_URL}/${img}`)} 
                                             />
                                         </div>
                             )}

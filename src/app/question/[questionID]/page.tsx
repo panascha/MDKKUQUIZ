@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Quiz } from "@/types/api/Quiz";
 import { Subject } from "@/types/api/Subject";
 import { Category } from "@/types/api/Category";
-import { BackendRoutes, FrontendRoutes } from "@/config/apiRoutes";
+import { BACKEND_URL, BackendRoutes, FrontendRoutes } from "@/config/apiRoutes";
 import { IoIosArrowBack } from "react-icons/io";
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
@@ -192,8 +192,8 @@ const QuestionDetail = () => {
                                         <div className="flex justify-center">
                                             <ImageGallery 
                                                 images={Array.isArray(question.img) 
-                                                    ? question.img.map(img => `http://localhost:5000${img}`) 
-                                                    : [`http://localhost:5000${question.img}`]} 
+                                                    ? question.img.map(img => `${BACKEND_URL}/${img}`) 
+                                                    : [`${BACKEND_URL}/${question.img}`]} 
                                             />
                                         </div>
                                     </div>

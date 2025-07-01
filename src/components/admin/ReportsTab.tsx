@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp } from 'lu
 import { Report } from '@/types/api/Report';
 import { useState } from 'react';
 import ImageGallery from '../magicui/ImageGallery';
+import { BACKEND_URL } from '@/config/apiRoutes';
 
 interface ReportsTabProps {
     reports: Report[];
@@ -83,7 +84,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                             {report.originalQuiz.img.map((img, index) => (
                                                                 <div key={index} className="relative aspect-square">
                                                                     <ImageGallery
-                                                                        images={[`http://localhost:5000${img}`]}
+                                                                        images={[`${BACKEND_URL}/${img}`]}
                                                                     />
                                                                 </div>
                                                             ))}
@@ -127,7 +128,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                             {report.suggestedChanges.img.map((img, index) => (
                                                                 <div key={index} className="relative aspect-square">
                                                                     <ImageGallery
-                                                                        images={[`http://localhost:5000${img}`]}
+                                                                        images={[`${BACKEND_URL}/${img}`]}
                                                                     />
                                                                 </div>
                                                             ))}

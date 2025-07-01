@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react';
 import { useUser } from '@/hooks/useUser';
 import Image from 'next/image';
 import ImageGallery from '@/components/magicui/ImageGallery';
+import { BACKEND_URL } from '@/config/apiRoutes';
 
 interface QuizFormData {
   user: string;
@@ -242,7 +243,7 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
                     <div key={index} className="relative group">
                       <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
                         <Image
-                          src={`http://localhost:5000${img}`}
+                          src={`${BACKEND_URL}/${img}`}
                           alt={`Original image ${index + 1}`}
                           fill
                           className="object-cover"
@@ -254,7 +255,7 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
                   <div className="relative group">
                     <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
                       <Image
-                        src={`http://localhost:5000${originalQuiz.img}`}
+                        src={`${BACKEND_URL}/${originalQuiz.img}`}
                         alt="Original image"
                         fill
                         className="object-cover"

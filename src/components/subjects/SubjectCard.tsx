@@ -25,7 +25,7 @@ export const SubjectCard = ({
                 {/* Image */}
                 <div className="relative w-full h-48 rounded-xl overflow-hidden">
                     <Image
-                        src={`http://localhost:5000${subject.img}`}
+                        src={`${subject.img}`}
                         alt={subject.name}
                         layout="fill"
                         objectFit="cover"

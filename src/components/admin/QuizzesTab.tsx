@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle, X } from 'lucide-react';
 import { Quiz } from '@/types/api/Quiz';
 import Image from 'next/image';
 import ImageGallery from '../magicui/ImageGallery';
+import { BACKEND_URL } from '@/config/apiRoutes';
 
 interface QuizzesTabProps {
     quizzes: Quiz[];
@@ -70,7 +71,7 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onApprove, onReject })
                                                     className="relative aspect-video cursor-pointer group"
                                                 >
                                                     <ImageGallery
-                                                        images={[`http://localhost:5000${image}`]}
+                                                        images={[`${BACKEND_URL}/${image}`]}
                                                     />
                                                 </div>
                                             ))}

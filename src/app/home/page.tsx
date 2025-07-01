@@ -16,6 +16,7 @@ import { SubjectCard } from '@/components/subjects/SubjectCard';
 import { SubjectHeader } from '@/components/subjects/SubjectHeader';
 import AddSubjectModal from '@/components/subjects/Modal/AddSubjectModal';
 import EditSubjectModal from '@/components/subjects/Modal/EditSubjectModal';
+import { BACKEND_URL } from '@/config/apiRoutes';
 
 const Main = () => {
     const {
@@ -187,7 +188,7 @@ const Main = () => {
         year: subject.year,
         image: null,
       });
-      setExistingImg(`http://localhost:5000${subject.img}`);
+      setExistingImg(`${BACKEND_URL}/${subject.img}`);
       setSelectedSubjectId(subject._id);
       setEditModal(true);
     };    
