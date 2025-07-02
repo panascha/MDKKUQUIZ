@@ -1,5 +1,5 @@
 //const BACKEND_URL = "https://medquizbackend.onrender.com";
-export const BACKEND_URL = "http://localhost:5000";
+export const BACKEND_URL = "http://localhost:5001";
 const BackendRootRoutes = `${BACKEND_URL}/api/v1`;
 
 export enum BackendRoutes {
@@ -26,6 +26,7 @@ export enum BackendRoutes {
   APPROVED_QUIZ = `${BackendRootRoutes}/approved/quiz`,
   APPROVED_KEYWORD = `${BackendRootRoutes}/approved/keyword`,
   APPROVED_REPORT = `${BackendRootRoutes}/approved/report`,
+  DAILY_ACTIVITY = `${BackendRootRoutes}/stat/daily-activity`,
 }
 
 export const getQuizByFilter = (subjectID?: string, categoryID?: string): string => {
