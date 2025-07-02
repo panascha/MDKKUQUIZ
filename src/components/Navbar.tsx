@@ -89,13 +89,9 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    {/* Desktop Right Menu */}
                     <div className="hidden lg:flex items-center gap-4">
                         {user ? (
                             <>
-                                <button className="p-2 hover:bg-gray-100 hover:text-blue-950 rounded-full transition duration-300 ease-in-out cursor-pointer">
-                                    <IoMdNotificationsOutline size={22} />
-                                </button>
                                 <div className="relative">
                                     <button
                                         onClick={toggleProfile}
@@ -135,70 +131,112 @@ export default function Navbar() {
                     </div>
                 </nav>
             </div>
-            {/* Mobile Dropdown */}
-            <div
-                className={`lg:hidden transition-all duration-300 ease-in-out origin-top bg-white text-black shadow-md rounded-b-sm overflow-hidden ${
-                    isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-                }`}
-            >
-                <div className="flex flex-col divide-y divide-gray-200">
-                    {user ? (
-                        <>
-                            <button className="w-full text-center px-4 py-3 hover:bg-gray-100">
-                                Notification
-                            </button>
+            {/* Mobile Modal/Drawer */}
+            {isMenuOpen && (
+                <>
+                    {/* Overlay */}
+                    <div
+                        className="fixed inset-0 bg-black/40 z-[300] transition-opacity duration-300"
+                        onClick={() => setIsMenuOpen(false)}
+                        aria-label="Close mobile menu overlay"
+                    />
+                    {/* Drawer Modal */}
+                    <div
+                        className="fixed top-4 right-4 w-64 max-w-[90vw] bg-white text-blue-950 shadow-2xl rounded-2xl z-[400] animate-slide-in flex flex-col divide-y divide-blue-100"
+                        style={{ animation: 'slideInRight 0.3s cubic-bezier(0.4,0,0.2,1)' }}
+                    >
+                        <div className="flex justify-between items-center px-4 py-3">
+                            <span className="font-bold text-lg">Menu</span>
                             <button
-                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
-                                onClick={() => {
-                                    setIsMenuOpen(false);
-                                    router.push(FrontendRoutes.HOMEPAGE);
-                                }}>
-                                Home
-                            </button>
-                            <button
-                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
-                                onClick={() => {
-                                    setIsMenuOpen(false);
-                                    router.push(FrontendRoutes.QUESTION);
-                                }}>
-                                Question
-                            </button>
-                            <button
-                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
-                                onClick={() => {
-                                    setIsMenuOpen(false);
-                                    router.push(FrontendRoutes.KEYWORD);
-                                }}>
-                                Keyword
-                            </button>
-                            <button
-                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
-                                onClick={() => {
-                                    setIsMenuOpen(false);
-                                    router.push(FrontendRoutes.REPORT);
-                                }}>
-                                Report
-                            </button>
-                            <button
-                                onClick={handleLogout}
-                                className="w-full text-center px-4 py-3 hover:bg-gray-100"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-2xl text-blue-900 hover:text-emerald-500 transition"
+                                aria-label="Close menu"
                             >
-                                Logout
+                                <FaXmark />
                             </button>
-                        </>
-                    ) : (
-                        <button
-                            onClick={() => {
-                                setIsMenuOpen(false);
-                                router.push(FrontendRoutes.LOGIN);
-                            }}
-                            className="w-full text-center px-4 py-3 hover:bg-gray-100"
-                        >
-                            Sign in
-                        </button>
-                    )}
-                </div>
-            </div>
+                        </div>
+                        <div className="flex flex-col divide-y divide-blue-100">
+                            {user ? (
+                                <>
+                                    <button
+                                        className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            router.push(FrontendRoutes.HOMEPAGE);
+                                        }}>
+                                        Home
+                                    </button>
+                                    <button
+                                        className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            router.push(FrontendRoutes.QUESTION);
+                                        }}>
+                                        Question
+                                    </button>
+                                    <button
+                                        className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            router.push(FrontendRoutes.KEYWORD);
+                                        }}>
+                                        Keyword
+                                    </button>
+                                    <button
+                                        className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            router.push(FrontendRoutes.REPORT);
+                                        }}>
+                                        Report
+                                    </button>
+                                    <button
+                                        className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            router.push(FrontendRoutes.PROFILE);
+                                        }}>
+                                        Profile
+                                    </button>
+                                    {isAdmin && 
+                                        <button
+                                            className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
+                                            onClick={() => {
+                                                setIsMenuOpen(false);
+                                                router.push(FrontendRoutes.ADMIN);
+                                            }}>
+                                            Admin
+                                        </button>
+                                    }
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
+                                    >
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={() => {
+                                        setIsMenuOpen(false);
+                                        router.push(FrontendRoutes.LOGIN);
+                                    }}
+                                    className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
+                                >
+                                    Sign in
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    {/* Keyframes for slide-in animation */}
+                    <style jsx global>{`
+                        @keyframes slideInRight {
+                            from { transform: translateX(100%); opacity: 0; }
+                            to { transform: translateX(0); opacity: 1; }
+                        }
+                    `}</style>
+                </>
+            )}
             {/* Spacer div to prevent content overlap */}
             <div className="h-16"></div>
         </>
