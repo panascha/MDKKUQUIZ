@@ -229,6 +229,12 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
           height={280}
           priority
         />
+        {/* Watermark overlay for thumbnail */}
+        <div className="absolute inset-0 flex items-end justify-end pointer-events-none">
+          <span className="m-2 px-2 py-1 bg-white/60 text-xs font-bold text-gray-700 rounded opacity-70 select-none">
+            คณะแพทยศาสตร์ มหาวิทยาลัยขอนแก่น
+          </span>
+        </div>
       </div>
 
       {images.length > 1 && (
@@ -280,6 +286,12 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
               quality={100}
               priority
             />
+            {/* Watermark overlay for modal */}
+            <div className="absolute inset-0 flex items-end justify-end pointer-events-none">
+              <span className="m-4 px-3 py-1 bg-white/70 text-base font-bold text-gray-700 rounded opacity-80 select-none shadow">
+                คณะแพทยศาสตร์ มหาวิทยาลัยขอนแก่น
+              </span>
+            </div>
             <div className="absolute top-2 right-2 flex space-x-2">
               <button
                 onClick={closeModal}
