@@ -11,9 +11,9 @@ import {
 import { Input } from "../../components/ui/Input";
 import { Label } from "../../components/ui/Label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
-import { BackendRoutes, FrontendRoutes } from "../../config/apiRoutes";
+import { BackendRoutes, FrontendRoutes, BACKEND_URL } from "../../config/apiRoutes";
 import axios from "axios";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -21,12 +21,31 @@ import TermOfServise from '../../components/ui/TermOfServise';
 
 const Page = () => {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
   useEffect(() => {
-    if (session) {
-      router.push(FrontendRoutes.HOMEPAGE);
-    }
-  }, [session, router]);
+    const checkUserExists = async () => {
+      if (status === "authenticated" && session?.user?.email) {
+        try {
+          const res = await axios.get(
+            `${BACKEND_URL}/api/v1/auth/user-exists?email=${encodeURIComponent(session.user.email)}`
+          );
+          if (!res.data.exists) {
+            toast.error("Your account has been deleted.");
+            await signOut({ redirect: false });
+            router.push(FrontendRoutes.LOGIN);
+          } else {
+            router.push(FrontendRoutes.HOMEPAGE);
+          }
+        } catch (err) {
+          toast.error("Session invalid. Please log in again.");
+          await signOut({ redirect: false });
+          router.push(FrontendRoutes.LOGIN);
+        }
+      }
+    };
+    checkUserExists();
+  }, [status, session, router]);
 
   // Login state
   const [email, setEmail] = useState("");

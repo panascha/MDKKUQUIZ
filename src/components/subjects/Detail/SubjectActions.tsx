@@ -9,7 +9,7 @@ export const SubjectActions = ({ subjectId, canTakeQuiz = true }: SubjectActions
     return (
         <div className="bg-white rounded-xl shadow-lg p-4 flex flex-col sm:flex-row justify-center items-center mt-8 gap-4 sm:gap-6 border border-gray-100">
             <div className="relative flex flex-col items-center">
-                <Link
+            <Link
                     href={canTakeQuiz ? `${subjectId}/quiz` : "#"}
                     className={
                         `min-w-[180px] px-6 py-3 text-white text-lg font-semibold rounded-lg shadow-md transition duration-200 text-center flex items-center justify-center ` +
@@ -19,9 +19,9 @@ export const SubjectActions = ({ subjectId, canTakeQuiz = true }: SubjectActions
                     }
                     aria-disabled={!canTakeQuiz}
                     tabIndex={canTakeQuiz ? 0 : -1}
-                >
-                    Take Quiz
-                </Link>
+            >
+                Take Quiz
+            </Link>
                 {!canTakeQuiz && (
                     <span className="absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-gray-800 text-white text-xs font-semibold rounded-lg px-3 py-2 shadow-xl whitespace-nowrap z-20 border border-gray-300 animate-fade-in">
                         You must create at least 5 quizzes to take a quiz
