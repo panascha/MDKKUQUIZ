@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useGetAllUser } from '@/hooks/useGetAllUser';
-import { BackendRoutes } from '@/config/apiRoutes';
+import { useGetAllUser } from '../../hooks/useGetAllUser';
+import { BackendRoutes } from '../../config/apiRoutes';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '../../hooks/useUser';
 
 const roles = ['user', 'admin', 'S-admin'];
 

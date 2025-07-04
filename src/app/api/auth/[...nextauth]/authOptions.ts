@@ -1,5 +1,5 @@
-import { FrontendRoutes } from "@/config/apiRoutes";
-import userLogIn from "@/lib/userLogIn";
+import { FrontendRoutes } from "../../../../config/apiRoutes";
+import userLogIn from "../../../../lib/userLogIn";
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 

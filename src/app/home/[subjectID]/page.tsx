@@ -1,19 +1,19 @@
 "use client"
 
-import { useGetSubjectByID } from "@/hooks/subject/useGetSubjectByID";
-import { useGetCategoryBySubjectID } from "@/hooks/category/useGetCategoryBySubjectID";
-import { BackButton } from "@/components/subjects/Detail/BackButton";
-import { SubjectDetailHeader } from "@/components/subjects/Detail/SubjectDetailHeader";
-import { SubjectActions } from "@/components/subjects/Detail/SubjectActions";
+import { useGetSubjectByID } from "../../../hooks/subject/useGetSubjectByID";
+import { useGetCategoryBySubjectID } from "../../../hooks/category/useGetCategoryBySubjectID";
+import { BackButton } from "../../../components/subjects/Detail/BackButton";
+import { SubjectDetailHeader } from "../../../components/subjects/Detail/SubjectDetailHeader";
+import { SubjectActions } from "../../../components/subjects/Detail/SubjectActions";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from 'react';
-import AddCategoryModal from "@/components/category/AddCategoryModal";
-import { useUser } from '@/hooks/useUser';
-import { Role_type } from '@/config/role';
+import AddCategoryModal from "../../../components/category/AddCategoryModal";
+import { useUser } from '../../../hooks/useUser';
+import { Role_type } from '../../../config/role';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
-import SubjectTopics from '@/components/subjects/Detail/SubjectTopics';
-import { useGetUserStatById } from '@/hooks/stats/useGetUserStatById';
+import SubjectTopics from '../../../components/subjects/Detail/SubjectTopics';
+import { useGetUserStatById } from '../../../hooks/stats/useGetUserStatById';
 
 export default function SubjectDetailPage() {
     const params = useParams();

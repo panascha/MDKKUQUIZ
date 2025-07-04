@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/Card";
-import { Keyword } from "@/types/api/Keyword";
-import { Badge } from "@/components/ui/Badge";
+import { Card, CardContent } from "../../components/ui/Card";
+import { Keyword } from "../../types/api/Keyword";
+import { Badge } from "../../components/ui/Badge";
 import Link from "next/link";
 
 interface KeywordCardProps {

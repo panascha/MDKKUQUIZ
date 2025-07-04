@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { BackendRoutes } from "@/config/apiRoutes";
 import { useSession } from "next-auth/react";
+import { BackendRoutes } from "../../config/apiRoutes";
 
 export interface CreateQuizData {
   user: string;

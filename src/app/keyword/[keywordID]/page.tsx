@@ -1,17 +1,17 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { FrontendRoutes, BackendRoutes } from '@/config/apiRoutes';
+import { FrontendRoutes, BackendRoutes } from '../../../config/apiRoutes';
 import { useSession } from 'next-auth/react';
-import ProtectedPage from '@/components/ProtectPage';
-import { Keyword } from '@/types/api/Keyword';
-import { Badge } from '@/components/ui/Badge';
-import { Card } from '@/components/ui/Card';
+import ProtectedPage from '../../../components/ProtectPage';
+import { Keyword } from '../../../types/api/Keyword';
+import { Badge } from '../../../components/ui/Badge';
+import { Card } from '../../../components/ui/Card';
 import Link from 'next/link';
 import { IoIosArrowBack } from "react-icons/io";
-import AddKeywordReportModal from '@/components/Report/AddKeywordReportModal';
-import { useUser } from '@/hooks/useUser';
-import { Role_type } from '@/config/role';
+import AddKeywordReportModal from '../../../components/Report/AddKeywordReportModal';
+import { useUser } from '../../../hooks/useUser';
+import { Role_type } from '../../../config/role';
 
 const KeywordDetail = () => {
     const params = useParams();

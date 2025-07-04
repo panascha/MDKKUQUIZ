@@ -1,8 +1,8 @@
-import { Subject } from "@/types/api/Subject";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { BackendRoutes } from "@/config/apiRoutes";
 import { useSession } from "next-auth/react";
+import { BackendRoutes } from "../../config/apiRoutes";
+import { Subject } from "../../types/api/Subject";
 
 export const useCreateSubject = () => {
     const session = useSession();

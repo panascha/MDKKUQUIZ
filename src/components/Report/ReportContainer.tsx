@@ -2,20 +2,20 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useGetReport } from '@/hooks/report/useGetReport';
-import { useUser } from '@/hooks/useUser';
-import { Role_type } from '@/config/role';
-import { Badge } from '@/components/ui/Badge';
-import ProtectedPage from '@/components/ProtectPage';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { useGetReport } from '../../hooks/report/useGetReport';
+import { useUser } from '../../hooks/useUser';
+import { Role_type } from '../../config/role';
+import { Badge } from '../../components/ui/Badge';
+import ProtectedPage from '../../components/ProtectPage';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/DropdownMenu';
 import { IoIosArrowBack } from 'react-icons/io';
 import Link from 'next/link';
-import { FrontendRoutes } from '@/config/apiRoutes';
-import { Report } from '@/types/api/Report';
+import { FrontendRoutes } from '../../config/apiRoutes';
+import { Report } from '../../types/api/Report';
 import ReportDetailDropdown from "./ReportDetailDropdown";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
 import { Trash2 } from 'lucide-react';
-import { useDeleteReport } from '@/hooks/report/useDeleteReport';
+import { useDeleteReport } from '../../hooks/report/useDeleteReport';
 
 const ReportContainer = () => {
   const router = useRouter();

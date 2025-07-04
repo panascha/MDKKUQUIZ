@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
-import Button from '@/components/ui/Button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../components/ui/Dialog';
+import Button from '../../components/ui/Button';
 import { LoaderIcon, X, PlusIcon } from "lucide-react";
-import { UserProps } from '@/types/api/UserProps';
-import { Quiz } from '@/types/api/Quiz';
-import { useCreateQuiz } from '@/hooks/quiz/useCreateQuiz';
-import { useCreateReport } from '@/hooks/report/useCreateReport';
-import { Report } from '@/types/api/Report';
+import { UserProps } from '../../types/api/UserProps';
+import { Quiz } from '../../types/api/Quiz';
+import { useCreateQuiz } from '../../hooks/quiz/useCreateQuiz';
+import { useCreateReport } from '../../hooks/report/useCreateReport';
+import { Report } from '../../types/api/Report';
 import toast from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '../../hooks/useUser';
 import Image from 'next/image';
-import ImageGallery from '@/components/magicui/ImageGallery';
-import { BACKEND_URL } from '@/config/apiRoutes';
+import { BACKEND_URL } from '../../config/apiRoutes';
 
 interface QuizFormData {
   user: string;

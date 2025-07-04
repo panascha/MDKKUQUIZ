@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
-import { UserScore } from "@/types/api/Score";
-import { Badge } from "@/components/ui/Badge";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card";
+import { UserScore } from "../../types/api/Score";
+import { Badge } from "../../components/ui/Badge";
 import Link from "next/link";
 import { XIcon } from 'lucide-react';
-import { useUser } from '@/hooks/useUser';
-import { Role_type } from '@/config/role';
-import { useDeleteScore } from '@/hooks/score/useDeleteScore';
+import { useDeleteScore } from '../../hooks/score/useDeleteScore';
 
 interface ScoreCardProps {
   scores: UserScore[];

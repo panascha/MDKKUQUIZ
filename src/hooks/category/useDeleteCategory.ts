@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { BackendRoutes } from "@/config/apiRoutes";
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
+import { BackendRoutes } from "../../config/apiRoutes";
 
 export const useDeleteCategory = () => {
     const session = useSession();

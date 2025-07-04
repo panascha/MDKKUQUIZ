@@ -1,19 +1,19 @@
 "use client";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { BackendRoutes } from "@/config/apiRoutes";
-import { useUser } from "@/hooks/useUser";
-import { UserScore } from "@/types/api/Score";
-import { User } from "@/types/User";
+import { Skeleton } from "../../components/ui/Skeleton";
+import { BackendRoutes } from "../../config/apiRoutes";
+import { useUser } from "../../hooks/useUser";
+import { UserScore } from "../../types/api/Score";
+import { User } from "../../types/User";
 import axios from "axios";
 import { LoaderCircleIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { ProfileInfoCard } from "@/components/profile/ProfileInfoCard";
-import { ScoresSection } from "@/components/profile/ScoresSection";
-import { useGetUserStats } from '@/hooks/stats/useGetUserStats';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
-import LeaderBoardSection from '@/components/profile/LeaderBoardSection';
+import { ProfileInfoCard } from "../../components/profile/ProfileInfoCard";
+import { ScoresSection } from "../../components/profile/ScoresSection";
+import { useGetUserStats } from '../../hooks/stats/useGetUserStats';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/Tabs';
+import LeaderBoardSection from '../../components/profile/LeaderBoardSection';
 
 const Page = () => {
     const session = useSession();

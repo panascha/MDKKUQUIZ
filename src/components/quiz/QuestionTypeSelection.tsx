@@ -1,4 +1,4 @@
-import { ButtonWithLogo } from "@/components/magicui/Buttonwithlogo";
+import { ButtonWithLogo } from "../../components/magicui/Buttonwithlogo";
 
 interface QuestionTypeSelectionProps {
     questionTypes: string[];

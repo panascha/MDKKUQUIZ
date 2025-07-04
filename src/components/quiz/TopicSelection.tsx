@@ -1,5 +1,5 @@
-import { Category } from "@/types/api/Category";
-import { Quiz } from "@/types/api/Quiz";
+import { Category } from "../../types/api/Category";
+import { Quiz } from "../../types/api/Quiz";
 import { useCallback } from "react";
 
 interface TopicSelectionProps {

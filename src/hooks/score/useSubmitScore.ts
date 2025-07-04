@@ -1,9 +1,10 @@
-import { BackendRoutes } from "@/config/apiRoutes";
-import { Question } from "@/types/api/Question";
-import { UserScore } from "@/types/api/Score";
+
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { BackendRoutes } from "../../config/apiRoutes";
+import { UserScore } from "../../types/api/Score";
+import { Question } from "../../types/api/Question";
 
 interface SubmitScoreData {
     user: string;

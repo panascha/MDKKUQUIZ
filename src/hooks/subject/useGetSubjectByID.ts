@@ -1,5 +1,5 @@
-import { BackendRoutes } from "@/config/apiRoutes";
 import axios from "axios";
+import { BackendRoutes } from "../../config/apiRoutes";
 
 export const useGetSubjectByID = async (subjectID:string) => {
     try {

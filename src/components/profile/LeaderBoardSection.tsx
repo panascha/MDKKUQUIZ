@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserStat } from '@/types/api/Stat';
+import { UserStat } from '../../types/api/Stat';
 import Image from 'next/image';
 
 interface LeaderBoardSectionProps {

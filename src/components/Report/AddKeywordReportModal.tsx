@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
-import Button from '@/components/ui/Button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../components/ui/Dialog';
+import Button from '../../components/ui/Button';
 import { LoaderIcon } from "lucide-react";
-import { UserProps } from '@/types/api/UserProps';
-import { Keyword } from '@/types/api/Keyword';
-import { useCreateKeyword } from '@/hooks/keyword/useCreateKeyword';
-import { useCreateReport } from '@/hooks/report/useCreateReport';
-import { Report } from '@/types/api/Report';
+import { UserProps } from '../../types/api/UserProps';
+import { Keyword } from '../../types/api/Keyword';
+import { useCreateKeyword } from '../../hooks/keyword/useCreateKeyword';
+import { useCreateReport } from '../../hooks/report/useCreateReport';
+import { Report } from '../../types/api/Report';
 import toast from 'react-hot-toast';
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '../../hooks/useUser';
 
 interface KeywordFormData {
   user: string;

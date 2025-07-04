@@ -1,4 +1,4 @@
-import { Quiz } from "@/types/api/Quiz";
+import { Quiz } from "../../types/api/Quiz";
 import { useCallback } from "react";
 
 interface QuestionCountSelectionProps {

@@ -1,8 +1,8 @@
-import { BackendRoutes } from "@/config/apiRoutes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
+import { BackendRoutes } from "../../config/apiRoutes";
 
 export function useDeleteScore() {
     const queryClient = useQueryClient();

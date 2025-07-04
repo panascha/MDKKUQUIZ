@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/Card";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { UserScore } from "@/types/api/Score";
+import { Card, CardContent } from "../../components/ui/Card";
+import { Skeleton } from "../../components/ui/Skeleton";
+import { UserScore } from "../../types/api/Score";
 import ScoreCard from "./ScoreCard";
 
 interface ScoresSectionProps {

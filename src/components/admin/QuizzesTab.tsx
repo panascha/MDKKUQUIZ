@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import { Quiz } from '@/types/api/Quiz';
+import { Card } from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import { Quiz } from '../../types/api/Quiz';
 import ImageGallery from '../magicui/ImageGallery';
 
 interface QuizzesTabProps {

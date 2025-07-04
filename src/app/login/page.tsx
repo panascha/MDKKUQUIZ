@@ -1,7 +1,5 @@
 "use client";
-import { Table } from "@/components/ui/Table";
-import { ButtonWithLogo } from "@/components/magicui/Buttonwithlogo";
-import { InteractiveHoverButton } from "@/components/magicui/InteractiveHoverButton";
+import { ButtonWithLogo } from "../../components/magicui/Buttonwithlogo";
 import {
   Card,
   CardContent,
@@ -9,17 +7,17 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { BackendRoutes, FrontendRoutes } from "@/config/apiRoutes";
+} from "../../components/ui/Card";
+import { Input } from "../../components/ui/Input";
+import { Label } from "../../components/ui/Label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
+import { BackendRoutes, FrontendRoutes } from "../../config/apiRoutes";
 import axios from "axios";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import TermOfServise from '@/components/ui/TermOfServise';
+import TermOfServise from '../../components/ui/TermOfServise';
 
 const Page = () => {
   const router = useRouter();

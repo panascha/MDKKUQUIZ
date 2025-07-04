@@ -1,17 +1,17 @@
 "use client";
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from 'next-auth/react';
-import { Question } from '@/types/api/Question';
-import ProtectedPage from '@/components/ProtectPage';
+import { Question } from '../../../../../types/api/Question';
+import ProtectedPage from '../../../../../components/ProtectPage';
 import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule } from '@mui/icons-material';
-import { useUser } from '@/hooks/useUser';
-import ImageGallery from '@/components/magicui/ImageGallery';
-import { useGetQuizzes } from '@/hooks/quiz/useGetQuizzes';
-import { useSubmitScore } from '@/hooks/score/useSubmitScore';
-import { Quiz } from '@/types/api/Quiz';
-import { useGetUserStatById } from '@/hooks/stats/useGetUserStatById';
+import { useUser } from '../../../../../hooks/useUser';
+import ImageGallery from '../../../../../components/magicui/ImageGallery';
+import { useGetQuizzes } from '../../../../../hooks/quiz/useGetQuizzes';
+import { useSubmitScore } from '../../../../../hooks/score/useSubmitScore';
+import { Quiz } from '../../../../../types/api/Quiz';
+import { useGetUserStatById } from '../../../../../hooks/stats/useGetUserStatById';
 
 
 export default function Problem() {

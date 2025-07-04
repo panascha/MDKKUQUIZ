@@ -1,13 +1,12 @@
 'use client';
 import React from 'react';
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "../hooks/useUser";
 import { FaBars } from "react-icons/fa";
 import { FaXmark } from 'react-icons/fa6';
-import { IoMdNotificationsOutline } from "react-icons/io";
 import toast from "react-hot-toast";
-import { FrontendRoutes } from '@/config/apiRoutes';
+import { FrontendRoutes } from '../config/apiRoutes';
 import { useRouter } from 'next/navigation';
-import { Role_type } from '@/config/role';
+import { Role_type } from '../config/role';
 
 export default function Navbar() {
     const { user, logout } = useUser();

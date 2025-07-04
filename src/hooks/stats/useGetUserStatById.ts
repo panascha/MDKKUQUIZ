@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
-import { BackendRoutes } from '@/config/apiRoutes';
-import { UserStat } from '@/types/api/Stat';
+import { UserStat } from '../../types/api/Stat';
+import { BackendRoutes } from '../../config/apiRoutes';
+
 
 export const useGetUserStatById = (userId: string, subjectId: string, enabled: boolean = true) => {
   const { data: session } = useSession();

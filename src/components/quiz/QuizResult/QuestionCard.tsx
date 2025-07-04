@@ -1,8 +1,8 @@
-import ImageGallery from '@/components/magicui/ImageGallery';
-import AddReportModal from '@/components/Report/AddQuizReportModal';
-import { Question } from '@/types/api/Score';
+import ImageGallery from '../../../components/magicui/ImageGallery';
+import AddReportModal from '../../../components/Report/AddQuizReportModal';
+import { Question } from '../../../types/api/Score';
 import { useState } from 'react';
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '../../../hooks/useUser';
 
 interface QuizQuestionCardProps {
     question: Question;

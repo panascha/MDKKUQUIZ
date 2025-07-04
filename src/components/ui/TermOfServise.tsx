@@ -1,6 +1,6 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/Dialog';
-import Button from '@/components/ui/Button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/Dialog';
+import Button from '../../components/ui/Button';
 
 const TERMS_TEXT = `
 ## นโยบายการใช้งานระบบ MDKKU SELF-EXAM BANK (MSEB)

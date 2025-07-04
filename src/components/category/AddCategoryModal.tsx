@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
-import Button from '@/components/ui/Button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../components/ui/Dialog';
+import Button from '../../components/ui/Button';
 import { LoaderIcon } from "lucide-react";
-import { UserProps } from '@/types/api/UserProps';
-import { Category } from '@/types/api/Category';
-import { Subject } from '@/types/api/Subject';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { useUser } from '@/hooks/useUser';
+import { Subject } from '../../types/api/Subject';
+import { useUser } from '../../hooks/useUser';
 import toast from 'react-hot-toast';
-import { CreateCategoryData, useCreateCategory } from '@/hooks/category/useCreateCategory';
+import { CreateCategoryData, useCreateCategory } from '../../hooks/category/useCreateCategory';
 
 interface AddCategoryModalProps {
   showModal: boolean;

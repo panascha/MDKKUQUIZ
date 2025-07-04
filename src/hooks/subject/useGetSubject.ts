@@ -1,6 +1,7 @@
-import { BackendRoutes } from "@/config/apiRoutes";
-import { Subject } from "@/types/api/Subject";
+
 import axios from "axios";
+import { Subject } from "../../types/api/Subject";
+import { BackendRoutes } from "../../config/apiRoutes";
 
 export const useGetSubject = async (): Promise<Array<Subject>> => {
     const response = await axios.get(BackendRoutes.SUBJECT);

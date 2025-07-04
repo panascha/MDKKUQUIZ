@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/Card';
+import { Card } from '../../components/ui/Card';
 import { 
     FileText, 
     Clock, 
@@ -11,8 +11,8 @@ import {
     CheckCircle2,
     FileCheck
 } from 'lucide-react';
-import { StatsOverviewProps } from '@/hooks/stats/useGetStatOverAll';
-import { useGetDailyActivity } from '@/hooks/stats/useGetDailyActivity';
+import { StatsOverviewProps } from '../../hooks/stats/useGetStatOverAll';
+import { useGetDailyActivity } from '../../hooks/stats/useGetDailyActivity';
 
 const StatsOverview: React.FC<StatsOverviewProps> = ({ 
     stat

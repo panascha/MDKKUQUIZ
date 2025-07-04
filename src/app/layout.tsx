@@ -1,6 +1,6 @@
-import Navbar from "@/components/Navbar";
-import NextAuthProvider from "@/providers/NextAuthProvider";
-import { TanstackQueryProvider } from "@/providers/TanstackQueryProvider";
+import Navbar from "../components/Navbar";
+import NextAuthProvider from "../providers/NextAuthProvider";
+import { TanstackQueryProvider } from "../providers/TanstackQueryProvider";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { Geist, Geist_Mono } from "next/font/google";

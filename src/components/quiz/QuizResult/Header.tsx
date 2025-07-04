@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { UserScore } from '@/types/api/Score';
+import { UserScore } from '../../../types/api/Score';
 
 interface QuizResultHeaderProps {
     score: UserScore | undefined;

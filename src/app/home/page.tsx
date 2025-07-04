@@ -1,22 +1,22 @@
 "use client"
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import ProtectedPage from '@/components/ProtectPage';
-import { useUser } from '@/hooks/useUser';
-import { Role_type } from '@/config/role';
-import { Subject } from '@/types/api/Subject';
+import ProtectedPage from '../../components/ProtectPage';
+import { useUser } from '../../hooks/useUser';
+import { Role_type } from '../../config/role';
+import { Subject } from '../../types/api/Subject';
 import { LoaderIcon, XCircleIcon } from "lucide-react";
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
-import { useCreateSubject } from '@/hooks/subject/useCreateSubject';
-import { useUpdateSubject } from '@/hooks/subject/useUpdateSubject';
-import { useDeleteSubject } from '@/hooks/subject/useDeleteSubject';
-import { useGetSubject } from '@/hooks/subject/useGetSubject';
-import { SubjectCard } from '@/components/subjects/SubjectCard';
-import { SubjectHeader } from '@/components/subjects/SubjectHeader';
-import AddSubjectModal from '@/components/subjects/Modal/AddSubjectModal';
-import EditSubjectModal from '@/components/subjects/Modal/EditSubjectModal';
-import { BACKEND_URL } from '@/config/apiRoutes';
+import { useCreateSubject } from '../../hooks/subject/useCreateSubject';
+import { useUpdateSubject } from '../../hooks/subject/useUpdateSubject';
+import { useDeleteSubject } from '../../hooks/subject/useDeleteSubject';
+import { useGetSubject } from '../../hooks/subject/useGetSubject';
+import { SubjectCard } from '../../components/subjects/SubjectCard';
+import { SubjectHeader } from '../../components/subjects/SubjectHeader';
+import AddSubjectModal from '../../components/subjects/Modal/AddSubjectModal';
+import EditSubjectModal from '../../components/subjects/Modal/EditSubjectModal';
+import { BACKEND_URL } from '../../config/apiRoutes';
 
 const Main = () => {
     const {

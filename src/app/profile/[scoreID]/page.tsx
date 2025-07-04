@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { UserScore, Question } from '@/types/api/Score';
+import { UserScore, Question } from '../../../types/api/Score';
 import axios from 'axios';
-import { BackendRoutes } from '@/config/apiRoutes';
+import { BackendRoutes } from '../../../config/apiRoutes';
 import { useSession } from 'next-auth/react';
-import { QuizResultHeader } from '@/components/quiz/QuizResult/Header';
-import { QuizResultFilter } from '@/components/quiz/QuizResult/Filter';
-import { QuizQuestionCard } from '@/components/quiz/QuizResult/QuestionCard';
+import { QuizResultHeader } from '../../../components/quiz/QuizResult/Header';
+import { QuizResultFilter } from '../../../components/quiz/QuizResult/Filter';
+import { QuizQuestionCard } from '../../../components/quiz/QuizResult/QuestionCard';
 
 const QuizResultPage = () => {
     const session = useSession();

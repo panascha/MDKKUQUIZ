@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import VisionCard from '@/components/VisionCard';
+import VisionCard from '../../components/VisionCard';
 
 export default function Home() {
   const heroVariants = {

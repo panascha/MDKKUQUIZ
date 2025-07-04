@@ -1,14 +1,14 @@
-import { Badge } from "@/components/ui/Badge";
-import Button from "@/components/ui/Button";
+import { Badge } from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-} from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { Role_type } from "@/config/role";
-import { User } from "@/types/User";
+} from "../../components/ui/Card";
+import { Input } from "../../components/ui/Input";
+import { Role_type } from "../../config/role";
+import { User } from "../../types/User";
 import { UserCircle2 } from "lucide-react";
 
 interface ProfileInfoCardProps {

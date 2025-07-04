@@ -2,18 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from 'next-auth/react';
-import { Quiz } from "@/types/api/Quiz";
-import {  BackendRoutes, FrontendRoutes } from "@/config/apiRoutes";
+import { Quiz } from "../../../types/api/Quiz";
+import {  BackendRoutes, FrontendRoutes } from "../../../config/apiRoutes";
 import { IoIosArrowBack } from "react-icons/io";
 import Link from 'next/link';
-import { Card } from '@/components/ui/Card';
-import ImageGallery from '@/components/magicui/ImageGallery';
+import { Card } from '../../../components/ui/Card';
+import ImageGallery from '../../../components/magicui/ImageGallery';
 import { LoaderIcon } from 'react-hot-toast';
-import ProtectedPage from '@/components/ProtectPage';
-import { useUser } from '@/hooks/useUser';
-import { Badge } from '@/components/ui/Badge';
-import { Role_type } from '@/config/role';
-import AddQuizReportModal from '@/components/Report/AddQuizReportModal';
+import ProtectedPage from '../../../components/ProtectPage';
+import { useUser } from '../../../hooks/useUser';
+import { Badge } from '../../../components/ui/Badge';
+import { Role_type } from '../../../config/role';
+import AddQuizReportModal from '../../../components/Report/AddQuizReportModal';
 
 const QuestionDetail = () => {
     const params = useParams();

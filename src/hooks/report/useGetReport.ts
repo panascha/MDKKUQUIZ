@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
-import { BackendRoutes } from '@/config/apiRoutes';
-import { Report } from '@/types/api/Report';
+import { BackendRoutes } from '../../config/apiRoutes';
+
 
 interface UseGetReportOptions {
     status?: 'pending' | 'approved' | 'rejected';

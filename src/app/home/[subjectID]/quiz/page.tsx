@@ -1,24 +1,23 @@
 'use client'
-import { ButtonWithLogo } from "@/components/magicui/Buttonwithlogo";
-import ProtectedPage from "@/components/ProtectPage";
-import { FrontendRoutes } from "@/config/apiRoutes";
-import { Category } from "@/types/api/Category";
-import type { Quiz } from "@/types/api/Quiz";
+import { ButtonWithLogo } from "../../../../components/magicui/Buttonwithlogo";
+import ProtectedPage from "../../../../components/ProtectPage";
+import { FrontendRoutes } from "../../../../config/apiRoutes";
+import type { Quiz } from "../../../../types/api/Quiz";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { LoaderIcon } from "react-hot-toast";
-import { useGetQuizzes } from "@/hooks/quiz/useGetQuizzes";
+import { useGetQuizzes } from "../../../../hooks/quiz/useGetQuizzes";
 import { useQuery } from "@tanstack/react-query";
-import { useGetSubjectByID } from "@/hooks/subject/useGetSubjectByID";
-import { useGetCategoryBySubjectID } from "@/hooks/category/useGetCategoryBySubjectID";
-import { TopicSelection } from "@/components/quiz/TopicSelection";
-import { QuizTypeSelection } from "@/components/quiz/QuizTypeSelection";
-import { AnswerModeSelection } from "@/components/quiz/AnswerModeSelection";
-import { QuestionTypeSelection } from "@/components/quiz/QuestionTypeSelection";
-import { QuestionCountSelection } from "@/components/quiz/QuestionCountSelection";
-import { useUser } from '@/hooks/useUser';
-import { useGetUserStatById } from '@/hooks/stats/useGetUserStatById';
+import { useGetSubjectByID } from "../../../../hooks/subject/useGetSubjectByID";
+import { useGetCategoryBySubjectID } from "../../../../hooks/category/useGetCategoryBySubjectID";
+import { TopicSelection } from "../../../../components/quiz/TopicSelection";
+import { QuizTypeSelection } from "../../../../components/quiz/QuizTypeSelection";
+import { AnswerModeSelection } from "../../../../components/quiz/AnswerModeSelection";
+import { QuestionTypeSelection } from "../../../../components/quiz/QuestionTypeSelection";
+import { QuestionCountSelection } from "../../../../components/quiz/QuestionCountSelection";
+import { useUser } from '../../../../hooks/useUser';
+import { useGetUserStatById } from '../../../../hooks/stats/useGetUserStatById';
 
 export default function Quiz() {
     type QuizType = "chillquiz" | "realtest" | "custom";

@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { BACKEND_URL } from '@/config/apiRoutes';
+import { BACKEND_URL } from '../../config/apiRoutes';
 
 interface ImageGalleryProps {
   images: string[];

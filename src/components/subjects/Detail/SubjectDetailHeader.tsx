@@ -1,5 +1,5 @@
-import { BACKEND_URL } from "@/config/apiRoutes";
-import { Subject } from "@/types/api/Subject";
+import { BACKEND_URL } from "../../../config/apiRoutes";
+import { Subject } from "../../../types/api/Subject";
 import Image from "next/image";
 
 interface SubjectDetailHeaderProps {

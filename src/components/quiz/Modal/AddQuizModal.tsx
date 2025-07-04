@@ -1,17 +1,17 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
-import Button from '@/components/ui/Button';
-import { LoaderIcon, ImageIcon, X, PlusIcon } from "lucide-react";
-import { UserProps } from '@/types/api/UserProps';
-import { Category } from '@/types/api/Category';
-import { Subject } from '@/types/api/Subject';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { useUser } from '@/hooks/useUser';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../../components/ui/Dialog';
+import Button from '../../../components/ui/Button';
+import { X, PlusIcon } from "lucide-react";
+import { UserProps } from '../../../types/api/UserProps';
+import { Category } from '../../../types/api/Category';
+import { Subject } from '../../../types/api/Subject';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../components/ui/DropdownMenu';
+import { useUser } from '../../../hooks/useUser';
 import toast from 'react-hot-toast';
-import { CreateQuizData, useCreateQuiz } from '@/hooks/quiz/useCreateQuiz';
+import { CreateQuizData, useCreateQuiz } from '../../../hooks/quiz/useCreateQuiz';
 import Image from 'next/image';
-import { Keyword } from '@/types/api/Keyword';
-import { useGetKeyword } from '@/hooks/keyword/useGetKeyword';
+import { Keyword } from '../../../types/api/Keyword';
+import { useGetKeyword } from '../../../hooks/keyword/useGetKeyword';
 
 interface AddQuizModalProps {
   showModal: boolean;

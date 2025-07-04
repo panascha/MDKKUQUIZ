@@ -1,9 +1,8 @@
-import { Subject } from '@/types/api/Subject';
+import { Subject } from '../../types/api/Subject';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PencilIcon, XIcon } from "lucide-react";
-import { Role_type } from '@/config/role';
-import { BACKEND_URL } from '@/config/apiRoutes';
+import { BACKEND_URL } from '../../config/apiRoutes';
 
 interface SubjectCardProps {
     subject: Subject;

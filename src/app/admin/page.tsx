@@ -1,38 +1,37 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import ProtectedPage from '@/components/ProtectPage';
-import { Badge } from '@/components/ui/Badge';
-import { Role_type } from '@/config/role';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import ProtectedPage from '../../components/ProtectPage';
+import { Badge } from '../../components/ui/Badge';
+import { Role_type } from '../../config/role';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 import { 
     FileText, 
     AlertTriangle, 
     BarChart3,
     LoaderIcon
 } from 'lucide-react';
-import { useGetStatOverAll } from '@/hooks/stats/useGetStatOverAll';
+import { useGetStatOverAll } from '../../hooks/stats/useGetStatOverAll';
 
-// Import components
-import StatsOverview from '@/components/admin/StatsOverview';
-import KeywordsTab from '@/components/admin/KeywordsTab';
-import QuizzesTab from '@/components/admin/QuizzesTab';
-import ReportsTab from '@/components/admin/ReportsTab';
-import UserSection from '@/components/admin/UserSection';
+import StatsOverview from '../../components/admin/StatsOverview';
+import KeywordsTab from '../../components/admin/KeywordsTab';
+import QuizzesTab from '../../components/admin/QuizzesTab';
+import ReportsTab from '../../components/admin/ReportsTab';
+import UserSection from '../../components/admin/UserSection';
 import { useRouter } from 'next/navigation';
-import { FrontendRoutes } from '@/config/apiRoutes';
-import { useGetQuizzes } from "@/hooks/quiz/useGetQuizzes";
-import useApprovedReport from '@/hooks/Approved/useApprovedReport';
-import useApprovedQuiz from '@/hooks/Approved/useApprovedQuiz';
-import useApprovedKeyword from '@/hooks/Approved/useApprovedKeyword';
+import { FrontendRoutes } from '../../config/apiRoutes';
+import { useGetQuizzes } from "../../hooks/quiz/useGetQuizzes";
+import useApprovedReport from '../../hooks/Approved/useApprovedReport';
+import useApprovedQuiz from '../../hooks/Approved/useApprovedQuiz';
+import useApprovedKeyword from '../../hooks/Approved/useApprovedKeyword';
 import { toast } from 'react-hot-toast';
-import { useGetKeyword } from '@/hooks/keyword/useGetKeyword';
-import { useGetReport } from '@/hooks/report/useGetReport';
-import { useUser } from '@/hooks/useUser';
-import { YearFilter } from '@/components/subjects/YearFilter';
-import { Quiz } from '@/types/api/Quiz';
-import { Keyword } from '@/types/api/Keyword';
-import { Report } from '@/types/api/Report';
+import { useGetKeyword } from '../../hooks/keyword/useGetKeyword';
+import { useGetReport } from '../../hooks/report/useGetReport';
+import { useUser } from '../../hooks/useUser';
+import { YearFilter } from '../../components/subjects/YearFilter';
+import { Quiz } from '../../types/api/Quiz';
+import { Keyword } from '../../types/api/Keyword';
+import { Report } from '../../types/api/Report';
 
 export default function AdminPanel() {
     const { data: session, status } = useSession();

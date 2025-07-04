@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import { CheckCircle2, XCircle, User } from 'lucide-react';
-import { Keyword } from '@/types/api/Keyword';
+import { Card } from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import { User } from 'lucide-react';
+import { Keyword } from '../../types/api/Keyword';
 
 interface KeywordsTabProps {
     keywords: Keyword[];

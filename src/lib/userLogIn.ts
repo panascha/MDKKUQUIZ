@@ -1,4 +1,4 @@
-import { BackendRoutes } from "@/config/apiRoutes";
+import { BackendRoutes } from "../config/apiRoutes";
 import axios, { AxiosError } from "axios";
 
 export default async function userLogIn(

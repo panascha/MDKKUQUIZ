@@ -1,10 +1,11 @@
 "use client";
-import { BackendRoutes, FrontendRoutes } from "@/config/apiRoutes";
-import { User } from "@/types/User";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { BackendRoutes, FrontendRoutes } from "../config/apiRoutes";
+import type { User } from "../types/User";
 
 const getUserProfile = async (token: string) => {
   try {

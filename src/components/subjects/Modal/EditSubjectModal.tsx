@@ -1,10 +1,10 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog';
-import Button from '@/components/ui/Button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../../components/ui/Dialog';
+import Button from '../../../components/ui/Button';
 import { LoaderIcon } from "lucide-react";
 import Image from 'next/image';
 import { X } from "lucide-react";
-import { BACKEND_URL } from '@/config/apiRoutes';
+import { BACKEND_URL } from '../../../config/apiRoutes';
 
 interface EditSubjectModalProps {
   editModal: boolean;

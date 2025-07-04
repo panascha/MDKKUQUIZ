@@ -1,7 +1,7 @@
-import { BackendRoutes } from '@/config/apiRoutes';
 import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { useUser } from '../useUser';
+import { BackendRoutes } from '../../config/apiRoutes';
 
 interface ApprovedKeywordParams {
   keywordID: string;

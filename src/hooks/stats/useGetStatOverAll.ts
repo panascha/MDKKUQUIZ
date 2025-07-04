@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
-import { BackendRoutes } from '@/config/apiRoutes';
-import { Stat } from '@/types/api/Stat';
+import { Stat } from '../../types/api/Stat';
+import { BackendRoutes } from '../../config/apiRoutes';
+
 
 export interface StatsOverviewProps {
     stat: Stat;

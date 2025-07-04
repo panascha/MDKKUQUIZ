@@ -1,6 +1,6 @@
 import { IoIosArrowBack } from "react-icons/io";
 import { useRouter } from "next/navigation";
-import { FrontendRoutes } from "@/config/apiRoutes";
+import { FrontendRoutes } from "../../../config/apiRoutes";
 
 export const BackButton = () => {
     const router = useRouter();

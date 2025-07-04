@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline'; // Assuming you have Heroicons installed
 import { XIcon } from "lucide-react"; // Import XIcon for clear button
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 // Define the shape of a suggestion
 export interface Suggestion {

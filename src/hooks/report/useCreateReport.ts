@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { BackendRoutes } from "@/config/apiRoutes";
 import { useSession } from "next-auth/react";
-import { Report } from "@/types/api/Report";
+import { Report } from "../../types/api/Report";
+import { BackendRoutes } from "../../config/apiRoutes";
 
 export const useCreateReport = () => {
     const session = useSession();

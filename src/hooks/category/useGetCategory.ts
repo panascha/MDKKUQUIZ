@@ -1,8 +1,9 @@
-import { BackendRoutes } from "@/config/apiRoutes";
-import { Category } from "@/types/api/Category";
+
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
+import { Category } from "../../types/api/Category";
+import { BackendRoutes } from "../../config/apiRoutes";
 
 export const useGetCategory = () => {
     const { data: session } = useSession();

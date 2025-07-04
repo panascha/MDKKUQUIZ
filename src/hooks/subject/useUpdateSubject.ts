@@ -1,8 +1,8 @@
-import { Subject } from "@/types/api/Subject";
+import { Subject } from "../../types/api/Subject";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { BackendRoutes } from "@/config/apiRoutes";
 import { useSession } from "next-auth/react";
+import { BackendRoutes } from "../../config/apiRoutes";
 
 export const useUpdateSubject = () => {
     const session = useSession();
@@ -16,8 +16,7 @@ export const useUpdateSubject = () => {
             if (updatedData.year) formData.append("year", updatedData.year.toString());
             if (
             updatedData.img &&
-            typeof updatedData.img === "object" &&
-            "name" in updatedData.img
+            typeof updatedData.img === "object"
             ) {
             formData.append("image", updatedData.img as File);
             } else if (updatedData.img) {

@@ -1,8 +1,9 @@
-import { BackendRoutes, getQuizByFilter } from "@/config/apiRoutes";
-import { Quiz } from "@/types/api/Quiz";
+
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import { getQuizByFilter } from "../../config/apiRoutes";
+import { Quiz } from "../../types/api/Quiz";
 
 interface UseGetQuizzesProps {
   subjectID?: string;

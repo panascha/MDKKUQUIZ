@@ -1,6 +1,6 @@
 import React from 'react';
-import { Report } from '@/types/api/Report';
-import ImageGallery from '@/components/magicui/ImageGallery';
+import { Report } from '../../types/api/Report';
+import ImageGallery from '../../components/magicui/ImageGallery';
 
 interface ReportDetailDropdownProps {
   report: Report;
