@@ -18,6 +18,7 @@ import StatsOverview from '@/components/admin/StatsOverview';
 import KeywordsTab from '@/components/admin/KeywordsTab';
 import QuizzesTab from '@/components/admin/QuizzesTab';
 import ReportsTab from '@/components/admin/ReportsTab';
+import UserSection from '@/components/admin/UserSection';
 import { useRouter } from 'next/navigation';
 import { FrontendRoutes } from '@/config/apiRoutes';
 import { useGetQuizzes } from "@/hooks/quiz/useGetQuizzes";
@@ -179,6 +180,12 @@ export default function AdminPanel() {
                                 <AlertTriangle className="w-4 h-4 mr-1 sm:mr-2" />
                                 Reports
                             </TabsTrigger>
+                            {user?.role === 'S-admin' && (
+                              <TabsTrigger value="users" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
+                                  <BarChart3 className="w-4 h-4 mr-1 sm:mr-2" />
+                                  Users
+                              </TabsTrigger>
+                            )}
                         </TabsList>
 
                         {/* Tab Contents */}
@@ -209,6 +216,12 @@ export default function AdminPanel() {
                                     onDismiss={handleReportReject}
                                 />
                             </TabsContent>
+
+                            {user?.role === 'S-admin' && (
+                              <TabsContent value="users">
+                                  <UserSection />
+                              </TabsContent>
+                            )}
                         </div>
                     </Tabs>
                 </div>
