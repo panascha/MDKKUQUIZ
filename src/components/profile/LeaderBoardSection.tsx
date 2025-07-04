@@ -10,9 +10,9 @@ interface LeaderBoardSectionProps {
 }
 
 const topBorders = [
-  'border-l-4 border-yellow-400', // Gold
-  'border-l-4 border-gray-400',   // Silver
-  'border-l-4 border-amber-500',  // Bronze
+  'border-l-4 border-yellow-400',
+  'border-l-4 border-gray-400',
+  'border-l-4 border-amber-500',
 ];
 
 const LeaderBoardSection: React.FC<LeaderBoardSectionProps> = ({ isLoading, error, leaderboard, currentUserId }) => {

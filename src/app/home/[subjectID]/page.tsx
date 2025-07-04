@@ -6,15 +6,14 @@ import { BackButton } from "@/components/subjects/Detail/BackButton";
 import { SubjectDetailHeader } from "@/components/subjects/Detail/SubjectDetailHeader";
 import { SubjectActions } from "@/components/subjects/Detail/SubjectActions";
 import { useQuery } from "@tanstack/react-query";
-import { use } from 'react';
 import { useState } from 'react';
 import AddCategoryModal from "@/components/category/AddCategoryModal";
-import Button from "@/components/ui/Button";
 import { useUser } from '@/hooks/useUser';
 import { Role_type } from '@/config/role';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
 import SubjectTopics from '@/components/subjects/Detail/SubjectTopics';
+import { useGetUserStatById } from '@/hooks/stats/useGetUserStatById';
 
 export default function SubjectDetailPage() {
     const params = useParams();
@@ -22,6 +21,9 @@ export default function SubjectDetailPage() {
     const { user } = useUser();
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
     const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+
+    const { data: userStat } = useGetUserStatById(user?._id || '', !!user?._id);
+    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 5;
 
     const { data: subject, isLoading, error } = useQuery({
         queryKey: ["subject", subjectID],
@@ -86,7 +88,7 @@ export default function SubjectDetailPage() {
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <BackButton />
                 <SubjectDetailHeader subject={subject} />
-                <SubjectActions subjectId={subjectID} />
+                <SubjectActions subjectId={subjectID} canTakeQuiz={canTakeQuiz} />
                 <div className="flex justify-between items-start gap-4 mt-6">
                     <div className="flex-1">
                         <SubjectTopics categories={categories} subject={subject} />
