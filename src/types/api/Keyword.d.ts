@@ -10,4 +10,5 @@ export interface Keyword {
     category: Category;
     keywords: Array<string>;
     status: string;
+    updatedAt: Date;
 }

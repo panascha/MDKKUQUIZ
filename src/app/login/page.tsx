@@ -19,6 +19,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import TermOfServise from '@/components/ui/TermOfServise';
 
 const Page = () => {
   const router = useRouter();
@@ -39,10 +40,19 @@ const Page = () => {
   const [year, setYear] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showTerms, setShowTerms] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
-  // Login handler
+  const [activeTab, setActiveTab] = useState('login');
+
+  useEffect(() => {
+    if (activeTab === 'register') {
+      setShowTerms(true);
+    }
+  }, [activeTab]);
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -73,6 +83,11 @@ const Page = () => {
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+
+    if (!termsAccepted) {
+      setShowTerms(true);
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match.");
@@ -129,7 +144,7 @@ const Page = () => {
         <div className="flex items-center justify-center text-4xl">
           MSEB
         </div>
-      <Tabs defaultValue="login" className="w-[400px] px-3">
+      <Tabs defaultValue="login" className="w-[400px] px-3" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-md transition-all duration-300 ease-in-out">
           <TabsTrigger value="login" className="transition-colors duration-300 ease-in-out cursor-pointer">
             Login
@@ -221,14 +236,19 @@ const Page = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="phone">Year</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="year"
+                  <Label htmlFor="year">Year</Label>
+                  <select
+                    id="year"
                     value={year}
                     onChange={(e) => setYear(e.target.value)}
-                  />
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    required
+                  >
+                    <option value="">Select year</option>
+                    {[1,2,3,4,5,6].map((y) => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="new-password">Password</Label>
@@ -250,15 +270,27 @@ const Page = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                 </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                  />
+                  <label htmlFor="terms" className="text-sm text-gray-700 cursor-pointer">
+                    I agree to the <span className="underline" onClick={() => setShowTerms(true)}>Terms of Service</span>
+                  </label>
+                </div>
                 {error && <p className="text-red-500">{error}</p>}
               </CardContent>
-              <CardFooter className="py-3">
-                {/* <InteractiveHoverButton type="submit">
+              <CardFooter className="py-3 flex flex-col items-center gap-3">
+                <ButtonWithLogo type="submit"> 
                   Register
-                </InteractiveHoverButton> */}
-                  <ButtonWithLogo type="submit"> 
-                    Register
-                  </ButtonWithLogo>
+                </ButtonWithLogo>
+                {/* Terms of Service Modal (controlled) */}
+                {showTerms && (
+                  <TermOfServise open={showTerms} setOpen={setShowTerms} onAccept={() => setTermsAccepted(true)} />
+                )}
               </CardFooter>
             </form>
           </Card>

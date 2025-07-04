@@ -3,16 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from 'next-auth/react';
 import { Quiz } from "@/types/api/Quiz";
-import { Subject } from "@/types/api/Subject";
-import { Category } from "@/types/api/Category";
-import { BACKEND_URL, BackendRoutes, FrontendRoutes } from "@/config/apiRoutes";
+import {  BackendRoutes, FrontendRoutes } from "@/config/apiRoutes";
 import { IoIosArrowBack } from "react-icons/io";
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import ImageGallery from '@/components/magicui/ImageGallery';
 import { LoaderIcon } from 'react-hot-toast';
 import ProtectedPage from '@/components/ProtectPage';
-import AddReportModal from '@/components/Report/AddQuizReportModal';
 import { useUser } from '@/hooks/useUser';
 import { Badge } from '@/components/ui/Badge';
 import { Role_type } from '@/config/role';
@@ -28,7 +25,6 @@ const QuestionDetail = () => {
     const [question, setQuestion] = useState<Quiz | null>(null);
     const [showReportModal, setShowReportModal] = useState(false);
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
-    // Fetch question details
     useEffect(() => {
         const fetchQuestion = async () => {
             try {
@@ -90,10 +86,6 @@ const QuestionDetail = () => {
             </div>
         );          
     }
-
-    // sample images for the image gallery
-    // const images = ['/mdkkuview.jpg', '/mdkkulogo.png'];
-
     return (
         <ProtectedPage>
             <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -191,9 +183,7 @@ const QuestionDetail = () => {
                                         <h2 className="text-lg font-semibold text-gray-900 mb-3">Images</h2>
                                         <div className="flex justify-center">
                                             <ImageGallery 
-                                                images={Array.isArray(question.img) 
-                                                    ? question.img 
-                                                    : question.img}
+                                                images={question.img}
                                             />
                                         </div>
                                     </div>

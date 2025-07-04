@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { BackendRoutes } from "@/config/apiRoutes";
 import { useSession } from "next-auth/react";
@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 
 export const useDeleteReport = () => {
     const session = useSession();
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
             if (!session?.data?.user.token) throw new Error("Authentication required");
@@ -14,6 +15,7 @@ export const useDeleteReport = () => {
             });
         },
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["scores"] });
             toast.success("Report deleted successfully");
         },
         onError: (error: Error) => {

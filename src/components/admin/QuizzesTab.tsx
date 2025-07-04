@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { CheckCircle2, XCircle, X } from 'lucide-react';
 import { Quiz } from '@/types/api/Quiz';
-import Image from 'next/image';
 import ImageGallery from '../magicui/ImageGallery';
-import { BACKEND_URL } from '@/config/apiRoutes';
 
 interface QuizzesTabProps {
     quizzes: Quiz[];

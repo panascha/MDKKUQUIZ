@@ -2,7 +2,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { BACKEND_URL, FrontendRoutes } from '@/config/apiRoutes';
 import { useSession } from 'next-auth/react';
 import { Question } from '@/types/api/Question';
 import ProtectedPage from '@/components/ProtectPage';
@@ -12,17 +11,20 @@ import ImageGallery from '@/components/magicui/ImageGallery';
 import { useGetQuizzes } from '@/hooks/quiz/useGetQuizzes';
 import { useSubmitScore } from '@/hooks/score/useSubmitScore';
 import { Quiz } from '@/types/api/Quiz';
-import transformUrl from '@/utils/transformUrl';
-import { UserScore } from '@/types/api/Score';
+import { useGetUserStatById } from '@/hooks/stats/useGetUserStatById';
+
 
 export default function Problem() {
     const session = useSession();
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
-    const { user } = useUser();
-
+    const { user, loading: userLoading } = useUser();
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SADMIN';
     const subjectID = params.subjectID as string;
+    const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
+    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 5;
+
     const answerMode = searchParams.get('answerMode');
     const questionCount = Number(searchParams.get('questionCount'));
     const selectedQuestionTypes = searchParams.get('questionType');
@@ -261,6 +263,24 @@ export default function Problem() {
         // Shuffle the choices
         return [...choicesWithIndices].sort(() => Math.random() - 0.5);
     }, [currentQuestion, selectedQuestionTypes]);
+
+    if (userLoading || statLoading) {
+        return (
+            <div className="flex items-center justify-center gap-3 pt-20">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" /> Checking permissions...
+            </div>
+        );
+    }
+
+    if (!canTakeQuiz) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <div className="text-3xl font-bold text-gray-700 mb-4">Access Restricted</div>
+                <div className="text-lg text-gray-500 mb-6 max-w-md">You must create at least <span className="font-semibold text-blue-600">5 quizzes</span> to access the quiz of this subject. Start contributing quizzes to unlock this section!</div>
+                <button onClick={() => router.push('/home')} className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition">Go to Home</button>
+            </div>
+        );
+    }
 
     if (isLoading || !quizData) {
         return (

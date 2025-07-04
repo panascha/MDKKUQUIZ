@@ -20,4 +20,5 @@ export interface UserScore {
     Question: Question[];
     timeTaken: Number;
     createdAt: Date;
+    updatedAt: Date;
 }

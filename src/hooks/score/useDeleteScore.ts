@@ -19,7 +19,6 @@ export function useDeleteScore() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["scores"] });
             toast.success("Score deleted successfully!");
-            window.location.reload(); 
         },
         onError: (error: Error) => {
             toast.error(`Failed to delete score : ${error.message}`);

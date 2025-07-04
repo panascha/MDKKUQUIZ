@@ -6,6 +6,7 @@ import { useUser } from '../useUser';
 interface ApprovedReportParams {
   reportID: string;
   isApproved: boolean;
+  reason: string;
 }
 
 interface ApprovedResponse {
@@ -18,7 +19,7 @@ const useApprovedReport = (): UseMutationResult<ApprovedResponse, AxiosError, Ap
   const { user } = useUser();
 
   return useMutation({
-    mutationFn: async ({ reportID, isApproved }: ApprovedReportParams) => {
+    mutationFn: async ({ reportID, isApproved, reason }: ApprovedReportParams) => {
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -27,7 +28,8 @@ const useApprovedReport = (): UseMutationResult<ApprovedResponse, AxiosError, Ap
         const response = await axios.post<ApprovedResponse>(
           `${BackendRoutes.APPROVED_REPORT}/${reportID}`,
           {
-            Approved: isApproved
+            Approved: isApproved,
+            reason: reason,
           },
           {
             headers: { Authorization: `Bearer ${user.token}` },

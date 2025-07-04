@@ -13,5 +13,6 @@ export interface Report {
     status: 'pending' | 'approved' | 'rejected';
     reason: string;
     createdAt: Date;
+    updatedAt: Date;
 }
 

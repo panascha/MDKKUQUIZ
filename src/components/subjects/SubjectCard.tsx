@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { PencilIcon, XIcon } from "lucide-react";
 import { Role_type } from '@/config/role';
+import { BACKEND_URL } from '@/config/apiRoutes';
 
 interface SubjectCardProps {
     subject: Subject;
@@ -22,34 +23,25 @@ export const SubjectCard = ({
     return (
         <div className="relative bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.01] overflow-hidden">
             <Link href={`/home/${subject._id}`} className="block p-4 pb-10">
-                {/* Image */}
                 <div className="relative w-full h-48 rounded-xl overflow-hidden">
                     <Image
-                        src={`${subject.img}`}
+                        src={`${BACKEND_URL}${subject.img}`}
                         alt={subject.name}
                         layout="fill"
                         objectFit="cover"
                         className="rounded-xl transition-transform duration-300 hover:scale-105"
                     />
                 </div>
-
-                {/* Name */}
                 <h2 className="text-lg font-semibold mt-4 text-sky-700 truncate">
                     {subject.name}
                 </h2>
-
-                {/* Description */}
                 <p className="text-gray-600 text-sm mt-1 line-clamp-2">
                     {subject.description}
                 </p>
             </Link>
-
-            {/* Footer Left - Year */}
             <div className="absolute bottom-4 left-4 text-gray-500 text-sm font-medium">
                 Year {subject.year}
             </div>
-
-            {/* Footer Right - Admin Buttons */}
             {isAdmin && (
                 <div className="absolute bottom-4 right-4 flex gap-2">
                     <button
