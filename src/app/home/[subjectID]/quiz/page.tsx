@@ -107,7 +107,7 @@ export default function Quiz() {
 
     const { user, loading: userLoading } = useUser();
     const isAdmin = user?.role === 'ADMIN' || user?.role === 'SADMIN';
-    const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', !!user?._id);
+    const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
     const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 5;
 
     if (userLoading || statLoading) {
@@ -122,7 +122,7 @@ export default function Quiz() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
                 <div className="text-3xl font-bold text-gray-700 mb-4">Access Restricted</div>
-                <div className="text-lg text-gray-500 mb-6 max-w-md">You must create at least <span className="font-semibold text-blue-600">5 quizzes</span> to access the quiz feature. Start contributing quizzes to unlock this section!</div>
+                <div className="text-lg text-gray-500 mb-6 max-w-md">You must create at least <span className="font-semibold text-blue-600">5 quizzes</span> to access quiz of this subject. Start contributing quizzes to unlock this section!</div>
                 <Link href="/home" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition">Go to Home</Link>
             </div>
         );

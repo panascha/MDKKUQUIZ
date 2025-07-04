@@ -22,7 +22,7 @@ export default function SubjectDetailPage() {
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
     const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
 
-    const { data: userStat } = useGetUserStatById(user?._id || '', !!user?._id);
+    const { data: userStat } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
     const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 5;
 
     const { data: subject, isLoading, error } = useQuery({
