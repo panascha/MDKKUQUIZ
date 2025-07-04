@@ -11,7 +11,7 @@ import {
     BarChart3,
     LoaderIcon
 } from 'lucide-react';
-import { useGetStatOverAll } from '@/hooks/useGetStatOverAll';
+import { useGetStatOverAll } from '@/hooks/stats/useGetStatOverAll';
 
 // Import components
 import StatsOverview from '@/components/admin/StatsOverview';

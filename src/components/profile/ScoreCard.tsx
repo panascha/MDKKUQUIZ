@@ -125,7 +125,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ scores }) => {
           className="absolute top-2 right-2 p-1 sm:p-1 bg-red-500/90 text-white rounded-full hover:bg-red-600 disabled:opacity-50 transition-all duration-300
             hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
             w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center"
-        >
+          >
           <XIcon size={16} className="w-4 h-4" />
         </button>
           </div>

@@ -11,8 +11,8 @@ import {
     CheckCircle2,
     FileCheck
 } from 'lucide-react';
-import { StatsOverviewProps } from '@/hooks/useGetStatOverAll';
-import { useGetDailyActivity } from '@/hooks/useGetDailyActivity';
+import { StatsOverviewProps } from '@/hooks/stats/useGetStatOverAll';
+import { useGetDailyActivity } from '@/hooks/stats/useGetDailyActivity';
 
 const StatsOverview: React.FC<StatsOverviewProps> = ({ 
     stat
