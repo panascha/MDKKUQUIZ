@@ -1,5 +1,5 @@
 import { Quiz } from "../../types/api/Quiz";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 interface QuestionCountSelectionProps {
     questionCount: number;
@@ -16,16 +16,24 @@ export const QuestionCountSelection = ({
     selectedQuestionTypes,
     filteredQuiz
 }: QuestionCountSelectionProps) => {
+    // Calculate max available questions based on type
+    const maxAvailableQuestions = selectedQuestionTypes.includes('mcq')
+        ? filteredQuiz.filter((q: Quiz) => q.type === "choice" || q.type === "both").length
+        : filteredQuiz.filter((q: Quiz) => q.type === "written" || q.type === "both").length;
+
+    // Auto-limit questionCount if it exceeds the new maximum
+    useEffect(() => {
+        if (questionCount > maxAvailableQuestions) {
+            setQuestionCount(maxAvailableQuestions);
+        }
+    }, [maxAvailableQuestions, questionCount, setQuestionCount]);
+
     const handleQuestionCountChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = Number(e.target.value);
-            const maxAvailableQuestions = selectedQuestionTypes.includes('mcq')
-                ? filteredQuiz.filter((q: Quiz) => q.type === "choice").length
-                : filteredQuiz.filter((q: Quiz) => q.type === "written").length;
-
             setQuestionCount(value > 0 ? Math.min(value, maxAvailableQuestions) : 0);
         },
-        [selectedQuestionTypes, filteredQuiz, setQuestionCount]
+        [maxAvailableQuestions, setQuestionCount]
     );
 
     return (
@@ -47,9 +55,13 @@ export const QuestionCountSelection = ({
                         ${selectCategory.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
                     value={questionCount}
                     onChange={handleQuestionCountChange}
-                    placeholder={`Max: ${filteredQuiz.length}`}
+                    placeholder={`Max: ${selectedQuestionTypes.includes('mcq')
+                        ? filteredQuiz.filter((q: Quiz) => q.type === "choice" || q.type === "both").length
+                        : filteredQuiz.filter((q: Quiz) => q.type === "written" || q.type === "both").length}`}
                     min={0}
-                    max={filteredQuiz.length}
+                    max={selectedQuestionTypes.includes('mcq')
+                        ? filteredQuiz.filter((q: Quiz) => q.type === "choice" || q.type === "both").length
+                        : filteredQuiz.filter((q: Quiz) => q.type === "written" || q.type === "both").length}
                     aria-label="Number of questions"
                     disabled={selectCategory.length === 0}
                 />
@@ -58,8 +70,8 @@ export const QuestionCountSelection = ({
                         ${selectCategory.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
                     onClick={() => setQuestionCount((prev: number) => Math.min(
                         Math.min(5, selectedQuestionTypes.includes('mcq')
-                            ? filteredQuiz.filter((q: Quiz) => q.type === "choice").length
-                            : filteredQuiz.filter((q: Quiz) => q.type === "written").length),
+                            ? filteredQuiz.filter((q: Quiz) => q.type === "choice" || q.type === "both").length
+                            : filteredQuiz.filter((q: Quiz) => q.type === "written" || q.type === "both").length),
                         prev + 5
                     ))}
                     aria-label="Increase number of questions"
@@ -69,8 +81,8 @@ export const QuestionCountSelection = ({
                 </button>
             </div>
             <p className="text-sm text-gray-600 mt-2 max-w-md mx-auto text-center">
-                {selectedQuestionTypes.includes('mcq') && `MCQ Questions Available: ${filteredQuiz.filter((q: Quiz) => q.type === "choice").length}`}
-                {selectedQuestionTypes.includes('shortanswer') && `Short Answer Questions Available: ${filteredQuiz.filter((q: Quiz) => q.type === "written").length}`}
+                {selectedQuestionTypes.includes('mcq') && `MCQ Questions Available: ${filteredQuiz.filter((q: Quiz) => q.type === "choice" || q.type === "both").length}`}
+                {selectedQuestionTypes.includes('shortanswer') && `Short Answer Questions Available: ${filteredQuiz.filter((q: Quiz) => q.type === "written" || q.type === "both").length}`}
             </p>
         </section>
     );

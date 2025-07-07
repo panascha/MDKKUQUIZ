@@ -1,6 +1,7 @@
 import { Category } from "../../types/api/Category";
 import { Quiz } from "../../types/api/Quiz";
 import { useCallback } from "react";
+import React from "react";
 
 interface TopicSelectionProps {
     category: Category[];
@@ -10,6 +11,22 @@ interface TopicSelectionProps {
     quiz: Quiz[];
     selectedQuestionTypes: string;
 }
+
+const SelectableButton = ({ selected, onSelect, children, ...props }: { selected: boolean, onSelect: () => void, children: React.ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button
+        className={`
+            cursor-pointer px-4 py-2 rounded-lg text-lg shadow-md transition transform duration-300
+            focus:outline-none
+            ${selected ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300 hover:text-gray-900'}
+            hover:scale-105
+        `}
+        onClick={onSelect}
+        aria-pressed={selected}
+        {...props}
+    >
+        {children}
+    </button>
+);
 
 export const TopicSelection = ({
     category,
@@ -64,18 +81,13 @@ export const TopicSelection = ({
             </div>
             <div className="flex flex-wrap gap-4">
                 {category.map((cat: Category) => (
-                    <button
+                    <SelectableButton
                         key={cat._id}
-                        className={`
-                            cursor-pointer px-4 py-2 rounded-lg text-lg bg-gray-200 text-gray-800 shadow-md hover:bg-gray-300 hover:text-gray-900 transition transform hover:scale-105 duration-300
-                            focus:outline-none
-                            ${selectCategory.includes(String(cat._id)) ? 'bg-orange-500 text-white' : ''}
-                        `}
-                        onClick={() => handleTopicToggle(cat._id)}
-                        aria-pressed={selectCategory.includes(String(cat._id))}
+                        selected={selectCategory.includes(String(cat._id))}
+                        onSelect={() => handleTopicToggle(cat._id)}
                     >
                         {cat.category}
-                    </button>
+                    </SelectableButton>
                 ))}
             </div>
         </section>
