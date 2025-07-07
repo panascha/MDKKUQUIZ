@@ -477,10 +477,11 @@ export default function Problem() {
                     )}
                     {answerMode === 'reveal-after-each' && allQuestionsSubmitted && (
                         <button
-                            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handleSubmit}
+                            disabled={isSubmitting}
                         >
-                            Go to Summary
+                            {isSubmitting ? "Submitting..." : "Go to Summary"}
                         </button>
                     )}
                         </div>
