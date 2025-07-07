@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MDKKUQUIZ
+
+MDKKUQUIZ is the frontend for the MedQuiz application, built with Next.js, React, and TypeScript. It provides a modern, responsive interface for users to interact with quizzes, manage profiles, view statistics, and more.
+
+---
+
+## Table of Contents
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Available Scripts](#available-scripts)
+- [Docker Usage](#docker-usage)
+- [Project Structure](#project-structure)
+- [Authentication](#authentication)
+- [Technologies Used](#technologies-used)
+
+---
+
+## Features
+- User authentication (NextAuth.js, credentials provider)
+- Quiz browsing, filtering, and participation
+- Profile management and leaderboard
+- Admin dashboard for managing quizzes, keywords, reports, and users
+- Category, subject, and keyword navigation
+- Responsive UI with Tailwind CSS and Material UI
+- Image upload and gallery support
+- Statistics and activity tracking
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- Backend API (see `/BackEnd`)
 
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone <repo-url>
+   cd MedQuiz/MDKKUQUIZ
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env.local` file in the root directory (see [Environment Variables](#environment-variables)).
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   The app will run on `http://localhost:3000` by default.
+
+---
+
+## Environment Variables
+Create a `.env.local` file in the root directory. Common variables include:
+```env
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=<your-random-secret>
+API_BASE_URL=http://localhost:5000/api/v1
+```
+Adjust these as needed for your backend and deployment.
+
+---
+
+## Available Scripts
+- `npm run dev` — Start the development server (with Turbopack)
+- `npm run build` — Build the app for production
+- `npm run start` — Start the production server
+- `npm run lint` — Run ESLint
+- `npm run lint:fix` — Fix lint errors
+- `npm run lint:strict` — TypeScript strict check
+- `npm run prettier:check` — Check code formatting
+- `npm run prettier:clean` — Format code with Prettier
+
+---
+
+## Docker Usage
+Build and run the frontend in a Docker container:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker build -t mdkkuquiz-frontend .
+docker run -p 3000:3000 --env-file .env.local mdkkuquiz-frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
+```
+MDKKUQUIZ/
+├── src/
+│   ├── app/           # Next.js app directory (routing, pages, API routes)
+│   ├── components/    # Reusable UI components (Navbar, Profile, Quiz, etc.)
+│   ├── hooks/         # Custom React hooks for data fetching and logic
+│   ├── config/        # API routes, roles, and other config
+│   ├── lib/           # Utility functions and libraries
+│   ├── providers/     # Context and providers (NextAuth, Tanstack Query)
+│   ├── types/         # TypeScript type definitions
+│   ├── utils/         # Utility helpers
+│   └── font/          # Custom fonts
+├── public/            # Static assets (images, icons)
+├── next.config.ts     # Next.js configuration
+├── tsconfig.json      # TypeScript configuration
+├── Dockerfile         # Docker configuration
+└── ...
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Authentication
+Authentication is handled via [NextAuth.js](https://next-auth.js.org/) using a credentials provider. The login page is at `/login`. Sessions are managed with JWT. See `src/app/api/auth/[...nextauth]/authOptions.ts` for details.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Technologies Used
+- [Next.js](https://nextjs.org/) (App Router, TypeScript)
+- [React](https://react.dev/)
+- [NextAuth.js](https://next-auth.js.org/) (authentication)
+- [Tailwind CSS](https://tailwindcss.com/) (utility-first styling)
+- [Material UI](https://mui.com/) (UI components)
+- [Radix UI](https://www.radix-ui.com/)
+- [Framer Motion](https://www.framer.com/motion/) (animations)
+- [TanStack Query](https://tanstack.com/query/latest) (data fetching)
+- [Axios](https://axios-http.com/) (HTTP client)
+- [TypeScript](https://www.typescriptlang.org/)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+ISC
