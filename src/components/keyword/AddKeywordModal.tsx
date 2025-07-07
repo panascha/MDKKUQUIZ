@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../components/ui/Dialog';
-import Button from '../../components/ui/Button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../ui/Dialog';
+import Button from '../ui/Button';
 import { LoaderIcon } from "lucide-react";
 import { UserProps } from '../../types/api/UserProps';
 import { Category } from '../../types/api/Category';
 import { Subject } from '../../types/api/Subject';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/DropdownMenu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/DropdownMenu';
 import { CreateKeywordData, useCreateKeyword } from '../../hooks/keyword/useCreateKeyword';
 import { useUser } from '../../hooks/useUser';
 import toast from 'react-hot-toast';

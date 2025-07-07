@@ -1,5 +1,4 @@
-//const BACKEND_URL = "https://medquizbackend.onrender.com";
-export const BACKEND_URL = "http://localhost:5000";
+export const BACKEND_URL = "http://localhost:5001";
 const BackendRootRoutes = `${BACKEND_URL}/api/v1`;
 
 export enum BackendRoutes {

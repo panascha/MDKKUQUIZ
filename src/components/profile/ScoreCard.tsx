@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/Card";
 import { UserScore } from "../../types/api/Score";
-import { Badge } from "../../components/ui/Badge";
+import { Badge } from "../ui/Badge";
 import Link from "next/link";
 import { XIcon } from 'lucide-react';
 import { useDeleteScore } from '../../hooks/score/useDeleteScore';

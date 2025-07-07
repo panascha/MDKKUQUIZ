@@ -1,12 +1,12 @@
-import { Badge } from "../../components/ui/Badge";
-import Button from "../../components/ui/Button";
+import { Badge } from "../ui/Badge";
+import Button from "../ui/Button";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-} from "../../components/ui/Card";
-import { Input } from "../../components/ui/Input";
+} from "../ui/Card";
+import { Input } from "../ui/Input";
 import { Role_type } from "../../config/role";
 import { User } from "../../types/User";
 import { UserCircle2 } from "lucide-react";

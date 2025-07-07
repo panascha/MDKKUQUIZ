@@ -3,6 +3,11 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { BackendRoutes } from "../../config/apiRoutes";
 import { Subject } from "../../types/api/Subject";
+import { uploadImageToBackend } from "../../lib/utils";
+
+function isFile(obj: unknown): obj is File {
+    return typeof obj === 'object' && obj !== null && 'name' in obj && obj instanceof File;
+}
 
 export const useCreateSubject = () => {
     const session = useSession();
@@ -10,19 +15,23 @@ export const useCreateSubject = () => {
         mutationFn: async (newSubject: Omit<Subject, "_id"|"createdAt" | "updatedAt">) => {
             if (!session?.data?.user.token) throw new Error("Authentication required");
 
-            const formDataPayload = new FormData();
-            formDataPayload.append("name", newSubject.name);
-            formDataPayload.append("description", newSubject.description);
-            formDataPayload.append("year", newSubject.year.toString());
-            // Ensure image is added correctly as file, only if it's not null
-            if (newSubject.img) {
-                formDataPayload.append("image", newSubject.img); // img is now a File
+            let imageUrl = "";
+            if (isFile(newSubject.img)) {
+                imageUrl = await uploadImageToBackend(newSubject.img, session.data.user.token);
+            } else if (typeof newSubject.img === 'string') {
+                imageUrl = newSubject.img;
             }
 
-            const response = await axios.post(BackendRoutes.SUBJECT, formDataPayload, {
+            const payload = {
+                name: newSubject.name,
+                description: newSubject.description,
+                year: newSubject.year,
+                img: imageUrl,
+            };
+
+            const response = await axios.post(BackendRoutes.SUBJECT, payload, {
                 headers: {
-                Authorization: `Bearer ${session.data.user.token}`,
-                "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${session.data.user.token}`,
                 },
             });
 

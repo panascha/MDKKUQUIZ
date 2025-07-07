@@ -1,4 +1,4 @@
-import { ButtonWithLogo } from "../../components/magicui/Buttonwithlogo";
+import { ButtonWithLogo } from "../magicui/Buttonwithlogo";
 
 type AnswerModes = "reveal-at-end"| "reveal-after-each";
 

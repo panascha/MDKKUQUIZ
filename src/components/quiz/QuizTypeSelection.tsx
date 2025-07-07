@@ -1,4 +1,4 @@
-import { ButtonWithLogo } from "../../components/magicui/Buttonwithlogo";
+import { ButtonWithLogo } from "../magicui/Buttonwithlogo";
 import { useCallback } from "react";
 
 type QuizType = "chillquiz" | "realtest" | "custom";

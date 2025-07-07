@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card } from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
+import { Card } from '../ui/Card';
+import Button from '../ui/Button';
 import { AlertTriangle } from 'lucide-react';
 import { Report } from '../../types/api/Report';
 import { useState } from 'react';
