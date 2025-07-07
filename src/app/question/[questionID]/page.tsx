@@ -177,7 +177,25 @@ const QuestionDetail = () => {
                                     <h2 className="text-lg font-semibold text-gray-900 mb-3">Question</h2>
                                     <p className="text-gray-700 leading-relaxed">{question.question}</p>
                                 </div>
-                                
+                                {/* Unified Correct Answers Section for all types - moved here */}
+                                {question.correctAnswer && question.correctAnswer.length > 0 && (
+                                    <div className="bg-gray-50 p-6 rounded-lg">
+                                        <h2 className="text-lg font-semibold text-green-700 mb-3 flex items-center gap-2">
+                                            <span className="text-green-500">✓</span>Correct Answer{question.correctAnswer.length > 1 ? 's' : ''}
+                                        </h2>
+                                        <ul className="space-y-2">
+                                            {question.correctAnswer.map((ans: string, idx: number) => (
+                                                <li key={idx} className="flex items-start gap-2">
+                                                    {/* If MCQ, show letter. If not, just show answer. */}
+                                                    {question.type === 'choice' || question.type === 'both' ? (
+                                                        <span className="text-green-500 font-bold">{String.fromCharCode(65 + (question.choice ? question.choice.findIndex((c: string) => c === ans) : 0))}.</span>
+                                                    ) : null}
+                                                    <span className="font-semibold text-green-700">{ans}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                                 {question.img && question.img.length > 0 && (
                                     <div className="bg-gray-50 p-6 rounded-lg">
                                         <h2 className="text-lg font-semibold text-gray-900 mb-3">Images</h2>
@@ -206,24 +224,6 @@ const QuestionDetail = () => {
                                             </ul>
                                         ) : (
                                             <p className="text-gray-400 italic">No choices provided.</p>
-                                        )}
-                                    </div>
-                                )}
-
-                                {(question.type === 'written' || question.type === 'both') && (
-                                    <div className="bg-gray-50 p-6 rounded-lg">
-                                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Correct Answers (Short Answer)</h2>
-                                        {question.correctAnswer && question.correctAnswer.length > 0 ? (
-                                            <ul className="space-y-2">
-                                                {question.correctAnswer.map((ans: string, idx: number) => (
-                                                    <li key={idx} className="flex items-start gap-2">
-                                                        <span className="text-green-500 font-semibold">✓</span>
-                                                        <span className="text-gray-700">{ans}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-gray-400 italic">No short answers provided.</p>
                                         )}
                                     </div>
                                 )}
