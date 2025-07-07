@@ -21,12 +21,12 @@ export const useCreateQuiz = () => {
     const session = useSession();
     return useMutation({
         mutationFn: async (quizData: CreateQuizData) => {
-            if (!session?.data?.user.token) throw new Error("Authentication required");
+            if (!session?.data?.user?.token) throw new Error("Authentication required");
 
             let imgUrls: string[] = [];
             if (quizData.images && quizData.images.length > 0) {
                 imgUrls = await Promise.all(
-                    quizData.images.map(file => uploadImageToBackend(file, session.data.user.token))
+                    quizData.images.map(file => uploadImageToBackend(file, session.data.user.token!))
                 );
             }
 
