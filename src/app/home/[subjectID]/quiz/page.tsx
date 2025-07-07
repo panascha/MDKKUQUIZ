@@ -6,7 +6,6 @@ import type { Quiz } from "../../../../types/api/Quiz";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
-import { LoaderIcon } from "react-hot-toast";
 import { useGetQuizzes } from "../../../../hooks/quiz/useGetQuizzes";
 import { useQuery } from "@tanstack/react-query";
 import { useGetSubjectByID } from "../../../../hooks/subject/useGetSubjectByID";
@@ -111,15 +110,16 @@ export default function Quiz() {
 
     if (userLoading || statLoading) {
         return (
-            <div className="flex items-center justify-center gap-3 pt-20">
-                <LoaderIcon /> Checking permissions...
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <span className="animate-spin rounded-full h-12 w-12 border-4 border-sky-500 border-t-transparent mr-4" />
+                <span className="text-lg text-sky-700 animate-fade-in">Checking permissions...</span>
             </div>
         );
     }
 
     if (!canTakeQuiz) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in">
                 <div className="text-3xl font-bold text-gray-700 mb-4">Access Restricted</div>
                 <div className="text-lg text-gray-500 mb-6 max-w-md">You must create at least <span className="font-semibold text-blue-600">5 quizzes</span> to access quiz of this subject. Start contributing quizzes to unlock this section!</div>
                 <Link href="/home" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition">Go to Home</Link>
@@ -129,29 +129,35 @@ export default function Quiz() {
 
     if (isSubjectLoading || isCategoryLoading || isQuizzesLoading) {
         return (
-            <div className="flex items-center justify-center gap-3 pt-20">
-                <LoaderIcon /> Loading...
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <span className="animate-spin rounded-full h-12 w-12 border-4 border-sky-500 border-t-transparent mr-4" />
+                <span className="text-lg text-sky-700 animate-fade-in">Loading...</span>
             </div>
         );          
     }
     
     if (subjectError || categoryError || quizzesError) {
         return (
-            <div className="text-red-500 flex items-center gap-2 pt-20">
-                <span>Error:</span> {subjectError?.message || categoryError?.message || quizzesError?.message}
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in">
+                <span className="text-red-500 text-xl font-semibold mb-2">Error</span>
+                <span className="text-gray-600">{subjectError?.message || categoryError?.message || quizzesError?.message}</span>
             </div>
         );          
     }
     
     if (!subject) {
         return (
-            <div className="text-red-500 pt-20">Subject not found</div>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in">
+                <span className="text-red-500 text-xl font-semibold mb-2">Subject not found</span>
+            </div>
         );          
     }
 
     if (!categories.length) {
         return (
-            <div className="text-red-500 pt-20">No categories found</div>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in">
+                <span className="text-red-500 text-xl font-semibold mb-2">No categories found</span>
+            </div>
         );          
     }
 
