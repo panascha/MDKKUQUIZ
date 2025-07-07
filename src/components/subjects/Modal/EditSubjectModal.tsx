@@ -1,6 +1,6 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../../components/ui/Dialog';
-import Button from '../../../components/ui/Button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../ui/Dialog';
+import Button from '../../ui/Button';
 import { LoaderIcon } from "lucide-react";
 import Image from 'next/image';
 import { X } from "lucide-react";

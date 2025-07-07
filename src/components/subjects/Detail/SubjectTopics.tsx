@@ -1,7 +1,7 @@
 import { Category } from "../../../types/api/Category";
 import { Subject } from "../../../types/api/Subject";
 import { useState } from "react";
-import EditCategoryModal from "../../../components/category/EditCategoryModal";
+import EditCategoryModal from "../../category/EditCategoryModal";
 import { useDeleteCategory } from "../../../hooks/category/useDeleteCategory";
 import { PencilIcon, TrashIcon, PlusIcon } from "lucide-react";
 import { toast } from "react-hot-toast";

@@ -208,9 +208,10 @@ const Main = () => {
 
     if (isLoading)
       return (
-        <p className="flex items-center justify-center gap-3 pt-10">
-          <LoaderIcon /> Loading...
-        </p>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <span className="animate-spin rounded-full h-12 w-12 border-4 border-sky-500 border-t-transparent mr-4" />
+          <span className="text-lg text-sky-700 animate-fade-in">Loading...</span>
+        </div>
       );
 
     return (
@@ -222,27 +223,32 @@ const Main = () => {
             selectedYear={year}
             onYearChange={setYear}
           />
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {filterSubject.map((subject) => (
-              <SubjectCard
-                key={subject._id}
-                subject={subject}
-                isAdmin={admin}
-                onEdit={handleEditClick}
-                onDelete={(id) => deleteSubject.mutate(id, {
-                  onSuccess: () => {
-                    queryClient.invalidateQueries({ queryKey: ["subject"] });
-                    toast.success("delete succesfully!")
-                  },
-                  onError: (error: Error) => {
-                    setError(error.message);
-                  },
-                })}
-                isDeleting={deleteSubject.isPending}
-              />
-            ))}
-          </div>
+          {filterSubject.length === 0 ? (
+            <div className="text-center text-gray-500 py-8 text-lg">
+              There is no subject.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {filterSubject.map((subject) => (
+                <SubjectCard
+                  key={subject._id}
+                  subject={subject}
+                  isAdmin={admin}
+                  onEdit={handleEditClick}
+                  onDelete={(id) => deleteSubject.mutate(id, {
+                    onSuccess: () => {
+                      queryClient.invalidateQueries({ queryKey: ["subject"] });
+                      toast.success("delete succesfully!")
+                    },
+                    onError: (error: Error) => {
+                      setError(error.message);
+                    },
+                  })}
+                  isDeleting={deleteSubject.isPending}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Add Subject Modal */}
