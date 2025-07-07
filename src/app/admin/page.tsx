@@ -52,6 +52,9 @@ export default function AdminPanel() {
     const defaultYear = user?.year ? Number(user.year) : null;
     const [selectedYear, setSelectedYear] = useState<number | null>(defaultYear);
 
+    // Add active tab state
+    const [activeTab, setActiveTab] = useState<string>('overview');
+
     useEffect(() => {
         if (status === "unauthenticated" || (!isUserLoading && !isAdmin)) {
             router.push(FrontendRoutes.HOMEPAGE);
@@ -161,7 +164,7 @@ export default function AdminPanel() {
                 {/* Main Content */}
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
                     {/* Tabs */}
-                    <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="overview" className="space-y-4 sm:space-y-6">
                         <TabsList className="bg-white p-1 rounded-lg shadow-sm overflow-x-auto flex whitespace-nowrap">
                             <TabsTrigger value="overview" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
                                 <BarChart3 className="w-4 h-4 mr-1 sm:mr-2" />
@@ -190,7 +193,7 @@ export default function AdminPanel() {
                         {/* Tab Contents */}
                         <div className="mt-4 sm:mt-6">
                             <TabsContent value="overview">
-                                <StatsOverview stat={stats}/>
+                                <StatsOverview stat={stats} onNavigateTab={setActiveTab}/>
                             </TabsContent>
                             <TabsContent value="keywords">
                                 <KeywordsTab 

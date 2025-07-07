@@ -11,11 +11,16 @@ import {
     CheckCircle2,
     FileCheck
 } from 'lucide-react';
-import { StatsOverviewProps } from '../../hooks/stats/useGetStatOverAll';
 import { useGetDailyActivity } from '../../hooks/stats/useGetDailyActivity';
 
+interface StatsOverviewProps {
+    stat: any;
+    onNavigateTab?: (tab: string) => void;
+}
+
 const StatsOverview: React.FC<StatsOverviewProps> = ({ 
-    stat
+    stat,
+    onNavigateTab
 }) => {
     const hasNoPendingKeywords = stat?.totalPendingKeywords === 0;
     const hasNoPendingQuizzes = stat?.totalPendingQuizzes === 0;
@@ -69,7 +74,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
             <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending Items</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg transition hover:bg-blue-100 cursor-pointer" onClick={() => onNavigateTab && onNavigateTab('keywords')}>
                         <div className="p-3 bg-blue-50 rounded-lg">
                             <FileText className="w-6 h-6 text-blue-600" />
                         </div>
@@ -85,7 +90,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
                             )}
                         </div>
                     </div>
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg transition hover:bg-amber-100 cursor-pointer" onClick={() => onNavigateTab && onNavigateTab('quizzes')}>
                         <div className="p-3 bg-amber-50 rounded-lg">
                             <Clock className="w-6 h-6 text-amber-600" />
                         </div>
@@ -101,7 +106,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
                             )}
                         </div>
                     </div>
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg transition hover:bg-orange-100 cursor-pointer" onClick={() => onNavigateTab && onNavigateTab('reports')}>
                         <div className="p-3 bg-orange-50 rounded-lg">
                             <AlertTriangle className="w-6 h-6 text-orange-600" />
                         </div>
