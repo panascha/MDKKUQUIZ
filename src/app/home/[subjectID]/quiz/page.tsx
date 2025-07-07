@@ -5,7 +5,7 @@ import { FrontendRoutes } from "../../../../config/apiRoutes";
 import type { Quiz } from "../../../../types/api/Quiz";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { useGetQuizzes } from "../../../../hooks/quiz/useGetQuizzes";
 import { useQuery } from "@tanstack/react-query";
 import { useGetSubjectByID } from "../../../../hooks/subject/useGetSubjectByID";
@@ -23,7 +23,7 @@ export default function Quiz() {
     type AnswerModes = "reveal-at-end"| "reveal-after-each"
     const quizTypes: QuizType[] = ["chillquiz", "realtest", "custom"];
     const answerModes: AnswerModes[] = ["reveal-at-end", "reveal-after-each"];
-    const questionTypes = ["mcq", "shortanswer", "both"];
+    const questionTypes = ["mcq", "shortanswer"];
 
     const [quizType, setQuizType] = useState('');
     const [answerMode, setAnswerMode] = useState('');
@@ -53,7 +53,18 @@ export default function Quiz() {
         return quizzes.filter((item: Quiz) => selectCategory.includes(item.category._id));
     }, [quizzes, selectCategory]);
 
-    // Default Values
+    useEffect(() => {
+        let max = 0;
+        if (selectedQuestionTypes === 'mcq') {
+            max = filteredQuiz.filter((q: Quiz) => q.type === 'choice' || q.type === 'both').length;
+        } else if (selectedQuestionTypes === 'shortanswer') {
+            max = filteredQuiz.filter((q: Quiz) => q.type === 'written' || q.type === 'both').length;
+        } else {
+            max = filteredQuiz.length;
+        }
+        setMaxQuestions(max);
+    }, [filteredQuiz, selectedQuestionTypes]);
+
     const defaultValues_AnswerMode = useMemo(() => ({
         chillquiz: answerModes[1],
         realtest: answerModes[0],
@@ -163,78 +174,84 @@ export default function Quiz() {
 
     return (
         <ProtectedPage>
-            <div className="container max-w-5xl p-8 md:p-16 rounded-lg mt-6 mx-auto bg-white shadow-lg animate-fade-in">
-                <Link href="/subjects" className="flex items-center gap-2 text-black hover:text-orange-800 transition duration-300 ease-in-out mb-6">
-                    <h1 className="text-4xl font-bold text-center animate-slide-down">
-                        Quiz for {subject?.name}
-                    </h1>
-                </Link>
+            <div className="min-h-screen w-full bg-gradient-to-br from-blue-100 via-white to-orange-100 flex items-center justify-center py-8 px-2 md:px-0">
+                <div className="w-full max-w-5xl p-4 sm:p-8 md:p-12 rounded-3xl mx-auto bg-white/80 shadow-2xl backdrop-blur-md border border-gray-200 animate-fade-in-up transition-all duration-500">
+                    <Link href="/home" className="flex items-center gap-2 text-black hover:text-orange-800 transition duration-300 ease-in-out mb-8">
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-center w-full drop-shadow-lg tracking-tight animate-slide-down">
+                            {subject?.name}
+                        </h1>
+                    </Link>
 
-                <TopicSelection
-                    category={categories}
-                    selectCategory={selectCategory}
-                    setSelectCategory={setSelectCategory}
-                    setMaxQuestions={setMaxQuestions}
-                    quiz={quizzes}
-                    selectedQuestionTypes={selectedQuestionTypes}
-                />
+                    <div className="space-y-8">
+                        <TopicSelection
+                            category={categories}
+                            selectCategory={selectCategory}
+                            setSelectCategory={setSelectCategory}
+                            setMaxQuestions={setMaxQuestions}
+                            quiz={quizzes}
+                            selectedQuestionTypes={selectedQuestionTypes}
+                        />
 
-                <QuizTypeSelection
-                    quizTypes={quizTypes}
-                    quizType={quizType}
-                    setQuizType={setQuizType}
-                    setQuestionCount={setQuestionCount}
-                    setAnswerMode={setAnswerMode}
-                    setSelectedQuestionTypes={setSelectedQuestionTypes}
-                    selectCategory={selectCategory}
-                    defaultValues_QuestionType={defaultValues_QuestionType}
-                    defaultValues_AnswerMode={defaultValues_AnswerMode}
-                    answerModes={answerModes}
-                    quiz={quizzes}
-                    setMaxQuestions={setMaxQuestions}
-                />
+                        <QuizTypeSelection
+                            quizTypes={quizTypes}
+                            quizType={quizType}
+                            setQuizType={setQuizType}
+                            setQuestionCount={setQuestionCount}
+                            setAnswerMode={setAnswerMode}
+                            setSelectedQuestionTypes={setSelectedQuestionTypes}
+                            selectCategory={selectCategory}
+                            defaultValues_QuestionType={defaultValues_QuestionType}
+                            defaultValues_AnswerMode={defaultValues_AnswerMode}
+                            answerModes={answerModes}
+                            quiz={quizzes}
+                            setMaxQuestions={setMaxQuestions}
+                        />
 
-                <AnswerModeSelection
-                    answerModes={answerModes}
-                    answerMode={answerMode}
-                    setAnswerMode={setAnswerMode}
-                    selectCategory={selectCategory}
-                />
+                        <AnswerModeSelection
+                            answerModes={answerModes}
+                            answerMode={answerMode}
+                            setAnswerMode={setAnswerMode}
+                            selectCategory={selectCategory}
+                        />
 
-                <QuestionTypeSelection
-                    questionTypes={questionTypes}
-                    selectedQuestionTypes={selectedQuestionTypes}
-                    setSelectedQuestionTypes={setSelectedQuestionTypes}
-                    selectCategory={selectCategory}
-                />
+                        <QuestionTypeSelection
+                            questionTypes={questionTypes}
+                            selectedQuestionTypes={selectedQuestionTypes}
+                            setSelectedQuestionTypes={setSelectedQuestionTypes}
+                            selectCategory={selectCategory}
+                        />
 
-                <QuestionCountSelection
-                    questionCount={questionCount}
-                    setQuestionCount={setQuestionCount}
-                    selectCategory={selectCategory}
-                    selectedQuestionTypes={selectedQuestionTypes}
-                    filteredQuiz={filteredQuiz}
-                />
+                        <QuestionCountSelection
+                            questionCount={questionCount}
+                            setQuestionCount={setQuestionCount}
+                            selectCategory={selectCategory}
+                            selectedQuestionTypes={selectedQuestionTypes}
+                            filteredQuiz={filteredQuiz}
+                        />
 
-                <ButtonWithLogo
-                    onClick={handleStartQuiz}
-                    className="
-                        w-full
-                        px-6 py-3
-                        text-lg font-semibold
-                        text-white text-center
-                        rounded-2xl
-                        bg-gradient-to-r from-cyan-500 to-blue-600
-                        shadow-lg hover:shadow-xl
-                        transition-all duration-300 ease-in-out
-                        hover:scale-102 hover:brightness-110
-                        focus:outline-none focus:ring-2 focus:ring-orange-400
-                        animate-fade-in
-                    "
-                    emoji={<span role="img" aria-label="emoji">৻(  •̀ ᗜ •́  ৻)</span>}
-                >
-                    🚀 Start Quiz
-                </ButtonWithLogo>
+                        <div className="pt-4">
+                            <ButtonWithLogo
+                                onClick={handleStartQuiz}
+                                className="
+                                    w-full
+                                    px-8 py-4
+                                    text-xl font-bold
+                                    text-white text-center
+                                    rounded-2xl
+                                    bg-gradient-to-r from-cyan-500 to-blue-600
+                                    shadow-xl hover:shadow-2xl
+                                    transition-all duration-300 ease-in-out
+                                    hover:scale-105 hover:brightness-110
+                                    focus:outline-none focus:ring-4 focus:ring-orange-300
+                                    animate-fade-in
+                                "
+                                emoji={<span role="img" aria-label="emoji">৻(  •̀ ᗜ •́  ৻)</span>}
+                            >
+                                🚀 Start Quiz
+                            </ButtonWithLogo>
+                        </div>
+                    </div>
+                </div>
             </div>
         </ProtectedPage>
     );

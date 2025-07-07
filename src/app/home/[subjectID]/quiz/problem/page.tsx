@@ -39,6 +39,7 @@ export default function Problem() {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isQuestionTableOpen, setIsQuestionTableOpen] = useState(false);
     const [questionViewMode, setQuestionViewMode] = useState<'grid' | 'list'>('grid');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { data: quizData, isLoading } = useGetQuizzes({
         subjectID,
@@ -123,7 +124,7 @@ export default function Problem() {
             alert("No user ID available in session");
             return;
         }
-
+        setIsSubmitting(true);
         // Mark all questions as correct or incorrect
         const updatedQuestions = showQuestion.map(question => {
             let isCorrect = false;
@@ -171,9 +172,11 @@ export default function Problem() {
                 router.push(`/profile/${result._id}`);
             } else {
                 console.error('No score ID returned from submission');
+                setIsSubmitting(false);
             }
         } catch (error) {
             console.error('Error submitting score:', error);
+            setIsSubmitting(false);
         }
     };
 
@@ -288,23 +291,6 @@ export default function Problem() {
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading questions...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!quizData.questions || quizData.questions.length === 0) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">No Questions Available</h2>
-                    <p className="text-gray-600">There are no questions matching your selected criteria.</p>
-                    <button
-                        onClick={() => router.back()}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        Go Back
-                    </button>
                 </div>
             </div>
         );
@@ -482,18 +468,20 @@ export default function Problem() {
                     </button>
                     {answerMode === 'reveal-at-end' && allQuestionsAnswered && (
                         <button
-                            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handleSubmit}
+                            disabled={isSubmitting}
                         >
-                            Submit All & Go to Summary
+                            {isSubmitting ? "Submitting..." : "Submit All & Go to Summary"}
                         </button>
                     )}
                     {answerMode === 'reveal-after-each' && allQuestionsSubmitted && (
                         <button
-                            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handleSubmit}
+                            disabled={isSubmitting}
                         >
-                            Go to Summary
+                            {isSubmitting ? "Submitting..." : "Go to Summary"}
                         </button>
                     )}
                         </div>

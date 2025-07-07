@@ -12,6 +12,7 @@ import { CreateQuizData, useCreateQuiz } from '../../../hooks/quiz/useCreateQuiz
 import Image from 'next/image';
 import { Keyword } from '../../../types/api/Keyword';
 import { useGetKeyword } from '../../../hooks/keyword/useGetKeyword';
+import { LoaderIcon } from 'lucide-react';
 
 interface AddQuizModalProps {
   showModal: boolean;
@@ -534,9 +535,17 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
           <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4 pt-4 sticky bottom-0 bg-white">
             <Button
               textButton="Submit"
+              disabled={createQuizMutation.isPending}
               className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
             >
-              Submit
+              {createQuizMutation.isPending ? (
+                <>
+                  <LoaderIcon className="mr-2 inline animate-spin" size={16} />
+                  Submitting...
+                </>
+              ) : (
+                "Submit"
+              )}
             </Button>
 
             <DialogClose asChild>
