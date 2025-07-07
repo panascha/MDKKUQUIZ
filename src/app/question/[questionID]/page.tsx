@@ -186,10 +186,12 @@ const QuestionDetail = () => {
                                         <ul className="space-y-2">
                                             {question.correctAnswer.map((ans: string, idx: number) => (
                                                 <li key={idx} className="flex items-start gap-2">
-                                                    {/* If MCQ, show letter. If not, just show answer. */}
-                                                    {question.type === 'choice' || question.type === 'both' ? (
-                                                        <span className="text-green-500 font-bold">{String.fromCharCode(65 + (question.choice ? question.choice.findIndex((c: string) => c === ans) : 0))}.</span>
-                                                    ) : null}
+                                                    {(() => {
+                                                        if (question.type !== 'choice' && question.type !== 'both') return null;
+                                                        const idx = question.choice?.findIndex(c => c === ans);
+                                                        if (idx === undefined || idx < 0) return null;
+                                                        return <span className="text-green-500 font-bold">{String.fromCharCode(65 + idx)}.</span>;
+                                                    })()}
                                                     <span className="font-semibold text-green-700">{ans}</span>
                                                 </li>
                                             ))}
