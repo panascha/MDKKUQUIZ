@@ -7,6 +7,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { authOptions } from "./api/auth/[...nextauth]/authOptions";
 import "./globals.css";
+import Analytics from "../components/Analytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen w-full flex-col items-center antialiased`}
       >
+        <Analytics />
         <TanstackQueryProvider>
           <NextAuthProvider session={session}>
             <Toaster position="bottom-right" />

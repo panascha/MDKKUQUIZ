@@ -255,33 +255,41 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
       <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Quiz</DialogTitle>
-{unusedKeywords.length > 0 && (
-  <div>
-    <p className="text-sm text-gray-500 mb-2">
-      Here are some keywords that you can use as correct answers:
-    </p>
-    <div className="flex flex-wrap justify-between">
-      {/* First Column */}
-      <ul className="w-1/2 pr-2 list-disc pl-5">
-        {unusedKeywords.slice(0, 5).map((keyword, index) => (
-          <li key={`col1-${index}`} className="text-gray-700">
-            {keyword}
-          </li>
-        ))}
-      </ul>
+          {/* Loading indicator for keywords/questions */}
+          {(getKeyword.isLoading || getQuestionBySubjectandCategory.isLoading) && (formData.subject && formData.category) && (
+            <div className="flex items-center gap-2 text-blue-600 my-2">
+              <LoaderIcon className="animate-spin w-5 h-5" />
+              <span>Loading suggestions...</span>
+            </div>
+          )}
+          {/* Show unused keywords only when not loading */}
+          {!(getKeyword.isLoading || getQuestionBySubjectandCategory.isLoading) && unusedKeywords.length > 0 && (
+            <div className="mb-4">
+              <p className="text-sm text-gray-500 mb-2">
+                Here are some keywords that you can use as correct answers:
+              </p>
+              <div className="flex flex-col sm:flex-row flex-wrap sm:justify-between gap-2 sm:gap-0 max-h-40 overflow-y-auto">
+                {/* First Column */}
+                <ul className="w-full sm:w-1/2 pr-0 sm:pr-2 list-disc pl-5 text-xs sm:text-sm">
+                  {unusedKeywords.slice(0, 5).map((keyword, index) => (
+                    <li key={`col1-${index}`} className="text-gray-700 py-0.5">
+                      {keyword}
+                    </li>
+                  ))}
+                </ul>
 
-      {unusedKeywords.length > 5 && (
-        <ul className="w-1/2 pl-2 list-disc pl-5"> {/* Takes roughly half width */}
-          {unusedKeywords.slice(5, 10).map((keyword, index) => (
-            <li key={`col2-${index}`} className="text-gray-700">
-              {keyword}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  </div>
-)}
+                {unusedKeywords.length > 5 && (
+                  <ul className="w-full sm:w-1/2 pl-0 sm:pl-2 list-disc text-xs sm:text-sm">
+                    {unusedKeywords.slice(5, 10).map((keyword, index) => (
+                      <li key={`col2-${index}`} className="text-gray-700 py-0.5">
+                        {keyword}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
         </DialogHeader>
         <form
           onSubmit={handleSubmit}

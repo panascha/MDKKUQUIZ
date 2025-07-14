@@ -353,8 +353,8 @@ const QuestionPage = () => {
 
                 {/* Question List */}
                 <Card className="w-full shadow-xl transition-all duration-300 max-w-5xl">
-                    <CardContent className="p-6">
-                        <div className="grid gap-6">
+                    <CardContent className="p-2 sm:p-4 md:p-6">
+                        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                             {filteredQuestions.map((question) => (
                                 <div key={question._id} className="relative group">
                                     <Link
@@ -369,11 +369,11 @@ const QuestionPage = () => {
                                                 : question.type === 'both'
                                                 ? 'border-blue-400 bg-blue-50'
                                                 : ''
-                                        } p-5 shadow-sm transition-all duration-300 hover:shadow-md`}>
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-sm font-semibold text-gray-700">
+                                        } p-3 sm:p-5 shadow-sm transition-all duration-300 hover:shadow-md`}> 
+                                            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-4">
+                                                <div className="space-y-2 w-full md:w-auto">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <p className="text-sm font-semibold text-gray-700 break-words max-w-xs md:max-w-md lg:max-w-lg">
                                                             {question.question}
                                                         </p>
                                                         <Badge
@@ -390,14 +390,14 @@ const QuestionPage = () => {
                                                             {question.type === 'choice' ? 'MCQ' : question.type === 'written' ? 'Written' : question.type === 'both' ? 'MCQ + Short Answer' : 'Unknown'}
                                                         </Badge>
                                                     </div>
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-xs sm:text-sm text-gray-500 break-words">
                                                         {question.subject.name} - {question.category.category}
                                                     </p>
                                                 </div>
                                                 {isAdmin && (
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 mt-2 md:mt-0">
                                                         <Badge
-                                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                                                            className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
                                                                 question.status === "approved"
                                                                 ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
                                                                 : question.status === "pending"
@@ -431,12 +431,12 @@ const QuestionPage = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="mt-4 space-y-1 text-sm text-gray-600">
+                                            <div className="mt-2 sm:mt-4 space-y-1 text-xs sm:text-sm text-gray-600">
                                                 {question.type === 'choice' ? (
                                                     <>
                                                         <p className="font-medium">Choices:</p>
                                                         {question.choice.map((choice, index) => (
-                                                            <p key={index} className="ml-4">
+                                                            <p key={index} className="ml-4 break-words">
                                                                 {String.fromCharCode(65 + index)}. {choice}
                                                             </p>
                                                         ))}
@@ -445,7 +445,7 @@ const QuestionPage = () => {
                                                     <>
                                                         <p className="font-medium">Correct Answers:</p>
                                                         {question.correctAnswer.map((answer, index) => (
-                                                            <p key={index} className="ml-4">
+                                                            <p key={index} className="ml-4 break-words">
                                                                 {index + 1}. {answer}
                                                             </p>
                                                         ))}
