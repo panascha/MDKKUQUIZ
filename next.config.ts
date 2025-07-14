@@ -2,7 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['localhost', 'medquizbackend.onrender.com'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'medquizbackend.onrender.com' },
+    ],
   },
 };
 

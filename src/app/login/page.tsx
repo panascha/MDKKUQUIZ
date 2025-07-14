@@ -18,6 +18,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import TermOfServise from '../../components/ui/TermOfServise';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/Dialog";
+import RegistrationQuestionsModal from "../../components/ui/RegistrationQuestionsModal";
 
 const Page = () => {
   const router = useRouter();
@@ -97,6 +99,20 @@ const Page = () => {
   };
 
   // Registration handler
+  const [showQuestionsModal, setShowQuestionsModal] = useState(false);
+  const [questionAnswers, setQuestionAnswers] = useState({
+    q1: '',
+    q2: '',
+    q3: '',
+  });
+  const [pendingRegister, setPendingRegister] = useState<{
+    name: string;
+    email: string;
+    password: string;
+    year: string;
+  } | null>(null);
+
+  // Registration form handler (opens modal only)
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -112,12 +128,26 @@ const Page = () => {
       return;
     }
 
-    const registerPromise = axios.post(BackendRoutes.REGISTER, {
+    setPendingRegister({
       name,
       email: regEmail,
       password: newPassword,
-      year: year,
+      year,
+    });
+    setShowQuestionsModal(true);
+  };
+
+  // Backend registration after modal submit
+  const handleModalSubmit = async () => {
+    if (!pendingRegister) return;
+    setError(null);
+    const registerPromise = axios.post(BackendRoutes.REGISTER, {
+      name: pendingRegister.name,
+      email: pendingRegister.email,
+      password: pendingRegister.password,
+      year: pendingRegister.year,
       role: "user",
+      ...questionAnswers, // Optionally send answers to backend if supported
     });
 
     toast.promise(registerPromise, {
@@ -128,21 +158,17 @@ const Page = () => {
 
     try {
       await registerPromise;
-
       const loginPromise = signIn("credentials", {
         redirect: false,
-        email: regEmail,
-        password: newPassword,
+        email: pendingRegister.email,
+        password: pendingRegister.password,
       });
-
       toast.promise(loginPromise, {
         loading: "Logging you in...",
         success: "Logged in successfully!",
         error: "Login failed after registration.",
       });
-
       const result = await loginPromise;
-
       if (result?.error) {
         setError(result.error);
       } else {
@@ -152,6 +178,9 @@ const Page = () => {
       axios.isAxiosError(error)
         ? setError(error.response?.data.message || "Registration failed.")
         : setError("An unexpected error occurred.");
+    } finally {
+      setPendingRegister(null);
+      setShowQuestionsModal(false);
     }
   };
 
@@ -315,6 +344,13 @@ const Page = () => {
         </Tabs>
       </Card>
 
+      <RegistrationQuestionsModal
+        open={showQuestionsModal}
+        setOpen={setShowQuestionsModal}
+        answers={questionAnswers}
+        setAnswers={setQuestionAnswers}
+        onSubmit={handleModalSubmit}
+      />
     </main>
   );
 };

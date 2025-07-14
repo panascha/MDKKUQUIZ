@@ -19,7 +19,8 @@ export default function SubjectDetailPage() {
     const params = useParams();
     const subjectID = typeof params.subjectID === 'string' ? params.subjectID : '';
     const { user } = useUser();
-    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
+    const isSAdmin = user?.role === Role_type.SADMIN;
+    const isAdmin = user?.role === Role_type.ADMIN || isSAdmin;
     const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
 
     const { data: userStat } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
@@ -88,7 +89,7 @@ export default function SubjectDetailPage() {
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <BackButton />
                 <SubjectDetailHeader subject={subject} />
-                <SubjectActions subjectId={subjectID} canTakeQuiz={canTakeQuiz} />
+                <SubjectActions subjectId={subjectID} canTakeQuiz={canTakeQuiz} isSAdmin={isSAdmin} />
                 <div className="flex justify-between items-start gap-4 mt-6">
                     <div className="flex-1">
                         <SubjectTopics categories={categories} subject={subject} />

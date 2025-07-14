@@ -17,6 +17,7 @@ import { QuestionTypeSelection } from "../../../../components/quiz/QuestionTypeS
 import { QuestionCountSelection } from "../../../../components/quiz/QuestionCountSelection";
 import { useUser } from '../../../../hooks/useUser';
 import { useGetUserStatById } from '../../../../hooks/stats/useGetUserStatById';
+import { Role_type } from "../../../../config/role";
 
 export default function Quiz() {
     type QuizType = "chillquiz" | "realtest" | "custom";
@@ -115,7 +116,8 @@ export default function Quiz() {
     }, [quizType, selectCategory, answerMode, questionCount, selectedQuestionTypes, maxQuestions, subjectID, router]);
 
     const { user, loading: userLoading } = useUser();
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SADMIN';
+    const isSAdmin = user?.role === Role_type.SADMIN;
+    const isAdmin = user?.role === Role_type.ADMIN || isSAdmin;
     const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
     const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 2;
 
@@ -128,11 +130,11 @@ export default function Quiz() {
         );
     }
 
-    if (!canTakeQuiz) {
+    if (!isSAdmin && !canTakeQuiz) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in">
                 <div className="text-3xl font-bold text-gray-700 mb-4">Access Restricted</div>
-                <div className="text-lg text-gray-500 mb-6 max-w-md">You must create at least <span className="font-semibold text-blue-600">5 quizzes</span> to access quiz of this subject. Start contributing quizzes to unlock this section!</div>
+                <div className="text-lg text-gray-500 mb-6 max-w-md">You must create at least <span className="font-semibold text-blue-600">2 quizzes</span> to access quiz of this subject. Start contributing quizzes to unlock this section!</div>
                 <Link href="/home" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition">Go to Home</Link>
             </div>
         );

@@ -14,6 +14,7 @@ import { Keyword } from '../../../types/api/Keyword';
 import { useGetKeyword } from '../../../hooks/keyword/useGetKeyword';
 import { useGetQuizzes } from '../../../hooks/quiz/useGetQuizzes';
 import { LoaderIcon } from 'lucide-react';
+import { Quiz } from '../../../types/api/Quiz';
 
 interface AddQuizModalProps {
   showModal: boolean;
@@ -229,7 +230,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
   };
 
   const usedCorrectAnswers = new Set(
-    getQuestionBySubjectandCategory.data?.flatMap(quiz => quiz.correctAnswer) || []
+    getQuestionBySubjectandCategory.data?.flatMap((quiz: Quiz) => quiz.correctAnswer) || []
   );
 
     const unusedKeywords: string[] = [];

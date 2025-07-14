@@ -5,13 +5,14 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from 'next-auth/react';
 import { Question } from '../../../../../types/api/Question';
 import ProtectedPage from '../../../../../components/ProtectPage';
-import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule } from '@mui/icons-material';
+import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useUser } from '../../../../../hooks/useUser';
 import ImageGallery from '../../../../../components/magicui/ImageGallery';
 import { useGetQuizzes } from '../../../../../hooks/quiz/useGetQuizzes';
 import { useSubmitScore } from '../../../../../hooks/score/useSubmitScore';
 import { Quiz } from '../../../../../types/api/Quiz';
 import { useGetUserStatById } from '../../../../../hooks/stats/useGetUserStatById';
+import { Role_type } from '../../../../../config/role';
 
 
 export default function Problem() {
@@ -20,7 +21,8 @@ export default function Problem() {
     const params = useParams();
     const searchParams = useSearchParams();
     const { user, loading: userLoading } = useUser();
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SADMIN';
+    const isSAdmin = user?.role === Role_type.SADMIN;
+    const isAdmin = user?.role === Role_type.ADMIN || isSAdmin;
     const subjectID = params.subjectID as string;
     const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
     const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 5;
@@ -40,6 +42,7 @@ export default function Problem() {
     const [isQuestionTableOpen, setIsQuestionTableOpen] = useState(false);
     const [questionViewMode, setQuestionViewMode] = useState<'grid' | 'list'>('grid');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isTimerVisible, setIsTimerVisible] = useState(true);
 
     const { data: quizData, isLoading } = useGetQuizzes({
         subjectID,
@@ -275,7 +278,7 @@ export default function Problem() {
         );
     }
 
-    if (!canTakeQuiz) {
+    if (!isSAdmin && !canTakeQuiz) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
                 <div className="text-3xl font-bold text-gray-700 mb-4">Access Restricted</div>
@@ -309,8 +312,19 @@ export default function Problem() {
                         <p className="text-base sm:text-lg text-gray-600 mt-2 sm:mt-4 font-medium">
                             Question {currentQuestionIndex + 1} of {showQuestion.length}
                         </p>
-                        <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-semibold shadow-sm">
-                            Time: {formatTime(seconds)}
+                        <div className="flex items-center gap-2">
+                            {isTimerVisible && (
+                                <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-semibold shadow-sm">
+                                    Time: {formatTime(seconds)}
+                                </div>
+                            )}
+                            <button
+                                className="ml-2 px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition flex items-center justify-center"
+                                onClick={() => setIsTimerVisible((v) => !v)}
+                                title={isTimerVisible ? 'Hide Timer' : 'Show Timer'}
+                            >
+                                {isTimerVisible ? <VisibilityOff /> : <Visibility />}
+                            </button>
                         </div>
                     </div>
                 </div>

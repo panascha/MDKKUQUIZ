@@ -3,28 +3,30 @@ import Link from "next/link";
 interface SubjectActionsProps {
     subjectId: string;
     canTakeQuiz?: boolean;
+    isSAdmin?: boolean;
 }
 
-export const SubjectActions = ({ subjectId, canTakeQuiz = true }: SubjectActionsProps) => {
+export const SubjectActions = ({ subjectId, canTakeQuiz = true, isSAdmin = false }: SubjectActionsProps) => {
+    const allowQuiz = isSAdmin || canTakeQuiz;
     return (
         <div className="bg-white rounded-xl shadow-lg p-4 flex flex-col sm:flex-row justify-center items-center mt-8 gap-4 sm:gap-6 border border-gray-100">
             <div className="relative flex flex-col items-center">
             <Link
-                    href={canTakeQuiz ? `${subjectId}/quiz` : "#"}
+                    href={allowQuiz ? `${subjectId}/quiz` : "#"}
                     className={
                         `min-w-[180px] px-6 py-3 text-white text-lg font-semibold rounded-lg shadow-md transition duration-200 text-center flex items-center justify-center ` +
-                        (canTakeQuiz
+                        (allowQuiz
                             ? "bg-blue-600 hover:bg-blue-700 active:scale-95 hover:scale-105 focus:scale-105"
                             : "bg-gray-300 cursor-not-allowed pointer-events-none")
                     }
-                    aria-disabled={!canTakeQuiz}
-                    tabIndex={canTakeQuiz ? 0 : -1}
+                    aria-disabled={!allowQuiz}
+                    tabIndex={allowQuiz ? 0 : -1}
             >
                 Take Quiz
             </Link>
-                {!canTakeQuiz && (
+                {!isSAdmin && !canTakeQuiz && (
                     <span className="absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-gray-800 text-white text-xs font-semibold rounded-lg px-3 py-2 shadow-xl whitespace-nowrap z-20 border border-gray-300 animate-fade-in">
-                        You must create at least 5 quizzes to take a quiz
+                        You must create at least 2 quizzes to take a quiz
                     </span>
                 )}
             </div>
