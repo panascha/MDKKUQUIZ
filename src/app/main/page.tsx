@@ -54,19 +54,19 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 mx-4 sm:mx-12">
             <VisionCard
-              imageSrc="/vision1.svg"
+              imageSrc="/Vision1.svg"
               altText="Vision 1"
               title="Share"
               description="Sharing knowledge and resources"
             />
             <VisionCard
-              imageSrc="/vision2.svg"
+              imageSrc="/Vision2.svg"
               altText="Vision 2"
               title="Synergy"
               description="Synergy of Learning"
             />
             <VisionCard
-              imageSrc="/vision3.svg"
+              imageSrc="/Vision3.svg"
               altText="Vision 3"
               title="Success"
               description="Success in Medical Education"
