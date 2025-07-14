@@ -35,7 +35,7 @@ export default function Home() {
             <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-md">Self-Exam Bank</h1>
           </div>
           <div className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 text-left">
-            <h2 className="text-sm sm:text-lg text-white drop-shadow-md">จากนักศึกษาแพทย์ เพื่อนักศึกษาแพทย์</h2>
+            <h2 className="text-sm sm:text-lg text-white drop-shadow-md">โดยนักศึกษาแพทย์ เพื่อนักศึกษาแพทย์</h2>
           </div>
         </motion.section>
 

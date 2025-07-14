@@ -12,6 +12,7 @@ import { CreateQuizData, useCreateQuiz } from '../../../hooks/quiz/useCreateQuiz
 import Image from 'next/image';
 import { Keyword } from '../../../types/api/Keyword';
 import { useGetKeyword } from '../../../hooks/keyword/useGetKeyword';
+import { useGetQuizzes } from '../../../hooks/quiz/useGetQuizzes';
 import { LoaderIcon } from 'lucide-react';
 
 interface AddQuizModalProps {
@@ -50,6 +51,11 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     const createQuizMutation = useCreateQuiz();
     const { user } = useUser();
     const getKeyword = useGetKeyword();
+    const getQuestionBySubjectandCategory = useGetQuizzes({
+      subjectID: formData.subject,
+      categoryID: formData.category
+    });
+
     const [dropdown, setDropdown] = useState<{[key: string]: boolean}>({});
     const keywordOptions = formData.category
       ? getKeyword?.data
@@ -222,6 +228,20 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     }
   };
 
+  const usedCorrectAnswers = new Set(
+    getQuestionBySubjectandCategory.data?.flatMap(quiz => quiz.correctAnswer) || []
+  );
+
+    const unusedKeywords: string[] = [];
+  for (const keyword of keywordOptions) {
+    if (!usedCorrectAnswers.has(keyword)) {
+      unusedKeywords.push(keyword);
+      if (unusedKeywords.length >= 10) {
+        break;
+      }
+    }
+  }
+
   return (
     <Dialog
       open={showModal}
@@ -235,6 +255,33 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
       <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Quiz</DialogTitle>
+{unusedKeywords.length > 0 && (
+  <div>
+    <p className="text-sm text-gray-500 mb-2">
+      Here are some keywords that you can use as correct answers:
+    </p>
+    <div className="flex flex-wrap justify-between">
+      {/* First Column */}
+      <ul className="w-1/2 pr-2 list-disc pl-5">
+        {unusedKeywords.slice(0, 5).map((keyword, index) => (
+          <li key={`col1-${index}`} className="text-gray-700">
+            {keyword}
+          </li>
+        ))}
+      </ul>
+
+      {unusedKeywords.length > 5 && (
+        <ul className="w-1/2 pl-2 list-disc pl-5"> {/* Takes roughly half width */}
+          {unusedKeywords.slice(5, 10).map((keyword, index) => (
+            <li key={`col2-${index}`} className="text-gray-700">
+              {keyword}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </div>
+)}
         </DialogHeader>
         <form
           onSubmit={handleSubmit}

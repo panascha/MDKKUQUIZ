@@ -117,7 +117,7 @@ export default function Quiz() {
     const { user, loading: userLoading } = useUser();
     const isAdmin = user?.role === 'ADMIN' || user?.role === 'SADMIN';
     const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
-    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 5;
+    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 2;
 
     if (userLoading || statLoading) {
         return (
