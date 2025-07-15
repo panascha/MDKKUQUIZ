@@ -1,5 +1,5 @@
-//export const BACKEND_URL = "https://medquizbackend-101913825665.asia-southeast1.run.app";
-export const BACKEND_URL = "http://localhost:5001";
+export const BACKEND_URL = "https://medquizbackend-101913825665.asia-southeast1.run.app";
+//export const BACKEND_URL = "http://localhost:5001";
 const BackendRootRoutes = `${BACKEND_URL}/api/v1`;
 
 export enum BackendRoutes {
