@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../ui/Dialog';
 import Button from '../../ui/Button';
 import { LoaderIcon, X } from "lucide-react";
@@ -32,6 +32,40 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   error,
   createMutation,
 }) => {
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {};
+    if (!formData.name || formData.name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters.';
+    } else if (formData.name.length > 100) {
+      errors.name = 'Name cannot be more than 100 characters.';
+    }
+    if (!formData.description || formData.description.trim().length < 10) {
+      errors.description = 'Description must be at least 10 characters.';
+    } else if (formData.description.length > 1000) {
+      errors.description = 'Description cannot be more than 1000 characters.';
+    }
+    if (!formData.year || isNaN(Number(formData.year))) {
+      errors.year = 'Year is required.';
+    } else if (Number(formData.year) < 1 || Number(formData.year) > 6) {
+      errors.year = 'Year must be between 1 and 6.';
+    }
+    if (!formData.image) {
+      errors.image = 'Image is required.';
+    }
+    return errors;
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errors = validateForm();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length === 0) {
+      handleSubmit(e);
+    }
+  };
+
   return (
     <Dialog
       open={showModal}
@@ -39,6 +73,7 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
         setShowModal(open);
         if (!open) {
           resetForm();
+          setFieldErrors({});
         }
       }}
     >
@@ -47,7 +82,7 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
           <DialogTitle>Subject</DialogTitle>
         </DialogHeader>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={onSubmit}
           className="w-full space-y-4"
           onClick={(e) => e.stopPropagation()}
         >
@@ -63,8 +98,11 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               placeholder="Biology"
             />
-            {error && error.includes('name') && (
-              <p className="text-red-500 text-sm">Name is required.</p>
+            {fieldErrors.name && (
+              <p className="text-red-500 text-sm">{fieldErrors.name}</p>
+            )}
+            {error && error.toLowerCase().includes('name') && (
+              <p className="text-red-500 text-sm">{error}</p>
             )}
           </div>
 
@@ -80,8 +118,11 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               placeholder="Everything about Biology"
             />
-            {error && error.includes('description') && (
-              <p className="text-red-500 text-sm">Description is required.</p>
+            {fieldErrors.description && (
+              <p className="text-red-500 text-sm">{fieldErrors.description}</p>
+            )}
+            {error && error.toLowerCase().includes('description') && (
+              <p className="text-red-500 text-sm">{error}</p>
             )}
           </div>
             
@@ -102,8 +143,11 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
                 </option>
               ))}
             </select>
-            {error && error.includes('year') && (
-              <p className="text-red-500 text-sm">Year is required.</p>
+            {fieldErrors.year && (
+              <p className="text-red-500 text-sm">{fieldErrors.year}</p>
+            )}
+            {error && error.toLowerCase().includes('year') && (
+              <p className="text-red-500 text-sm">{error}</p>
             )}
           </div>
 
@@ -140,8 +184,11 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
                 <p className="mt-1 text-xs text-gray-600 truncate">{formData.image.name}</p>
               </div>
             )}
-            {error && error.includes('image') && (
-              <p className="text-red-500 text-sm">Please upload a valid image.</p>
+            {fieldErrors.image && (
+              <p className="text-red-500 text-sm">{fieldErrors.image}</p>
+            )}
+            {error && error.toLowerCase().includes('image') && (
+              <p className="text-red-500 text-sm">{error}</p>
             )}
           </div>
 

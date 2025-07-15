@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { PencilIcon, XIcon } from "lucide-react";
 import { BACKEND_URL } from '../../config/apiRoutes';
+import { useState } from 'react';
+import { ConfirmDeleteModal } from '../ui/ConfirmDeleteModal';
 
 interface SubjectCardProps {
     subject: Subject;
@@ -19,6 +21,7 @@ export const SubjectCard = ({
     onDelete,
     isDeleting
 }: SubjectCardProps) => {
+    const [open, setOpen] = useState(false);
     return (
         <div className="relative bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.01] overflow-hidden">
             <Link href={`/home/${subject._id}`} className="block p-4 pb-10">
@@ -50,12 +53,19 @@ export const SubjectCard = ({
                         <PencilIcon size={16} />
                     </button>
                     <button
-                        onClick={() => onDelete(subject._id)}
+                        onClick={() => setOpen(true)}
                         disabled={isDeleting}
                         className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
                     >
                         <XIcon size={16} />
                     </button>
+                    <ConfirmDeleteModal
+                        open={open}
+                        setOpen={setOpen}
+                        isDeleting={isDeleting}
+                        onDelete={() => onDelete(subject._id)}
+                        entityName={subject.name}
+                    />
                 </div>
             )}
         </div>

@@ -49,11 +49,9 @@ const Page = () => {
     checkUserExists();
   }, [status, session, router]);
 
-  // Login state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Registration state
   const [name, setName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [year, setYear] = useState("");
@@ -61,6 +59,7 @@ const Page = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showTerms, setShowTerms] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [registerErrors, setRegisterErrors] = useState<{ [key: string]: string }>({});
 
   const [error, setError] = useState<string | null>(null);
 
@@ -113,10 +112,47 @@ const Page = () => {
   } | null>(null);
 
   // Registration form handler (opens modal only)
+  const validateRegisterForm = () => {
+    const errors: { [key: string]: string } = {};
+    if (!name || name.trim().length < 2) {
+      errors.name = "Name must be at least 2 characters.";
+    } else if (name.length > 50) {
+      errors.name = "Name cannot be more than 50 characters.";
+    }
+    if (!regEmail) {
+      errors.email = "Email is required.";
+    } else if (!/^[a-zA-Z0-9._%+-]+@kkumail\.(com|ac\.th)$/.test(regEmail)) {
+      errors.email = "Email must be a valid KKUMail address (@kkumail.com or @kkumail.ac.th).";
+    }
+    if (!year || isNaN(Number(year))) {
+      errors.year = "Year is required.";
+    } else if (Number(year) < 1 || Number(year) > 6) {
+      errors.year = "Year must be between 1 and 6.";
+    }
+    if (!newPassword) {
+      errors.password = "Password is required.";
+    } else if (newPassword.length < 6) {
+      errors.password = "Password must be at least 6 characters.";
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(newPassword)) {
+      errors.password = "Password must contain upper, lower, number, and special character.";
+    }
+    if (newPassword !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match.";
+    }
+    if (!termsAccepted) {
+      errors.terms = "You must accept the Terms of Service.";
+    }
+    return errors;
+  };
+
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-
+    const errors = validateRegisterForm();
+    setRegisterErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
     if (!termsAccepted) {
       setShowTerms(true);
       return;
@@ -270,6 +306,7 @@ const Page = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
+                  {registerErrors.name && <p className="text-red-500 text-xs">{registerErrors.name}</p>}
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="reg-email">Email</Label>
@@ -280,6 +317,7 @@ const Page = () => {
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                   />
+                  {registerErrors.email && <p className="text-red-500 text-xs">{registerErrors.email}</p>}
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="year">Year</Label>
@@ -295,6 +333,7 @@ const Page = () => {
                       <option key={y} value={y}>{y}</option>
                     ))}
                   </select>
+                  {registerErrors.year && <p className="text-red-500 text-xs">{registerErrors.year}</p>}
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="new-password">Password</Label>
@@ -305,6 +344,7 @@ const Page = () => {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                   />
+                  {registerErrors.password && <p className="text-red-500 text-xs">{registerErrors.password}</p>}
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="confirm-password">Confirm Password</Label>
@@ -315,6 +355,7 @@ const Page = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
+                  {registerErrors.confirmPassword && <p className="text-red-500 text-xs">{registerErrors.confirmPassword}</p>}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <input
@@ -327,6 +368,7 @@ const Page = () => {
                     I agree to the <span className="underline" onClick={() => setShowTerms(true)}>Terms of Service</span>
                   </label>
                 </div>
+                {registerErrors.terms && <p className="text-red-500 text-xs">{registerErrors.terms}</p>}
                 {error && <p className="text-red-500">{error}</p>}
               </CardContent>
               <CardFooter className="py-3 flex flex-col items-center gap-3">

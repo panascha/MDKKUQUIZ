@@ -31,7 +31,7 @@ export const useCreateSubject = () => {
 
             const response = await axios.post(BackendRoutes.SUBJECT, payload, {
                 headers: {
-                    Authorization: `Bearer ${session.data.user.token}`,
+                Authorization: `Bearer ${session.data.user.token}`,
                 },
             });
 
