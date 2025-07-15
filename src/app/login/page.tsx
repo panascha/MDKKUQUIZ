@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import TermOfServise from '../../components/ui/TermOfServise';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/Dialog";
 import RegistrationQuestionsModal from "../../components/ui/RegistrationQuestionsModal";
 
 const Page = () => {
