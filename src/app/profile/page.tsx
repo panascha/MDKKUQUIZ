@@ -14,6 +14,7 @@ import { ScoresSection } from "../../components/profile/ScoresSection";
 import { useGetUserStats } from '../../hooks/stats/useGetUserStats';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/Tabs';
 import LeaderBoardSection from '../../components/profile/LeaderBoardSection';
+import ProtectedPage from "../../components/ProtectPage";
 
 const Page = () => {
     const session = useSession();
@@ -124,43 +125,45 @@ const Page = () => {
     }
 
     return (
-        <main className="px-4 md:px-10 pt-5">
-            <section className="flex w-full flex-col items-center justify-center mb-6">
-                <p className="text-3xl font-semibold text-gray-800">Your Profile</p>
-            </section>
-            <Tabs defaultValue="profile-scores" className="w-full max-w-4xl mx-auto">
-                <TabsList className="bg-white p-1 rounded-lg shadow-sm overflow-x-auto flex whitespace-nowrap mb-6">
-                    <TabsTrigger value="profile-scores" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">Profile & Scores</TabsTrigger>
-                    <TabsTrigger value="leaderboard" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">Leaderboard</TabsTrigger>
-                </TabsList>
-                <TabsContent value="profile-scores">
-                    <ProfileInfoCard
-                        user={user}
-                        isEditing={isEditing}
-                        isUpdating={isUpdating}
-                        isLoggingOut={isLoggingOut}
-                        formData={formData}
-                        onEditToggle={handleEditToggle}
-                        onSave={handleSave}
-                        onLogout={handleLogout}
-                        onFormDataChange={setFormData}
-                    />
-                    <div className="mt-8">
-                        <ScoresSection
-                            isLoading={isLoadingScores}
-                            scores={score}
+        <ProtectedPage>
+            <main className="px-4 md:px-10 pt-5">
+                <section className="flex w-full flex-col items-center justify-center mb-6">
+                    <p className="text-3xl font-semibold text-gray-800">Your Profile</p>
+                </section>
+                <Tabs defaultValue="profile-scores" className="w-full max-w-4xl mx-auto">
+                    <TabsList className="bg-white p-1 rounded-lg shadow-sm overflow-x-auto flex whitespace-nowrap mb-6">
+                        <TabsTrigger value="profile-scores" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">Profile & Scores</TabsTrigger>
+                        <TabsTrigger value="leaderboard" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">Leaderboard</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="profile-scores">
+                        <ProfileInfoCard
+                            user={user}
+                            isEditing={isEditing}
+                            isUpdating={isUpdating}
+                            isLoggingOut={isLoggingOut}
+                            formData={formData}
+                            onEditToggle={handleEditToggle}
+                            onSave={handleSave}
+                            onLogout={handleLogout}
+                            onFormDataChange={setFormData}
                         />
-                    </div>
-                </TabsContent>
-                <TabsContent value="leaderboard">
-                    <LeaderBoardSection
-                        isLoading={isLeaderboardLoading}
-                        error={leaderboardError}
-                        leaderboard={leaderboard}
-                    />
-                </TabsContent>
-            </Tabs>
-        </main>
+                        <div className="mt-8">
+                            <ScoresSection
+                                isLoading={isLoadingScores}
+                                scores={score}
+                            />
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="leaderboard">
+                        <LeaderBoardSection
+                            isLoading={isLeaderboardLoading}
+                            error={leaderboardError}
+                            leaderboard={leaderboard}
+                        />
+                    </TabsContent>
+                </Tabs>
+            </main>
+        </ProtectedPage>
     );
 };
 

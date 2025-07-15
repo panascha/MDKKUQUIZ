@@ -1,5 +1,5 @@
-export const BACKEND_URL = "https://medquizbackend-101913825665.asia-southeast1.run.app";
-//export const BACKEND_URL = "http://localhost:5001";
+//export const BACKEND_URL = "https://medquizbackend-101913825665.asia-southeast1.run.app";
+export const BACKEND_URL = "http://localhost:5001";
 const BackendRootRoutes = `${BACKEND_URL}/api/v1`;
 
 export enum BackendRoutes {
@@ -28,6 +28,8 @@ export enum BackendRoutes {
   APPROVED_REPORT = `${BackendRootRoutes}/approved/report`,
   DAILY_ACTIVITY = `${BackendRootRoutes}/stat/daily-activity`,
   USER_STATS = `${BackendRootRoutes}/stat/user-stats`,
+  BAN_USER = `${BackendRootRoutes}/auth/ban`,
+  UNBAN_USER = `${BackendRootRoutes}/auth/unban`,
 }
 
 export const getQuizByFilter = (subjectID?: string, categoryID?: string): string => {
@@ -67,6 +69,7 @@ export enum FrontendRootRoutes {
   REPORT = "/report",
   QUESTION_CREATE = "/question/create",
   ADMIN = "/admin",
+  BAN = "/ban",
 }
 export enum FrontendRoutes {
   HOMEPAGE = FrontendRootRoutes.HOMEPAGE,
@@ -79,4 +82,5 @@ export enum FrontendRoutes {
   REPORT = `${FrontendRootRoutes.REPORT}`,
   QUESTION_CREATE = `${FrontendRootRoutes.QUESTION_CREATE}`,
   ADMIN = `${FrontendRootRoutes.ADMIN}`,
+  BAN = `${FrontendRootRoutes.BAN}`,
 }

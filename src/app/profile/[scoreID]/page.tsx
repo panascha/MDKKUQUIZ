@@ -9,6 +9,7 @@ import { useSession } from 'next-auth/react';
 import { QuizResultHeader } from '../../../components/quiz/QuizResult/Header';
 import { QuizResultFilter } from '../../../components/quiz/QuizResult/Filter';
 import { QuizQuestionCard } from '../../../components/quiz/QuizResult/QuestionCard';
+import ProtectedPage from '../../../components/ProtectPage';
 
 const QuizResultPage = () => {
     const session = useSession();
@@ -85,30 +86,32 @@ const QuizResultPage = () => {
 
 
     return (
-        <div className="container mx-auto mt-24 md:mt-16 flex flex-col items-center justify-center">
-            <QuizResultHeader score={score} formatTime={formatTime} />
+        <ProtectedPage>
+            <div className="container mx-auto mt-24 md:mt-16 flex flex-col items-center justify-center">
+                <QuizResultHeader score={score} formatTime={formatTime} />
 
-            <QuizResultFilter
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                filter={filter}
-                setFilter={setFilter}
-                showDropdown={showDropdown}
-                toggleDropdown={toggleDropdown}
-                bookmarkFilter={bookmarkFilter}
-                setBookmarkFilter={setBookmarkFilter}
-            />
+                <QuizResultFilter
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    filter={filter}
+                    setFilter={setFilter}
+                    showDropdown={showDropdown}
+                    toggleDropdown={toggleDropdown}
+                    bookmarkFilter={bookmarkFilter}
+                    setBookmarkFilter={setBookmarkFilter}
+                />
 
-            <section className="grid grid-cols-1 gap-6 mx-4 p-4 md:p-6 sm:mx-10 w-full md:w-2/3">
-                {filteredQuestions?.map((question: Question, index: number) => (
-                    <QuizQuestionCard
-                        key={question.Quiz._id}
-                        question={question}
-                        index={index}
-                    />
-                ))}
-            </section>
-        </div>
+                <section className="grid grid-cols-1 gap-6 mx-4 p-4 md:p-6 sm:mx-10 w-full md:w-2/3">
+                    {filteredQuestions?.map((question: Question, index: number) => (
+                        <QuizQuestionCard
+                            key={question.Quiz._id}
+                            question={question}
+                            index={index}
+                        />
+                    ))}
+                </section>
+            </div>
+        </ProtectedPage>
     );
 };
 
