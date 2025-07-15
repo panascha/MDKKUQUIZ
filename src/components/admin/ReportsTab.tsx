@@ -97,6 +97,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                 <p className="font-medium">Keyword: {report.originalKeyword?.name}</p>
                                                 <p>Category: {report.originalKeyword?.category?.category}</p>
                                                 <p>Subject: {report.originalKeyword?.subject?.name}</p>
+                                                <p>Keywords: {report.originalKeyword?.keywords?.join(', ')}</p>
                                             </div>
                                         )}
                                     </div>
@@ -141,6 +142,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                 <p className="font-medium">Keyword: {report.suggestedChangesKeyword?.name}</p>
                                                 <p>Category: {report.suggestedChangesKeyword?.category?.category}</p>
                                                 <p>Subject: {report.suggestedChangesKeyword?.subject?.name}</p>
+                                                <p>Keywords: {report.suggestedChangesKeyword?.keywords?.join(', ')}</p>
                                             </div>
                                         )}
                                     </div>
@@ -150,7 +152,6 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                     <h4 className="font-medium text-gray-700 mb-2">Report Details</h4>
                                     <div className="space-y-1 text-sm">
                                         <p><span className="font-medium">Report Type:</span> {report.type}</p>
-                                        <p><span className="font-medium">Status:</span> {report.status}</p>
                                         <p><span className="font-medium">Reported At:</span> {new Date(report.createdAt).toLocaleString()}</p>
                                         <p><span className="font-medium">Reason:</span> {report.reason}</p>
                                     </div>
