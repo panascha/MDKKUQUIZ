@@ -356,7 +356,7 @@ export default function Problem() {
                     {currentQuestion && (
                                 <div className="mb-8 sm:mb-12 flex flex-col md:flex-row justify-center items-start gap-8 w-full">
                             {currentQuestion.quiz.img && currentQuestion.quiz.img.length > 0 && (
-                                        <div className="w-full md:w-1/2 bg-gray-50 rounded-xl p-4 shadow-inner">
+                                        <div className="w-[280px] md:w-[250px] aspect-square flex items-center justify-center bg-gray-50 rounded-xl p-4 shadow-inner">
                                             <ImageGallery 
                                                 images={currentQuestion.quiz.img} 
                                             />
