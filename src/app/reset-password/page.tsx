@@ -9,8 +9,10 @@ import { useRouter } from "next/navigation";
 import { BackendRoutes, FrontendRoutes } from "../../config/apiRoutes";
 import { useResetPassword } from "../../hooks/User/useGetResetPassword";
 import { useGetOTP } from "../../hooks/User/useGetOTP";
+import { useSession } from "next-auth/react";
 
 const ResetPasswordPage = () => {
+  const { data: session, status } = useSession();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -23,6 +25,12 @@ const ResetPasswordPage = () => {
   const { resetPassword, loading: resetLoading, error: resetError } = useResetPassword();
   const { getOTP, loading: otpLoading, error: otpError } = useGetOTP();
   const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push(FrontendRoutes.HOMEPAGE);
+    }
+  }, [status, router]);
 
   useEffect(() => {
     if (cooldown > 0) {
