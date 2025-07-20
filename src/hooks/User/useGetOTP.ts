@@ -10,9 +10,8 @@ export function useGetOTP() {
     setLoading(true);
     setError(null);
     try {
-      await axios.post(BackendRoutes.REQUEST_OTP, { email });
-      setLoading(false);
-      return true;
+      const response = await axios.post(BackendRoutes.REQUEST_OTP, { email });
+      return response; // or response.data if you want just the data
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to send OTP.");
       setLoading(false);

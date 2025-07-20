@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Input } from "../../components/ui/Input";
@@ -19,30 +19,45 @@ const ResetPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
   const { resetPassword, loading: resetLoading, error: resetError } = useResetPassword();
   const { getOTP, loading: otpLoading, error: otpError } = useGetOTP();
   const router = useRouter();
 
-  function isOtpResponse(response: unknown): response is { otp: string } {
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
+
+  function isOtpResponse(response: unknown): response is { data: { data: string } } {
+    const res = response as any;
     return (
-      typeof response === 'object' &&
-      response !== null &&
-      'otp' in response &&
-      typeof (response as any).otp === 'string'
+      typeof res === 'object' &&
+      res !== null &&
+      'data' in res &&
+      typeof res.data === 'object' &&
+      res.data !== null &&
+      'data' in res.data &&
+      typeof res.data.data === 'string'
     );
   }
 
   // Step 1: Send OTP
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (cooldown > 0) return;
     setError(null);
     try {
       const response = await getOTP(email);
+      console.log('OTP API response:', response);
       // If getOTP returns the OTP, store it
       if (isOtpResponse(response)) {
-        setServerOtp(response.otp);
+        setServerOtp(response.data.data);
         toast.success("OTP sent to your email.");
         setStep(2);
+        setCooldown(60); // 60 seconds cooldown
       } else {
         setError("Failed to get OTP from server.");
       }
@@ -76,6 +91,12 @@ const ResetPasswordPage = () => {
       setError("Password must be at least 6 characters.");
       return;
     }
+    // Password must contain at least one uppercase, one lowercase, one number, and one special character
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/;
+    if (!passwordRegex.test(newPassword)) {
+      setError("Password must contain at least one uppercase letter, one lowercase letter, one number and one special character.");
+      return;
+    }
     const success = await resetPassword({ email, otp, newPassword });
     if (success) {
       toast.success("Password reset successfully! Please log in.");
@@ -106,7 +127,11 @@ const ResetPasswordPage = () => {
               </div>
               {(error || otpError) && <p className="text-red-500 text-sm">{error || otpError}</p>}
               <CardFooter>
-                <Button type="submit" disabled={otpLoading} className="w-full" textButton={otpLoading ? "Sending..." : "Send OTP"} />
+                <Button
+                  type="submit"
+                  disabled={otpLoading || cooldown > 0}
+                  textButton={cooldown > 0 ? `Resend in ${cooldown}s` : otpLoading ? "Sending..." : "Send OTP"}
+                />
               </CardFooter>
             </form>
           )}
