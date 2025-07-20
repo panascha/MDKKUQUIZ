@@ -2,7 +2,7 @@ import ImageGallery from '../../magicui/ImageGallery';
 import AddReportModal from '../../Report/AddQuizReportModal';
 import { Question } from '../../../types/api/Score';
 import { useState } from 'react';
-import { useUser } from '../../../hooks/useUser';
+import { useUser } from '../../../hooks/User/useUser';
 
 interface QuizQuestionCardProps {
     question: Question;

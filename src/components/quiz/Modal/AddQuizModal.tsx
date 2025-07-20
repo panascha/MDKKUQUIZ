@@ -6,7 +6,7 @@ import { UserProps } from '../../../types/api/UserProps';
 import { Category } from '../../../types/api/Category';
 import { Subject } from '../../../types/api/Subject';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../ui/DropdownMenu';
-import { useUser } from '../../../hooks/useUser';
+import { useUser } from '../../../hooks/User/useUser';
 import toast from 'react-hot-toast';
 import { CreateQuizData, useCreateQuiz } from '../../../hooks/quiz/useCreateQuiz';
 import Image from 'next/image';

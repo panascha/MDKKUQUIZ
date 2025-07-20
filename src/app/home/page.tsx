@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ProtectedPage from '../../components/ProtectPage';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import { Role_type } from '../../config/role';
 import { Subject } from '../../types/api/Subject';
 import { LoaderIcon, XCircleIcon } from "lucide-react";

@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Category } from '../../types/api/Category';
 import { useGetKeyword } from '../../hooks/keyword/useGetKeyword';
 import AddKeywordModal from '../../components/keyword/AddKeywordModal';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import { useDeleteKeyword } from '../../hooks/keyword/useDeleteKeyword';
 import { Trash2 } from 'lucide-react';
 import { Role_type } from '../../config/role';

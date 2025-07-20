@@ -8,7 +8,7 @@ import { SubjectActions } from "../../../components/subjects/Detail/SubjectActio
 import { useQuery } from "@tanstack/react-query";
 import { useState } from 'react';
 import AddCategoryModal from "../../../components/category/AddCategoryModal";
-import { useUser } from '../../../hooks/useUser';
+import { useUser } from '../../../hooks/User/useUser';
 import { Role_type } from '../../../config/role';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';

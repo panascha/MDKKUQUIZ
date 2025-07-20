@@ -16,7 +16,7 @@ import { Badge } from '../../components/ui/Badge';
 import { LoaderIcon } from 'react-hot-toast';
 import { Role_type } from '../../config/role';
 import AddQuizModal from '../../components/quiz/Modal/AddQuizModal';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import { useDeleteQuiz } from '../../hooks/quiz/useDeleteQuiz';
 import { Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';

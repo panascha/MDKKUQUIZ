@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useGetReport } from '../../hooks/report/useGetReport';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import { Role_type } from '../../config/role';
 import { Badge } from '../ui/Badge';
 import ProtectedPage from '../ProtectPage';

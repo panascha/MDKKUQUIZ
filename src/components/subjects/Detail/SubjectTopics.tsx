@@ -5,7 +5,7 @@ import EditCategoryModal from "../../category/EditCategoryModal";
 import { useDeleteCategory } from "../../../hooks/category/useDeleteCategory";
 import { PencilIcon, TrashIcon, PlusIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { useUser } from "../../../hooks/useUser";
+import { useUser } from "../../../hooks/User/useUser";
 import { Role_type } from "../../../config/role";
 
 interface SubjectTopicsProps {

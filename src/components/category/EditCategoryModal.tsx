@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import { LoaderIcon } from "lucide-react";
 import { Category } from '../../types/api/Category';
 import { Subject } from '../../types/api/Subject';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import toast from 'react-hot-toast';
 import { EditCategoryData, useEditCategory } from '../../hooks/category/useEditCategory';
 

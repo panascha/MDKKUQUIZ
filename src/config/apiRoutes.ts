@@ -5,6 +5,8 @@ const BackendRootRoutes = `${BACKEND_URL}/api/v1`;
 export enum BackendRoutes {
   LOGOUT = `${BackendRootRoutes}/auth/logout`,
   LOGIN = `${BackendRootRoutes}/auth/login`,
+  REQUEST_OTP = `${BackendRootRoutes}/auth/request-reset-otp`,
+  RESET_PASSWORD = `${BackendRootRoutes}/auth/reset-password-otp`,
   REGISTER = `${BackendRootRoutes}/auth/register`,
   UPDATE_USER = `${BackendRootRoutes}/auth/updateUser`,
   USER_INFO = `${BackendRootRoutes}/auth/me`,
@@ -70,6 +72,7 @@ export enum FrontendRootRoutes {
   QUESTION_CREATE = "/question/create",
   ADMIN = "/admin",
   BAN = "/ban",
+  RESET_PASSWORD = "/reset-password"
 }
 export enum FrontendRoutes {
   HOMEPAGE = FrontendRootRoutes.HOMEPAGE,
@@ -83,4 +86,5 @@ export enum FrontendRoutes {
   QUESTION_CREATE = `${FrontendRootRoutes.QUESTION_CREATE}`,
   ADMIN = `${FrontendRootRoutes.ADMIN}`,
   BAN = `${FrontendRootRoutes.BAN}`,
+  RESET_PASSWORD = `${FrontendRootRoutes.RESET_PASSWORD}`,
 }

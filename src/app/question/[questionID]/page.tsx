@@ -10,7 +10,7 @@ import { Card } from '../../../components/ui/Card';
 import ImageGallery from '../../../components/magicui/ImageGallery';
 import { LoaderIcon } from 'react-hot-toast';
 import ProtectedPage from '../../../components/ProtectPage';
-import { useUser } from '../../../hooks/useUser';
+import { useUser } from '../../../hooks/User/useUser';
 import { Badge } from '../../../components/ui/Badge';
 import { Role_type } from '../../../config/role';
 import AddQuizReportModal from '../../../components/Report/AddQuizReportModal';

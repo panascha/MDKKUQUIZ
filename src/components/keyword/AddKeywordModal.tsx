@@ -7,7 +7,7 @@ import { Category } from '../../types/api/Category';
 import { Subject } from '../../types/api/Subject';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/DropdownMenu';
 import { CreateKeywordData, useCreateKeyword } from '../../hooks/keyword/useCreateKeyword';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import toast from 'react-hot-toast';
 
 interface AddKeywordModalProps {

@@ -9,7 +9,7 @@ import { useCreateReport } from '../../hooks/report/useCreateReport';
 import { Report } from '../../types/api/Report';
 import toast from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import Image from 'next/image';
 import { BACKEND_URL } from '../../config/apiRoutes';
 

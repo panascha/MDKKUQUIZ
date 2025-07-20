@@ -15,7 +15,7 @@ import { QuizTypeSelection } from "../../../../components/quiz/QuizTypeSelection
 import { AnswerModeSelection } from "../../../../components/quiz/AnswerModeSelection";
 import { QuestionTypeSelection } from "../../../../components/quiz/QuestionTypeSelection";
 import { QuestionCountSelection } from "../../../../components/quiz/QuestionCountSelection";
-import { useUser } from '../../../../hooks/useUser';
+import { useUser } from '../../../../hooks/User/useUser';
 import { useGetUserStatById } from '../../../../hooks/stats/useGetUserStatById';
 import { Role_type } from "../../../../config/role";
 

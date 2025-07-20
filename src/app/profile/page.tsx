@@ -1,7 +1,7 @@
 "use client";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { BackendRoutes } from "../../config/apiRoutes";
-import { useUser } from "../../hooks/useUser";
+import { useUser } from "../../hooks/User/useUser";
 import { UserScore } from "../../types/api/Score";
 import { User } from "../../types/User";
 import axios from "axios";

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import Button from '../ui/Button';
 import { LoaderIcon } from "lucide-react";
 import { Subject } from '../../types/api/Subject';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import toast from 'react-hot-toast';
 import { CreateCategoryData, useCreateCategory } from '../../hooks/category/useCreateCategory';
 

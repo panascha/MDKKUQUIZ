@@ -8,7 +8,7 @@ import { useCreateKeyword } from '../../hooks/keyword/useCreateKeyword';
 import { useCreateReport } from '../../hooks/report/useCreateReport';
 import { Report } from '../../types/api/Report';
 import toast from 'react-hot-toast';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 
 interface KeywordFormData {
   user: string;

@@ -10,7 +10,7 @@ import { Card } from '../../../components/ui/Card';
 import Link from 'next/link';
 import { IoIosArrowBack } from "react-icons/io";
 import AddKeywordReportModal from '../../../components/Report/AddKeywordReportModal';
-import { useUser } from '../../../hooks/useUser';
+import { useUser } from '../../../hooks/User/useUser';
 import { Role_type } from '../../../config/role';
 
 const KeywordDetail = () => {

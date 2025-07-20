@@ -230,9 +230,10 @@ const Page = () => {
           <TabsTrigger value="login" className="transition-colors duration-300 ease-in-out cursor-pointer">
             Login
           </TabsTrigger>
-          <TabsTrigger value="register" className="transition-colors duration-300 ease-in-out cursor-pointer">
+          {/* TODO: for trial user for now */}
+          {/* <TabsTrigger value="register" className="transition-colors duration-300 ease-in-out cursor-pointer">
             Register
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         {/* Login Form */}
@@ -264,6 +265,15 @@ const Page = () => {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    className="text-xs text-blue-600 hover:underline focus:outline-none"
+                    onClick={() => router.push(FrontendRoutes.RESET_PASSWORD)}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
                 {error && <p className="text-red-500">{error}</p>}
               </CardContent>
               <CardFooter className="py-3 flex flex-col items-center gap-3">
@@ -273,16 +283,18 @@ const Page = () => {
                 <ButtonWithLogo type="submit"> 
                     Login
                   </ButtonWithLogo>
-                  <div className="flex items-center justify-center">
+                  
+                  {/* TO DO: DO when SSO KKU come */}
+
+                  {/* <div className="flex items-center justify-center">
                     <div className="h-px bg-gray-300 w-16"></div>
                     <span className="mx-2 text-gray-500">OR</span>
                     <div className="h-px bg-gray-300 w-16"></div>
                   </div>
-
                   <ButtonWithLogo logo={<img src="/kkulogo.svg" alt="Logo" />} type="submit"
                     className="bg-[#302E7A] hover:bg-[#302E7A]/90">
                     KKU Single Sign On
-                  </ButtonWithLogo>
+                  </ButtonWithLogo> */}
               </CardFooter>
             </form>
           </Card>

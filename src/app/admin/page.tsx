@@ -27,7 +27,7 @@ import useApprovedKeyword from '../../hooks/Approved/useApprovedKeyword';
 import { toast } from 'react-hot-toast';
 import { useGetKeyword } from '../../hooks/keyword/useGetKeyword';
 import { useGetReport } from '../../hooks/report/useGetReport';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import { YearFilter } from '../../components/subjects/YearFilter';
 import { Quiz } from '../../types/api/Quiz';
 import { Keyword } from '../../types/api/Keyword';

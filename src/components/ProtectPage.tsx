@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FrontendRoutes } from "../config/apiRoutes";
-import { useUser } from '../hooks/useUser';
+import { useUser } from '../hooks/User/useUser';
 
 const ProtectedPage = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status } = useSession();

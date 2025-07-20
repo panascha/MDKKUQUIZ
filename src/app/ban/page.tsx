@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useUser } from '../../hooks/useUser';
+import { useUser } from '../../hooks/User/useUser';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 

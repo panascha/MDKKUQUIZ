@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
-import { BACKEND_URL } from '../config/apiRoutes';
+import { BACKEND_URL } from '../../config/apiRoutes';
 
 export const useGetAllUser = (enabled: boolean = true) => {
   const { data: session } = useSession();

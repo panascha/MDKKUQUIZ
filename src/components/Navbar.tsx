@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useUser } from "../hooks/useUser";
+import { useUser } from "../hooks/User/useUser";
 import { FaBars } from "react-icons/fa";
 import { FaXmark } from 'react-icons/fa6';
 import toast from "react-hot-toast";

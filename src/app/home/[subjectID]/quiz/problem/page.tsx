@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { Question } from '../../../../../types/api/Question';
 import ProtectedPage from '../../../../../components/ProtectPage';
 import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule, Visibility, VisibilityOff } from '@mui/icons-material';
-import { useUser } from '../../../../../hooks/useUser';
+import { useUser } from '../../../../../hooks/User/useUser';
 import ImageGallery from '../../../../../components/magicui/ImageGallery';
 import { useGetQuizzes } from '../../../../../hooks/quiz/useGetQuizzes';
 import { useSubmitScore } from '../../../../../hooks/score/useSubmitScore';
