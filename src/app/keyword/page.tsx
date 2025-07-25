@@ -12,6 +12,7 @@ import { IoIosArrowBack } from 'react-icons/io';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/DropdownMenu';
 import { Category } from '../../types/api/Category';
 import { useGetKeyword } from '../../hooks/keyword/useGetKeyword';
+import { useGetQuizzes } from '../../hooks/quiz/useGetQuizzes';
 import AddKeywordModal from '../../components/keyword/AddKeywordModal';
 import { useUser } from '../../hooks/User/useUser';
 import { useDeleteKeyword } from '../../hooks/keyword/useDeleteKeyword';
@@ -28,6 +29,7 @@ const KeywordPage = () => {
     
     const { data: session } = useSession();
     const { data: keywords = [], isLoading: keywordsLoading, error: keywordsError } = useGetKeyword();
+    const { data: quizzes = [], isLoading: quizzesLoading, error: quizzesError } = useGetQuizzes();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -45,6 +47,63 @@ const KeywordPage = () => {
     const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectFromUrl);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+// --- The Optimized Hooks ---
+
+// State to hold the final calculated statuses for EACH keyword STRING
+const [keywordStatuses, setKeywordStatuses] = useState<{ [keyword: string]: 'isuse' | 'pending' | 'notuse' }>({});
+
+// 1. Memoize the expensive calculation of statuses for every individual keyword string
+const calculatedStatuses = useMemo(() => {
+    console.log("Recalculating keyword statuses...");
+    if (!quizzes?.length || !keywords?.length) {
+        return {};
+    }
+
+    // --- Step 1: Process all quizzes in a single pass for maximum efficiency ---
+    const usedKeywordStrings = new Set<string>();
+    const pendingKeywordStrings = new Set<string>();
+
+    quizzes.forEach((quiz: any) => {
+        // Check the status of the quiz and update the sets accordingly
+        if (quiz.status === 'pending' || quiz.status === 'reported') {
+            quiz.correctAnswer.forEach((kw: string) => pendingKeywordStrings.add(kw));
+        } else if (quiz.status === 'approved') {
+            quiz.correctAnswer.forEach((kw: string) => usedKeywordStrings.add(kw));
+        }
+    });
+
+        // console.log('Used Keywords:', Array.from(usedKeywordStrings));
+    console.log('Pending Keywords:', Array.from(pendingKeywordStrings));
+    
+    // --- Step 3: Get a unique list of every possible keyword string ---
+    const allPossibleKeywords = new Set(keywords.flatMap(group => group.keywords ?? []));
+
+    // --- Step 4: Build the final statuses object ---
+    const statuses: { [keyword: string]: 'isuse' | 'pending' | 'notuse' } = {};
+
+    for (const keywordStringUntyped of allPossibleKeywords) {
+        const keywordString: string = String(keywordStringUntyped);
+        if (usedKeywordStrings.has(keywordString)) {
+            statuses[keywordString] = 'isuse';
+        } else if (pendingKeywordStrings.has(keywordString)) {
+            statuses[keywordString] = 'pending';
+        } else {
+            statuses[keywordString] = 'notuse';
+        }
+    }
+    
+    console.log('Final Calculated Statuses:', statuses);
+    return statuses;
+
+// The calculation now correctly depends only on quizzes and the master keyword list.
+}, [quizzes, keywords]);
+
+
+// 2. Use an effect to update state only when the calculated statuses object changes.
+useEffect(() => {
+    setKeywordStatuses(calculatedStatuses);
+}, [calculatedStatuses]);
+    
     // Memoize filter options
     const filterOptions = useMemo(() => ({
         searchTerm,
@@ -66,6 +125,15 @@ const KeywordPage = () => {
             roleFilteredKeywords = keywords.filter((k: Keyword) => k.status !== "reported");
         }
 
+        const latestKeywords = Object.values(
+            roleFilteredKeywords.reduce((acc: { [key: string]: Keyword }, keyword: Keyword) => {
+                if (!acc[keyword.name] || new Date(keyword.updatedAt) > new Date(acc[keyword.name].updatedAt)) {
+                    acc[keyword.name] = keyword;
+                }
+                return acc;
+            }, {})
+        );
+
         const operators = ['and', 'or', 'not'];
         const searchTerms =
             searchTerm
@@ -81,10 +149,10 @@ const KeywordPage = () => {
         };
 
         if (!searchTerms.length) {
-            return roleFilteredKeywords.filter((k: Keyword) => subjectFilter(k) && categoryFilter(k));
+            return latestKeywords.filter((k: Keyword) => subjectFilter(k) && categoryFilter(k));
         }
 
-        return roleFilteredKeywords.filter((k: Keyword) => {
+        return latestKeywords.filter((k: Keyword) => {
             let includeKeyword: boolean | null = null;
             let currentOperator = 'or';
 
@@ -113,6 +181,7 @@ const KeywordPage = () => {
             return !!includeKeyword && subjectFilter(k) && categoryFilter(k);
         });
     }, [keywords, searchTerm, selectedSubject, selectedCategory, isAdmin, isSAdmin]);
+
 
     useEffect(() => {
         if (!session) return;
@@ -147,12 +216,18 @@ const KeywordPage = () => {
 
     // Update URL when subject filter changes
     useEffect(() => {
-        if (selectedSubject) {
-            router.push(`/keyword?subject=${selectedSubject}`);
-        } else {
-            router.push('/keyword');
-        }
-    }, [selectedSubject, router]);
+    const currentSubjectInUrl = searchParams.get('subject');
+
+    if (selectedSubject && selectedSubject !== currentSubjectInUrl) {
+        router.push(`/keyword?subject=${selectedSubject}`);
+    } else if (!selectedSubject && currentSubjectInUrl) {
+        router.push('/keyword');
+    }
+
+    // By having these conditions, if the state and URL are already in sync,
+    // router.push() is NEVER called, and the infinite loop is broken.
+
+}, [selectedSubject, searchParams, router]); // Keep dependencies
 
     const handleDeleteKeyword = async (keywordId: string) => {
         if (!window.confirm('Are you sure you want to delete this keyword?')) {
@@ -355,11 +430,34 @@ const KeywordPage = () => {
                                     <div className="mt-4 space-y-1 text-sm text-gray-600">
                                         <p className="font-medium">Keywords:</p>
                                         <div className="flex flex-wrap gap-2">
-                                            {keyword.keywords.map((kw: string, index: number) => (
-                                                <span key={index} className="px-2 py-1 bg-gray-100 rounded-md">
-                                                    {kw}
-                                                </span>
-                                            ))}
+                                            {keyword.keywords.map((kw: string, index: number) => {
+                                                const status = keywordStatuses[kw];
+                                                let bgColorClass = 'bg-gray-100'; // Default color
+                                                let textColorClass = 'text-gray-800'; // Default text color
+
+                                                switch (status) {
+                                                    case 'isuse':
+                                                        bgColorClass = 'bg-green-200';
+                                                        textColorClass = 'text-green-800';
+                                                        break;
+                                                    case 'pending':
+                                                        bgColorClass = 'bg-yellow-200';
+                                                        textColorClass = 'text-yellow-800';
+                                                        break;
+                                                    case 'notuse':
+                                                        bgColorClass = 'bg-red-200';
+                                                        textColorClass = 'text-red-800';
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                                
+                                                return (
+                                                    <span key={index} className={`px-2 py-1 rounded-md ${bgColorClass} ${textColorClass}`}>
+                                                        {kw}
+                                                    </span>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
