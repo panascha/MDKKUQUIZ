@@ -76,6 +76,20 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
     }));
   };
 
+  const addChoice = () => {
+    setFormData(prev => ({
+      ...prev,
+      choice: [...prev.choice, '']
+    }));
+  };
+
+  const removeChoice = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      choice: prev.choice.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleCorrectAnswerChange = (index: number, value: string) => {
     setFormData(prev => {
       if (prev.type === 'both' && index === 0) {
@@ -192,7 +206,7 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto mt-8 flex flex-col">
         <DialogHeader>
           <DialogTitle>Report Quiz</DialogTitle>
         </DialogHeader>
@@ -302,8 +316,26 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
                     className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
                     placeholder={`Choice ${index + 1}`}
                   />
+                  <button
+                    type="button"
+                    onClick={() => removeChoice(index)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                    title="Remove choice"
+                    disabled={formData.choice.length <= 1}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
+                
               ))}
+                            <button
+                type="button"
+                onClick={addChoice}
+                className="mt-2 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1"
+              >
+                <PlusIcon className="w-4 h-4" />
+                Add Another Choice
+              </button>
             </div>
           )}
 
