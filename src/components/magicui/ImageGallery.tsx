@@ -232,7 +232,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
         {/* Watermark overlay for thumbnail */}
         <div className="absolute inset-0 flex items-end justify-end pointer-events-none">
           <span className="m-2 px-2 py-1 bg-white/60 text-xs font-bold text-gray-700 rounded opacity-70 select-none">
-            คณะแพทยศาสตร์ มหาวิทยาลัยขอนแก่น
+            MSEB
           </span>
         </div>
       </div>
