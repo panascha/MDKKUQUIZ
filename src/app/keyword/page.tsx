@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
@@ -47,62 +47,43 @@ const KeywordPage = () => {
     const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectFromUrl);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-// --- The Optimized Hooks ---
 
-// State to hold the final calculated statuses for EACH keyword STRING
-const [keywordStatuses, setKeywordStatuses] = useState<{ [keyword: string]: 'isuse' | 'pending' | 'notuse' }>({});
-
-// 1. Memoize the expensive calculation of statuses for every individual keyword string
-const calculatedStatuses = useMemo(() => {
-    console.log("Recalculating keyword statuses...");
-    if (!quizzes?.length || !keywords?.length) {
+const keywordStatuses = useMemo(() => {
+    // Return early with an empty object if data isn't ready.
+    if (!quizzes?.length) {
         return {};
     }
-
-    // --- Step 1: Process all quizzes in a single pass for maximum efficiency ---
-    const usedKeywordStrings = new Set<string>();
-    const pendingKeywordStrings = new Set<string>();
-
-    quizzes.forEach((quiz: any) => {
-        // Check the status of the quiz and update the sets accordingly
-        if (quiz.status === 'pending' || quiz.status === 'reported') {
-            quiz.correctAnswer.forEach((kw: string) => pendingKeywordStrings.add(kw));
-        } else if (quiz.status === 'approved') {
-            quiz.correctAnswer.forEach((kw: string) => usedKeywordStrings.add(kw));
-        }
-    });
-
-        // console.log('Used Keywords:', Array.from(usedKeywordStrings));
-    console.log('Pending Keywords:', Array.from(pendingKeywordStrings));
+    console.log(quizzes.map(q => q.correctAnswer));
+    const quizKeywordMap = new Map<string, 'isuse' | 'pending'>();
     
-    // --- Step 3: Get a unique list of every possible keyword string ---
-    const allPossibleKeywords = new Set(keywords.flatMap(group => group.keywords ?? []));
-
-    // --- Step 4: Build the final statuses object ---
-    const statuses: { [keyword: string]: 'isuse' | 'pending' | 'notuse' } = {};
-
-    for (const keywordStringUntyped of allPossibleKeywords) {
-        const keywordString: string = String(keywordStringUntyped);
-        if (usedKeywordStrings.has(keywordString)) {
-            statuses[keywordString] = 'isuse';
-        } else if (pendingKeywordStrings.has(keywordString)) {
-            statuses[keywordString] = 'pending';
-        } else {
-            statuses[keywordString] = 'notuse';
+    for (const quiz of quizzes) {
+        const status = quiz.status;
+        if (status === 'approved') {
+            for (const kw of quiz.correctAnswer) {
+                // An 'approved' status always takes precedence.
+                quizKeywordMap.set(kw, 'isuse');
+            }
+        } else if (status === 'pending' || status === 'reported') {
+            for (const kw of quiz.correctAnswer) {
+                // Only set 'pending' if it's not already 'isuse'.
+                if (!quizKeywordMap.has(kw)) {
+                    quizKeywordMap.set(kw, 'pending');
+                }
+            }
         }
     }
+
+    // 2. Iterate through all possible keywords to build the final status object.
+    const statuses: { [keyword: string]: 'isuse' | 'pending' | 'notuse' } = {};
+    const allPossibleKeywords = new Set(keywords.flatMap(group => group.keywords ?? []));
+
+    for (const keywordString of allPossibleKeywords) {
+        statuses[keywordString as string] = quizKeywordMap.get(keywordString as string) || 'notuse';
+    }
     
-    console.log('Final Calculated Statuses:', statuses);
     return statuses;
 
-// The calculation now correctly depends only on quizzes and the master keyword list.
-}, [quizzes, keywords]);
-
-
-// 2. Use an effect to update state only when the calculated statuses object changes.
-useEffect(() => {
-    setKeywordStatuses(calculatedStatuses);
-}, [calculatedStatuses]);
+}, [quizzes, keywords]); // Dependencies are correct.
     
     // Memoize filter options
     const filterOptions = useMemo(() => ({
