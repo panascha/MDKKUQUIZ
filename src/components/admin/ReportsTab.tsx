@@ -81,7 +81,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                         <p className="font-medium mb-1">Choices:</p>
                                                         <ul className="list-disc pl-5 space-y-1">
                                                             {report.originalQuiz.choice.map((choice, index) => (
-                                                                <li key={index} className={`text-sm ${report.originalQuiz.correctAnswer.includes(choice) ? 'bg-green-100' : ''}`}>
+                                                                <li key={index} className={`text-sm ${report.originalQuiz?.correctAnswer?.includes(choice) ? 'bg-green-100' : ''}`}>
                                                                     {String.fromCharCode(65 + index)}. {choice}
                                                                 </li>
                                                             ))}

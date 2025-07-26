@@ -50,11 +50,16 @@ const KeywordPage = () => {
 
 const keywordStatuses = useMemo(() => {
     if (!quizzes?.length) {
+        // Return an empty object if there are no quizzes to avoid errors.
         return {};
     }
+
     const quizKeywordMap = new Map<string, 'isuse' | 'pending'>();
+    
+    // This is the corrected part
     const uniqueQuizzes: typeof quizzes = Array.from(
-        quizzes.reduce((map, quiz) => map.set(quiz._id, quiz), new Map<string, typeof quizzes[0]>()).values());
+        quizzes.reduce((map: Map<string, typeof quizzes[0]>, quiz: typeof quizzes[0]) => map.set(quiz._id, quiz), new Map()).values()
+    );
     
     for (const quiz of uniqueQuizzes) {
         const status = quiz.status;
@@ -71,9 +76,9 @@ const keywordStatuses = useMemo(() => {
         }
     }
 
-    // 2. Iterate through all possible keywords to build the final status object.
     const statuses: { [keyword: string]: 'isuse' | 'pending' | 'notuse' } = {};
-    const allPossibleKeywords = new Set(keywords.flatMap(group => group.keywords ?? []));
+    // Ensure keywords is an array before using flatMap
+    const allPossibleKeywords = new Set(keywords?.flatMap((group: Keyword) => group.keywords ?? []) ?? []);
 
     for (const keywordString of allPossibleKeywords) {
         statuses[keywordString as string] = quizKeywordMap.get(keywordString as string) || 'notuse';
@@ -81,7 +86,7 @@ const keywordStatuses = useMemo(() => {
     
     return statuses;
 
-}, [quizzes, keywords]); // Dependencies are correct.
+}, [quizzes, keywords]);
     
     // Memoize filter options
     const filterOptions = useMemo(() => ({
@@ -129,10 +134,10 @@ const keywordStatuses = useMemo(() => {
         };
 
         if (!searchTerms.length) {
-            return latestKeywords.filter((k: Keyword) => subjectFilter(k) && categoryFilter(k));
+            return (latestKeywords as Keyword[]).filter((k: Keyword) => subjectFilter(k) && categoryFilter(k));
         }
 
-        return latestKeywords.filter((k: Keyword) => {
+        return (latestKeywords as Keyword[]).filter((k: Keyword) => {
             let includeKeyword: boolean | null = null;
             let currentOperator = 'or';
 
