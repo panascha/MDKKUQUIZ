@@ -59,16 +59,16 @@ const KeywordsTab: React.FC<KeywordsTabProps> = ({ keywords, onApprove, onReject
                         {/* Keywords List */}
                         <div className="space-y-2">
                             <p className="text-sm font-medium text-gray-700">Related Keywords:</p>
-                            <div className="flex flex-wrap gap-2">
+                            <ul className="list-disc list-inside space-y-1">
                                 {keyword.keywords.map((kw, index) => (
-                                    <span 
+                                    <li 
                                         key={index}
-                                        className="px-2 py-1 bg-gray-100 rounded-md text-sm text-gray-700"
+                                        className="text-sm text-gray-700"
                                     >
                                         {kw}
-                                </span>
+                                    </li>
                                 ))}
-                            </div>
+                            </ul>
                         </div>
 
                         {/* Action Buttons */}

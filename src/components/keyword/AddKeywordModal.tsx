@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../ui/Dialog';
 import Button from '../ui/Button';
-import { LoaderIcon } from "lucide-react";
+import { LoaderIcon, X } from "lucide-react";
 import { UserProps } from '../../types/api/UserProps';
 import { Category } from '../../types/api/Category';
 import { Subject } from '../../types/api/Subject';
@@ -50,6 +50,13 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
     setFormData(prev => ({
       ...prev,
       keywords: prev.keywords.map((keyword, i) => i === index ? value : keyword)
+    }));
+  };
+
+  const removeKeyword = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      keywords: prev.keywords.filter((_, i) => i !== index)
     }));
   };
 
@@ -126,7 +133,7 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
+      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto mt-8 flex flex-col">
         <DialogHeader>
           <DialogTitle>Add Keyword</DialogTitle>
         </DialogHeader>
@@ -216,7 +223,7 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
           <div>
             <label className="mb-1 block text-sm font-semibold">Keywords *</label>
             {formData.keywords.map((keyword, index) => (
-              <div key={index} className="mb-2">
+                <div key={index} className="mb-2 flex items-center">
                 <input
                   type="text"
                   value={keyword}
@@ -225,7 +232,16 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                   placeholder={`Keyword ${index + 1}`}
                 />
-              </div>
+                <button
+                  type="button"
+                  onClick={() => removeKeyword(index)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors ml-2"
+                  title="Remove keyword"
+                  disabled={formData.keywords.length <= 1}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                </div>
             ))}
             <button
               type="button"

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
@@ -12,6 +12,7 @@ import { IoIosArrowBack } from 'react-icons/io';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/DropdownMenu';
 import { Category } from '../../types/api/Category';
 import { useGetKeyword } from '../../hooks/keyword/useGetKeyword';
+import { useGetQuizzes } from '../../hooks/quiz/useGetQuizzes';
 import AddKeywordModal from '../../components/keyword/AddKeywordModal';
 import { useUser } from '../../hooks/User/useUser';
 import { useDeleteKeyword } from '../../hooks/keyword/useDeleteKeyword';
@@ -28,6 +29,7 @@ const KeywordPage = () => {
     
     const { data: session } = useSession();
     const { data: keywords = [], isLoading: keywordsLoading, error: keywordsError } = useGetKeyword();
+    const { data: quizzes = [], isLoading: quizzesLoading, error: quizzesError } = useGetQuizzes();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -45,6 +47,42 @@ const KeywordPage = () => {
     const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectFromUrl);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+
+const keywordStatuses = useMemo(() => {
+    if (!quizzes?.length) {
+        return {};
+    }
+    const quizKeywordMap = new Map<string, 'isuse' | 'pending'>();
+    const uniqueQuizzes: typeof quizzes = Array.from(
+        quizzes.reduce((map, quiz) => map.set(quiz._id, quiz), new Map<string, typeof quizzes[0]>()).values());
+    
+    for (const quiz of uniqueQuizzes) {
+        const status = quiz.status;
+        if (status === 'approved') {
+            for (const kw of quiz.correctAnswer) {
+                quizKeywordMap.set(kw, 'isuse');
+            }
+        } else if (status === 'pending') {
+            for (const kw of quiz.correctAnswer) {
+                if (!quizKeywordMap.has(kw)) {
+                    quizKeywordMap.set(kw, 'pending');
+                }
+            }
+        }
+    }
+
+    // 2. Iterate through all possible keywords to build the final status object.
+    const statuses: { [keyword: string]: 'isuse' | 'pending' | 'notuse' } = {};
+    const allPossibleKeywords = new Set(keywords.flatMap(group => group.keywords ?? []));
+
+    for (const keywordString of allPossibleKeywords) {
+        statuses[keywordString as string] = quizKeywordMap.get(keywordString as string) || 'notuse';
+    }
+    
+    return statuses;
+
+}, [quizzes, keywords]); // Dependencies are correct.
+    
     // Memoize filter options
     const filterOptions = useMemo(() => ({
         searchTerm,
@@ -62,9 +100,19 @@ const KeywordPage = () => {
         let roleFilteredKeywords = keywords;
         if (!isAdmin && !isSAdmin) {
             roleFilteredKeywords = keywords.filter((k: Keyword) => k.status === "approved");
-        } else if (isAdmin && !isSAdmin) {
+        }
+        else if (isAdmin && !isSAdmin) {
             roleFilteredKeywords = keywords.filter((k: Keyword) => k.status !== "reported");
         }
+
+        const latestKeywords = Object.values(
+            roleFilteredKeywords.reduce((acc: { [key: string]: Keyword }, keyword: Keyword) => {
+            if (!acc[keyword.name] || new Date(keyword.updatedAt) > new Date(acc[keyword.name].updatedAt)) {
+                acc[keyword.name] = keyword;
+            }
+            return acc;
+            }, {})
+        );
 
         const operators = ['and', 'or', 'not'];
         const searchTerms =
@@ -81,10 +129,10 @@ const KeywordPage = () => {
         };
 
         if (!searchTerms.length) {
-            return roleFilteredKeywords.filter((k: Keyword) => subjectFilter(k) && categoryFilter(k));
+            return latestKeywords.filter((k: Keyword) => subjectFilter(k) && categoryFilter(k));
         }
 
-        return roleFilteredKeywords.filter((k: Keyword) => {
+        return latestKeywords.filter((k: Keyword) => {
             let includeKeyword: boolean | null = null;
             let currentOperator = 'or';
 
@@ -113,6 +161,7 @@ const KeywordPage = () => {
             return !!includeKeyword && subjectFilter(k) && categoryFilter(k);
         });
     }, [keywords, searchTerm, selectedSubject, selectedCategory, isAdmin, isSAdmin]);
+
 
     useEffect(() => {
         if (!session) return;
@@ -147,12 +196,18 @@ const KeywordPage = () => {
 
     // Update URL when subject filter changes
     useEffect(() => {
-        if (selectedSubject) {
-            router.push(`/keyword?subject=${selectedSubject}`);
-        } else {
-            router.push('/keyword');
-        }
-    }, [selectedSubject, router]);
+    const currentSubjectInUrl = searchParams.get('subject');
+
+    if (selectedSubject && selectedSubject !== currentSubjectInUrl) {
+        router.push(`/keyword?subject=${selectedSubject}`);
+    } else if (!selectedSubject && currentSubjectInUrl) {
+        router.push('/keyword');
+    }
+
+    // By having these conditions, if the state and URL are already in sync,
+    // router.push() is NEVER called, and the infinite loop is broken.
+
+}, [selectedSubject, searchParams, router]); // Keep dependencies
 
     const handleDeleteKeyword = async (keywordId: string) => {
         if (!window.confirm('Are you sure you want to delete this keyword?')) {
@@ -315,7 +370,7 @@ const KeywordPage = () => {
                                                 {keyword.subject.name}
                                             </p>
                                         </div>
-                                        {isAdmin && (
+                                        {(isAdmin &&
                                             <div className="flex items-center gap-2">
                                                 <Badge
                                                     className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
@@ -355,11 +410,23 @@ const KeywordPage = () => {
                                     <div className="mt-4 space-y-1 text-sm text-gray-600">
                                         <p className="font-medium">Keywords:</p>
                                         <div className="flex flex-wrap gap-2">
-                                            {keyword.keywords.map((kw: string, index: number) => (
-                                                <span key={index} className="px-2 py-1 bg-gray-100 rounded-md">
-                                                    {kw}
-                                                </span>
-                                            ))}
+                                                                                        {
+                                                keyword.keywords.map((kw: string, index: number) => {
+                                                const status = keywordStatuses[kw];
+                                                const statusStyles = {
+                                                    isuse: 'bg-green-200 text-green-800',
+                                                    pending: 'bg-yellow-200 text-yellow-800',
+                                                    notuse: 'bg-red-200 text-red-800',
+                                                };
+                                                const style = statusStyles[status as keyof typeof statusStyles] ?? 'bg-gray-100 text-gray-800';
+                                                
+                                                return (
+                                                    <span key={index} className={`px-2 py-1 rounded-md ${style}`}>
+                                                        {kw}
+                                                    </span>
+                                                );
+                                            })}
+
                                         </div>
                                     </div>
                                 </div>

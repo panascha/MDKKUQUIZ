@@ -25,7 +25,7 @@ interface AddQuizModalProps {
 }
 
 function filterKeywords(keywords: string[], value: string) {
-  return keywords.filter(k => k.toLowerCase().includes(value.toLowerCase())).slice(0, 10);
+  return keywords.filter(k => k.toLowerCase().includes(value.toLowerCase()));
 }
 
 const AddQuizModal: React.FC<AddQuizModalProps> = ({
@@ -41,7 +41,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     subject: '',
     category: '',
     type: 'choice', 
-    choice: ['', '', '', ''], 
+    choice: ['', ''], 
     correctAnswer: [''], 
     img: [],
     status: 'pending'
@@ -59,9 +59,9 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
 
     const [dropdown, setDropdown] = useState<{[key: string]: boolean}>({});
     const keywordOptions = formData.category
-      ? getKeyword?.data
-          .filter((kw: Keyword) => kw.category && kw.category._id === formData.category)
-          .flatMap((kw: Keyword) => kw.keywords)
+      ? Array.from(new Set(getKeyword?.data
+        .filter((kw: Keyword) => kw.category && kw.category._id === formData.category)
+        .flatMap((kw: Keyword) => kw.keywords) as string[]))
       : [];
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -70,7 +70,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
       setFormData(prev => ({
         ...prev,
         [name]: value,
-        choice: value === 'choice' ? ['', '', '', ''] : [],
+        choice: value === 'choice' ? ['', ''] : [],
         correctAnswer: value === 'choice' ? [] : [''] 
       }));
     } else {
@@ -96,6 +96,13 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
         choice: newChoices
       };
     });
+  };
+  const removeChoice = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      choice: prev.choice.filter((_, i) => i !== index),
+      correctAnswer: prev.correctAnswer.filter(answer => answer !== prev.choice[index])
+    }));
   };
 
   const handleCorrectAnswerChange = (value: string, index: number) => {
@@ -158,7 +165,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
       subject: '',
       category: '',
       type: 'choice',
-      choice: ['', '', '', ''],
+      choice: ['', ''],
       correctAnswer: [''], // Reset to one empty answer
       img: [],
       status: 'pending'
@@ -229,19 +236,15 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     }
   };
 
-  const usedCorrectAnswers = new Set(
-    getQuestionBySubjectandCategory.data?.flatMap((quiz: Quiz) => quiz.correctAnswer) || []
-  );
+const usedCorrectAnswers = new Set(
+  getQuestionBySubjectandCategory.data
+    ?.filter((quiz: Quiz) => quiz.status === 'approved')
+    .flatMap((quiz: Quiz) => quiz.correctAnswer) || []
+);
 
-    const unusedKeywords: string[] = [];
-  for (const keyword of keywordOptions) {
-    if (!usedCorrectAnswers.has(keyword)) {
-      unusedKeywords.push(keyword);
-      if (unusedKeywords.length >= 10) {
-        break;
-      }
-    }
-  }
+const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
+  .filter(keyword => !usedCorrectAnswers.has(keyword))
+  .slice(0, 10);
 
   return (
     <Dialog
@@ -253,7 +256,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto mt-8 flex flex-col">
         <DialogHeader>
           <DialogTitle>Add Quiz</DialogTitle>
           {/* Loading indicator for keywords/questions */}
@@ -269,26 +272,26 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
               <p className="text-sm text-gray-500 mb-2">
                 Here are some keywords that you can use as correct answers:
               </p>
-              <div className="flex flex-col sm:flex-row flex-wrap sm:justify-between gap-2 sm:gap-0 max-h-40 overflow-y-auto">
+                <div className="flex flex-col sm:flex-row flex-wrap sm:justify-between gap-2 sm:gap-0 max-h-40 overflow-y-auto">
                 {/* First Column */}
-                <ul className="w-full sm:w-1/2 pr-0 sm:pr-2 list-disc pl-5 text-xs sm:text-sm">
-                  {unusedKeywords.slice(0, 5).map((keyword, index) => (
-                    <li key={`col1-${index}`} className="text-gray-700 py-0.5">
-                      {keyword}
-                    </li>
+                <ul className="w-1/2 pr-0 sm:pr-2 list-disc pl-5 text-xs sm:text-sm">
+                  {unusedKeywords.slice(0, 4).map((keyword, index) => (
+                  <li key={`col1-${index}`} className="text-gray-700 py-0.5 text-left">
+                  {keyword}
+                  </li>
                   ))}
                 </ul>
 
-                {unusedKeywords.length > 5 && (
-                  <ul className="w-full sm:w-1/2 pl-0 sm:pl-2 list-disc text-xs sm:text-sm">
-                    {unusedKeywords.slice(5, 10).map((keyword, index) => (
-                      <li key={`col2-${index}`} className="text-gray-700 py-0.5">
-                        {keyword}
-                      </li>
-                    ))}
+                {unusedKeywords.length > 4 && (
+                  <ul className="w-1/2 pl-0 sm:pl-2 list-disc text-xs sm:text-sm">
+                  {unusedKeywords.slice(4, 8).map((keyword, index) => (
+                  <li key={`col2-${index}`} className="text-gray-700 py-0.5 text-left">
+                  {keyword}
+                  </li>
+                  ))}
                   </ul>
                 )}
-              </div>
+                </div>
             </div>
           )}
         </DialogHeader>
@@ -314,7 +317,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                         ...prev, 
                         subject: s._id,
                         category: '',
-                        choice: ['', '', '', ''],
+                        choice: ['', ''],
                         correctAnswer: [''],
                         img: [],
                       }));
@@ -355,7 +358,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
                     onClick={() => setFormData(prev => ({
                       ...prev,
                       category: c._id,
-                      choice: ['', '', '', ''],
+                      choice: ['', ''],
                       correctAnswer: [''],
                       img: [],
                     }))}
@@ -430,48 +433,57 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
 
           {formData.type === 'choice' || formData.type === 'both'? (
             <div>
-              <label className="mb-1 block text-sm font-semibold">Choices *</label>
-              {formData.choice.map((choice, index) => (
+                <label className="mb-1 block text-sm font-semibold">Choices *</label>
+                {formData.choice.map((choice, index) => (
                 <div key={index} className="mb-2 flex items-center gap-2">
                   <input
-                    type="radio"
-                    name="correctAnswer"
-                    checked={formData.correctAnswer.includes(choice)}
-                    onChange={() => handleCorrectAnswerChange(choice, 0)}
-                    disabled={!choice.trim()}
-                    className={`w-4 h-4 ${!choice.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  type="radio"
+                  name="correctAnswer"
+                  checked={formData.correctAnswer.includes(choice)}
+                  onChange={() => handleCorrectAnswerChange(choice, 0)}
+                  disabled={!choice.trim()}
+                  className={`w-4 h-4 ${!choice.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   />
                   <div className="relative flex-1">
-                    <input
-                      type="text"
-                      value={choice}
-                      onChange={e => handleChoiceChange(index, e.target.value)}
-                      onFocus={() => setDropdown(d => ({ ...d, ['choice' + index]: true }))}
-                      onBlur={() => setTimeout(() => setDropdown(d => ({ ...d, ['choice' + index]: false })), 150)}
-                      required
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                      placeholder={`Choice ${index + 1}`}
-                      autoComplete="off"
-                    />
-                    {dropdown['choice' + index] && filterKeywords(keywordOptions, choice).length > 0 && (
-                      <div className="absolute z-50 bg-white border border-gray-200 rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full">
-                        {filterKeywords(keywordOptions, choice).map((keyword, kidx) => (
-                          <div
-                            key={kidx}
-                            className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800"
-                            onMouseDown={() => {
-                              handleChoiceChange(index, keyword);
-                              setDropdown(d => ({ ...d, ['choice' + index]: false }));
-                            }}
-                          >
-                            {keyword}
-                          </div>
-                        ))}
+                  <input
+                    type="text"
+                    value={choice}
+                    onChange={e => handleChoiceChange(index, e.target.value)}
+                    onFocus={() => setDropdown(d => ({ ...d, ['choice' + index]: true }))}
+                    onBlur={() => setTimeout(() => setDropdown(d => ({ ...d, ['choice' + index]: false })), 150)}
+                    required
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    placeholder={`Choice ${index + 1}`}
+                    autoComplete="off"
+                  />
+                  {dropdown['choice' + index] && filterKeywords(keywordOptions, choice).length > 0 && (
+                    <div className="absolute z-50 bg-white border border-gray-200 rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full">
+                    {filterKeywords(keywordOptions, choice).map((keyword, kidx) => (
+                      <div
+                      key={kidx}
+                      className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800"
+                      onMouseDown={() => {
+                        handleChoiceChange(index, keyword);
+                        setDropdown(d => ({ ...d, ['choice' + index]: false }));
+                      }}
+                      >
+                      {keyword}
                       </div>
-                    )}
+                    ))}
+                    </div>
+                  )}
                   </div>
+                          <button
+                type="button"
+                onClick={() => removeChoice(index)}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors ml-2"
+                title="Remove choice"
+                disabled={formData.choice.length <= 1}
+                >
+                <X className="w-5 h-5" />
+                </button>
                 </div>
-              ))}
+                ))}
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, choice: [...prev.choice, ''] }))}
@@ -588,7 +600,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
           )}
 
           {/* Buttons */}
-          <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4 pt-4 sticky bottom-0 bg-white">
+          <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4 pt-4 bottom-0 bg-white">
             <Button
               textButton="Submit"
               disabled={createQuizMutation.isPending}

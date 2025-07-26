@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../ui/Dialog';
 import Button from '../ui/Button';
-import { LoaderIcon } from "lucide-react";
+import { LoaderIcon, X } from "lucide-react";
 import { UserProps } from '../../types/api/UserProps';
 import { Keyword } from '../../types/api/Keyword';
 import { useCreateKeyword } from '../../hooks/keyword/useCreateKeyword';
@@ -9,6 +9,7 @@ import { useCreateReport } from '../../hooks/report/useCreateReport';
 import { Report } from '../../types/api/Report';
 import toast from 'react-hot-toast';
 import { useUser } from '../../hooks/User/useUser';
+
 
 interface KeywordFormData {
   user: string;
@@ -110,6 +111,13 @@ const AddKeywordReportModal: React.FC<AddKeywordReportModalProps> = ({
     }
   };
 
+    const removeKeyword = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      keywords: prev.keywords.filter((_, i) => i !== index)
+    }));
+  };
+
   return (
     <Dialog
       open={showModal}
@@ -120,7 +128,7 @@ const AddKeywordReportModal: React.FC<AddKeywordReportModalProps> = ({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] flex flex-col mt-8">
+      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] flex flex-col mt-8 overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Report Keyword</DialogTitle>
         </DialogHeader>
@@ -165,18 +173,27 @@ const AddKeywordReportModal: React.FC<AddKeywordReportModalProps> = ({
           </div>
 
           {/* Keywords List */}
-          <div>
+            <div>
             <label className="mb-1 block text-sm font-semibold">Keywords</label>
             {formData.keywords.map((keyword, index) => (
-              <div key={index} className="mb-2">
-                <input
-                  type="text"
-                  value={keyword}
-                  onChange={(e) => handleKeywordsChange(index, e.target.value)}
-                  required
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                  placeholder={`Keyword ${index + 1}`}
-                />
+              <div key={index} className="mb-2 flex items-center">
+              <input
+                type="text"
+                value={keyword}
+                onChange={(e) => handleKeywordsChange(index, e.target.value)}
+                required
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                placeholder={`Keyword ${index + 1}`}
+              />
+              <button
+                type="button"
+                onClick={() => removeKeyword(index)}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors ml-2"
+                title="Remove keyword"
+                disabled={formData.keywords.length <= 1}
+              >
+                <X className="w-5 h-5" />
+              </button>
               </div>
             ))}
             <button
@@ -186,7 +203,7 @@ const AddKeywordReportModal: React.FC<AddKeywordReportModalProps> = ({
             >
               + Add Keyword
             </button>
-          </div>
+            </div>
 
           {/* Error Message */}
           {error && (

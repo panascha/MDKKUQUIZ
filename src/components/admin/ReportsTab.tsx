@@ -27,6 +27,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
             </div>
         );
     }
+    
 
     return (
         <div className="space-y-4 sm:space-y-6">
@@ -61,16 +62,26 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                         <h4 className="font-medium text-gray-700">Original Content</h4>
                                         {report.type === 'quiz' ? (
                                             <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                                                <p className="font-medium">Question: {report.originalQuiz?.question}</p>
-                                                <p>Answer: {report.originalQuiz?.correctAnswer}</p>
-                                                <p>Category: {report.originalQuiz?.category?.category}</p>
                                                 <p>Subject: {report.originalQuiz?.subject?.name}</p>
-                                                {report.originalQuiz?.choice && report.originalQuiz.choice.length > 0 && (
+                                                <p>Category: {report.originalQuiz?.category?.category}</p>
+                                                <br />
+                                                <p className="font-medium">Question: {report.originalQuiz?.question}</p>
+                                                <p className="font-medium mb-1">Answer:</p>
+                                                <ul className='list-disc list-inside'>
+                                                    {report.originalQuiz?.correctAnswer.map((answer, index) => (
+                                                        <li key={index}>
+                                                            {answer}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+
+                                                    {
+                                                        report.originalQuiz?.choice && report.originalQuiz.choice.length > 0 && (
                                                     <div className="mt-2">
                                                         <p className="font-medium mb-1">Choices:</p>
                                                         <ul className="list-disc pl-5 space-y-1">
                                                             {report.originalQuiz.choice.map((choice, index) => (
-                                                                <li key={index} className="text-sm">
+                                                                <li key={index} className={`text-sm ${report.originalQuiz.correctAnswer.includes(choice) ? 'bg-green-100' : ''}`}>
                                                                     {String.fromCharCode(65 + index)}. {choice}
                                                                 </li>
                                                             ))}
@@ -80,7 +91,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                 {report.originalQuiz?.img && report.originalQuiz.img.length > 0 && (
                                                     <div className="mt-2">
                                                         <p className="font-medium mb-1">Images:</p>
-                                                        <div className="grid grid-cols-2 gap-2">
+                                                        <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
                                                             {report.originalQuiz.img.map((img, index) => (
                                                                 <div key={index} className="relative aspect-square">
                                                                     <ImageGallery
@@ -94,10 +105,17 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                             </div>
                                         ) : (
                                             <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                                                <p className="font-medium">Keyword: {report.originalKeyword?.name}</p>
-                                                <p>Category: {report.originalKeyword?.category?.category}</p>
                                                 <p>Subject: {report.originalKeyword?.subject?.name}</p>
-                                                <p>Keywords: {report.originalKeyword?.keywords?.join(', ')}</p>
+                                                <p>Category: {report.originalKeyword?.category?.category}</p>
+                                                <br />
+                                                <p className="font-medium">Keyword: {report.originalKeyword?.name}</p>
+                                                <p className="font-medium">Keywords:</p>
+                                                <ul className="list-disc pl-5 space-y-1">
+                                                    {report.originalKeyword?.keywords?.map((keyword, index) => (
+                                                        <li key={index}>{keyword}</li>
+                                                    ))}
+                                                </ul>
+
                                             </div>
                                         )}
                                     </div>
@@ -105,27 +123,126 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                     <div className="space-y-2">
                                         <h4 className="font-medium text-gray-700">Suggested Changes</h4>
                                         {report.type === 'quiz' ? (
-                                            <div className="bg-emerald-50 p-3 rounded-lg space-y-2">
-                                                <p className="font-medium">Question: {report.suggestedChanges?.question}</p>
-                                                <p>Answer: {report.suggestedChanges?.correctAnswer}</p>
-                                                <p>Category: {report.suggestedChanges?.category?.category}</p>
+                                            <div className="bg-yellow-50 p-3 rounded-lg space-y-2">
                                                 <p>Subject: {report.suggestedChanges?.subject?.name}</p>
-                                                {report.suggestedChanges?.choice && report.suggestedChanges.choice.length > 0 && (
-                                                    <div className="mt-2">
-                                                        <p className="font-medium mb-1">Choices:</p>
-                                                        <ul className="list-disc pl-5 space-y-1">
-                                                            {report.suggestedChanges.choice.map((choice, index) => (
-                                                                <li key={index} className="text-sm">
-                                                                    {String.fromCharCode(65 + index)}. {choice}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
+                                                <p>Category: {report.suggestedChanges?.category?.category}</p>
+                                                <br />
+                                                <p className="font-medium">Question: {report.suggestedChanges?.question}
+                                                    {report.suggestedChanges?.question !== report.originalQuiz?.question && (
+                                                        <span className="text-red-500 ml-1"> (Modified)</span>
+                                                    )}
+                                                </p>
+                                                <p className="font-medium mb-1">Answer:</p>
+
+    {(() => {
+        const originalAnswers = report.originalQuiz?.correctAnswer || [];
+        const suggestedAnswers = report.suggestedChanges?.correctAnswer || [];
+
+        const originalAnswerSet = new Set(originalAnswers);
+        const suggestedAnswerSet = new Set(suggestedAnswers);
+
+        return (
+            <ul className="list-disc pl-5 space-y-1">
+                {/* Render suggested answers (marking new ones) */}
+                {suggestedAnswers.map((answer, index) => {
+                    // Check if this answer is new (wasn't in the original list)
+                    const isAdded = !originalAnswerSet.has(answer);
+
+                    return (
+                        <li 
+                            key={`suggested-${index}`} 
+                            className={`text-sm ${isAdded ? 'bg-green-100' : ''}`}
+                        >
+                            {answer}
+                            {isAdded && <span className="text-green-700 font-semibold ml-2">(Added)</span>}
+                        </li>
+                    );
+                })}
+
+                {/* Render original answers that were removed */}
+                {originalAnswers.map((answer, index) => {
+                    const isRemoved = !suggestedAnswerSet.has(answer);
+
+                    if (isRemoved) {
+                        return (
+                            <li 
+                                key={`original-${index}`} 
+                                className="text-sm bg-red-100 line-through"
+                            >
+                                {answer}
+                                <span className="text-red-700 font-semibold ml-2">(Removed)</span>
+                            </li>
+                        );
+                    }
+                    return null; // Don't render anything if it wasn't removed
+                })}
+            </ul>
+        );
+    })()}
+                                                {
+                                                    report.suggestedChanges?.choice && report.suggestedChanges.choice.length > 0 && (
+                                                        <div className="mt-2">
+                                                            <p className="font-medium mb-1">Choices:</p>
+    
+    {(() => {
+        const originalChoices = report.originalQuiz?.choice || [];
+        const suggestedChoices = report.suggestedChanges?.choice || [];
+        
+        const originalChoiceSet = new Set(originalChoices);
+        const suggestedChoiceSet = new Set(suggestedChoices);
+        
+        const correctAnswersSet = new Set(report.suggestedChanges?.correctAnswer || []);
+
+        return (
+            <ul className="list-disc pl-5 space-y-1">
+                {suggestedChoices.map((choice, index) => {
+                    // Determine the status of this choice
+                    const isCorrect = correctAnswersSet.has(choice);
+                    const isAdded = !originalChoiceSet.has(choice);
+
+                    // Build the className dynamically
+                    const classNames = ['text-sm', 'p-1', 'rounded'];
+                    if (isCorrect) {
+                        classNames.push('bg-green-100'); // Highlight for correct answers
+                    }
+                    if (isAdded) {
+                        classNames.push('border', 'border-blue-400'); // Border for newly added choices
+                    }
+                    
+                    return (
+                        <li key={`suggested-choice-${index}`} className={classNames.join(' ')}>
+                            {String.fromCharCode(65 + index)}. {choice}
+                            {isAdded && <span className="text-blue-700 font-semibold ml-2">(Added)</span>}
+                        </li>
+                    );
+                })}
+
+                {/* Loop 2: Identify and render any choices that were removed */}
+                {originalChoices.map((choice, index) => {
+                    const isRemoved = !suggestedChoiceSet.has(choice);
+                    
+                    if (isRemoved) {
+                        return (
+                            <li 
+                                key={`removed-choice-${index}`} 
+                                className="text-sm bg-red-100 p-1 rounded line-through"
+                            >
+                                {choice}
+                                <span className="text-red-700 font-semibold ml-2">(Removed)</span>
+                            </li>
+                        );
+                    }
+                    return null; // Don't render if it's not removed
+                })}
+            </ul>
+        );
+    })()}
+                                                        </div>
+                                                    )}
                                                 {report.suggestedChanges?.img && report.suggestedChanges.img.length > 0 && (
                                                     <div className="mt-2">
                                                         <p className="font-medium mb-1">Images:</p>
-                                                        <div className="grid grid-cols-2 gap-2">
+                                                        <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
                                                             {report.suggestedChanges.img.map((img, index) => (
                                                                 <div key={index} className="relative aspect-square">
                                                                     <ImageGallery
@@ -138,11 +255,62 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="bg-emerald-50 p-3 rounded-lg space-y-2">
-                                                <p className="font-medium">Keyword: {report.suggestedChangesKeyword?.name}</p>
-                                                <p>Category: {report.suggestedChangesKeyword?.category?.category}</p>
+                                            <div className="bg-yellow-50 p-3 rounded-lg space-y-2">
                                                 <p>Subject: {report.suggestedChangesKeyword?.subject?.name}</p>
-                                                <p>Keywords: {report.suggestedChangesKeyword?.keywords?.join(', ')}</p>
+                                                    <p>Category: {report.suggestedChangesKeyword?.category?.category}</p>
+                                                <br />
+                                                    <p className="font-medium">Keyword: {report.suggestedChangesKeyword?.name}
+                                                        {report.suggestedChangesKeyword?.name !== report.originalKeyword?.name && (
+                                                        <span className="text-red-500 ml-1"> (Modified)</span>
+                                                    )}
+                                                </p>
+                                                <p className="font-medium mb-1">Keywords:</p>
+
+    {(() => {
+        const originalKeywords = report.originalKeyword?.keywords || [];
+        const suggestedKeywords = report.suggestedChangesKeyword?.keywords || [];
+
+        // Create Sets for fast, order-independent lookups
+        const originalKeywordSet = new Set(originalKeywords);
+        const suggestedKeywordSet = new Set(suggestedKeywords);
+
+        // --- Step 2: Render the lists to show the differences ---
+        return (
+            <ul className="list-disc pl-5 space-y-1">
+                {/* Loop 1: Render the suggested keywords, highlighting new ones */}
+                {suggestedKeywords.map((keyword, index) => {
+                    const isAdded = !originalKeywordSet.has(keyword);
+
+                    return (
+                        <li 
+                            key={`suggested-kw-${index}`} 
+                            className={`text-sm p-1 rounded ${isAdded ? 'bg-green-100' : ''}`}
+                        >
+                            {keyword}
+                            {isAdded && <span className="text-green-700 font-semibold ml-2">(Added)</span>}
+                        </li>
+                    );
+                })}
+
+                {originalKeywords.map((keyword, index) => {
+                    const isRemoved = !suggestedKeywordSet.has(keyword);
+
+                    if (isRemoved) {
+                        return (
+                            <li 
+                                key={`removed-kw-${index}`} 
+                                className="text-sm bg-red-100 p-1 rounded line-through"
+                            >
+                                {keyword}
+                                <span className="text-red-700 font-semibold ml-2">(Removed)</span>
+                            </li>
+                        );
+                    }
+                    return null; // Essential: Don't render anything if it wasn't removed
+                })}
+            </ul>
+        );
+    })()}
                                             </div>
                                         )}
                                     </div>
