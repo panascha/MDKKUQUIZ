@@ -15,7 +15,7 @@ const ReportDetailDropdown: React.FC<ReportDetailDropdownProps> = ({ report, ope
       <h4 className="font-bold text-base mb-2 text-gray-900 border-b pb-1">{title}</h4>
       <div className="grid grid-cols-1 gap-x-8 gap-y-2">
         <div><span className="font-semibold">Question:</span> {quiz?.question}</div>
-        {['written', 'both'].includes(quiz?.type) && (
+        {['choice', 'both'].includes(quiz?.type) && (
             <div>
             <span className="font-semibold">Choices:</span>
             <ul className="list-disc list-inside">

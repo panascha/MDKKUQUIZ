@@ -86,7 +86,8 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
   const removeChoice = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      choice: prev.choice.filter((_, i) => i !== index)
+      choice: prev.choice.filter((_, i) => i !== index),
+      correctAnswer: prev.correctAnswer.filter(answer => answer !== prev.choice[index])
     }));
   };
 

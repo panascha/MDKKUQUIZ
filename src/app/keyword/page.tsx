@@ -53,10 +53,8 @@ const keywordStatuses = useMemo(() => {
         return {};
     }
     const quizKeywordMap = new Map<string, 'isuse' | 'pending'>();
-    const uniqueQuizzes = Array.from(new Set(quizzes.map(quiz => quiz._id))).map(_id => {
-        return quizzes.find(quiz => quiz._id === _id) as typeof quizzes[0];
-    });
-    console.log('Unique quizzes:', uniqueQuizzes.map(q => q.correctAnswer));
+    const uniqueQuizzes: typeof quizzes = Array.from(
+        quizzes.reduce((map, quiz) => map.set(quiz._id, quiz), new Map<string, typeof quizzes[0]>()).values());
     
     for (const quiz of uniqueQuizzes) {
         const status = quiz.status;
@@ -412,34 +410,23 @@ const keywordStatuses = useMemo(() => {
                                     <div className="mt-4 space-y-1 text-sm text-gray-600">
                                         <p className="font-medium">Keywords:</p>
                                         <div className="flex flex-wrap gap-2">
-                                            {keyword.keywords.map((kw: string, index: number) => {
+                                                                                        {
+                                                keyword.keywords.map((kw: string, index: number) => {
                                                 const status = keywordStatuses[kw];
-                                                let bgColorClass = 'bg-gray-100'; // Default color
-                                                let textColorClass = 'text-gray-800'; // Default text color
-
-                                                switch (status) {
-                                                    case 'isuse':
-                                                        bgColorClass = 'bg-green-200';
-                                                        textColorClass = 'text-green-800';
-                                                        break;
-                                                    case 'pending':
-                                                        bgColorClass = 'bg-yellow-200';
-                                                        textColorClass = 'text-yellow-800';
-                                                        break;
-                                                    case 'notuse':
-                                                        bgColorClass = 'bg-red-200';
-                                                        textColorClass = 'text-red-800';
-                                                        break;
-                                                    default:
-                                                        break;
-                                                }
+                                                const statusStyles = {
+                                                    isuse: 'bg-green-200 text-green-800',
+                                                    pending: 'bg-yellow-200 text-yellow-800',
+                                                    notuse: 'bg-red-200 text-red-800',
+                                                };
+                                                const style = statusStyles[status as keyof typeof statusStyles] ?? 'bg-gray-100 text-gray-800';
                                                 
                                                 return (
-                                                    <span key={index} className={`px-2 py-1 rounded-md ${bgColorClass} ${textColorClass}`}>
+                                                    <span key={index} className={`px-2 py-1 rounded-md ${style}`}>
                                                         {kw}
                                                     </span>
                                                 );
                                             })}
+
                                         </div>
                                     </div>
                                 </div>
