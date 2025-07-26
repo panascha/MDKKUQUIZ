@@ -78,7 +78,7 @@ const KeywordDetail = () => {
                                 <p className="text-sm text-gray-500">Subject</p>
                                 <p className="text-base md:text-lg font-medium text-gray-900">{keyword?.subject?.name}</p>
                             </div>
-                            {(
+                            {(isAdmin &&
                                 <Badge
                                     className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
                                         keyword?.status === "approved"

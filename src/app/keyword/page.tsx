@@ -370,7 +370,7 @@ const keywordStatuses = useMemo(() => {
                                                 {keyword.subject.name}
                                             </p>
                                         </div>
-                                        {(
+                                        {(isAdmin &&
                                             <div className="flex items-center gap-2">
                                                 <Badge
                                                     className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
