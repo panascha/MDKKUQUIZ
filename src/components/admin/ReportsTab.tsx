@@ -61,16 +61,24 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                         <h4 className="font-medium text-gray-700">Original Content</h4>
                                         {report.type === 'quiz' ? (
                                             <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                                                <p className="font-medium">Question: {report.originalQuiz?.question}</p>
-                                                <p>Answer: {report.originalQuiz?.correctAnswer}</p>
-                                                <p>Category: {report.originalQuiz?.category?.category}</p>
                                                 <p>Subject: {report.originalQuiz?.subject?.name}</p>
-                                                {report.originalQuiz?.choice && report.originalQuiz.choice.length > 0 && (
+                                                <p>Category: {report.originalQuiz?.category?.category}</p>
+                                                <br />
+                                                <p className="font-medium">Question: {report.originalQuiz?.question}</p>
+                                                <p className=''>Answer: {report.originalQuiz?.correctAnswer.map((answer, index) => (
+                                                    <li key={index}>
+                                                        {answer}
+                                                    </li>
+                                                ))}
+                                                </p>
+
+                                                    {
+                                                        report.originalQuiz?.choice && report.originalQuiz.choice.length > 0 && (
                                                     <div className="mt-2">
                                                         <p className="font-medium mb-1">Choices:</p>
                                                         <ul className="list-disc pl-5 space-y-1">
                                                             {report.originalQuiz.choice.map((choice, index) => (
-                                                                <li key={index} className="text-sm">
+                                                                <li key={index} className={`text-sm ${report.originalQuiz.correctAnswer.includes(choice) ? 'bg-green-100' : ''}`}>
                                                                     {String.fromCharCode(65 + index)}. {choice}
                                                                 </li>
                                                             ))}
@@ -80,7 +88,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                 {report.originalQuiz?.img && report.originalQuiz.img.length > 0 && (
                                                     <div className="mt-2">
                                                         <p className="font-medium mb-1">Images:</p>
-                                                        <div className="grid grid-cols-2 gap-2">
+                                                        <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
                                                             {report.originalQuiz.img.map((img, index) => (
                                                                 <div key={index} className="relative aspect-square">
                                                                     <ImageGallery
@@ -94,10 +102,17 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                             </div>
                                         ) : (
                                             <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                                                <p className="font-medium">Keyword: {report.originalKeyword?.name}</p>
-                                                <p>Category: {report.originalKeyword?.category?.category}</p>
                                                 <p>Subject: {report.originalKeyword?.subject?.name}</p>
-                                                <p>Keywords: {report.originalKeyword?.keywords?.join(', ')}</p>
+                                                <p>Category: {report.originalKeyword?.category?.category}</p>
+                                                <br />
+                                                <p className="font-medium">Keyword: {report.originalKeyword?.name}</p>
+                                                <p className="font-medium">Keywords:</p>
+                                                <ul className="list-disc pl-5 space-y-1">
+                                                    {report.originalKeyword?.keywords?.map((keyword, index) => (
+                                                        <li key={index}>{keyword}</li>
+                                                    ))}
+                                                </ul>
+
                                             </div>
                                         )}
                                     </div>
@@ -105,27 +120,50 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                     <div className="space-y-2">
                                         <h4 className="font-medium text-gray-700">Suggested Changes</h4>
                                         {report.type === 'quiz' ? (
-                                            <div className="bg-emerald-50 p-3 rounded-lg space-y-2">
-                                                <p className="font-medium">Question: {report.suggestedChanges?.question}</p>
-                                                <p>Answer: {report.suggestedChanges?.correctAnswer}</p>
-                                                <p>Category: {report.suggestedChanges?.category?.category}</p>
+                                            <div className="bg-yellow-50 p-3 rounded-lg space-y-2">
                                                 <p>Subject: {report.suggestedChanges?.subject?.name}</p>
-                                                {report.suggestedChanges?.choice && report.suggestedChanges.choice.length > 0 && (
-                                                    <div className="mt-2">
-                                                        <p className="font-medium mb-1">Choices:</p>
-                                                        <ul className="list-disc pl-5 space-y-1">
-                                                            {report.suggestedChanges.choice.map((choice, index) => (
-                                                                <li key={index} className="text-sm">
-                                                                    {String.fromCharCode(65 + index)}. {choice}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
+                                                <p>Category: {report.suggestedChanges?.category?.category}</p>
+                                                <br />
+                                                <p className="font-medium">Question: {report.suggestedChanges?.question}
+                                                    {report.suggestedChanges?.question !== report.originalQuiz?.question && (
+                                                        <span className="text-red-500 ml-1"> (Modified)</span>
+                                                    )}
+                                                </p>
+                                                <p className=''>Answer: {report.suggestedChanges?.correctAnswer.map((answer, index) => {
+                                                    let modified = false;
+                                                    if (report.originalQuiz?.correctAnswer && report.originalQuiz?.correctAnswer[index] !== answer) {
+                                                        modified = true;
+                                                    }
+                                                    return (
+                                                        <li key={index}>
+                                                                        {answer}
+                                                                        {modified && (
+                                                                            <span className="text-red-500 ml-1"> (Modified)</span>
+                                                                        )}
+                                                                    </li>
+                                                    );
+                                                })}
+                                                </p>
+                                                {
+                                                    report.suggestedChanges?.choice && report.suggestedChanges.choice.length > 0 && (
+                                                        <div className="mt-2">
+                                                            <p className="font-medium mb-1">Choices:</p>
+                                                            <ul className="list-disc pl-5 space-y-1">
+                                                                {report.suggestedChanges.choice.map((choice, index) => (
+                                                                    <li key={index} className={`text-sm ${report.suggestedChanges.correctAnswer.includes(choice) ? 'bg-green-100' : ''}`}>
+                                                                        {String.fromCharCode(65 + index)}. {choice}
+                                                                        {report.originalQuiz?.choice && report.originalQuiz.choice[index] !== choice && (
+                                                                            <span className="text-red-500 ml-1"> (Modified)</span>
+                                                                        )}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
                                                 {report.suggestedChanges?.img && report.suggestedChanges.img.length > 0 && (
                                                     <div className="mt-2">
                                                         <p className="font-medium mb-1">Images:</p>
-                                                        <div className="grid grid-cols-2 gap-2">
+                                                        <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
                                                             {report.suggestedChanges.img.map((img, index) => (
                                                                 <div key={index} className="relative aspect-square">
                                                                     <ImageGallery
@@ -139,10 +177,31 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                             </div>
                                         ) : (
                                             <div className="bg-emerald-50 p-3 rounded-lg space-y-2">
-                                                <p className="font-medium">Keyword: {report.suggestedChangesKeyword?.name}</p>
-                                                <p>Category: {report.suggestedChangesKeyword?.category?.category}</p>
                                                 <p>Subject: {report.suggestedChangesKeyword?.subject?.name}</p>
-                                                <p>Keywords: {report.suggestedChangesKeyword?.keywords?.join(', ')}</p>
+                                                    <p>Category: {report.suggestedChangesKeyword?.category?.category}</p>
+                                                <br />
+                                                    <p className="font-medium">Keyword: {report.suggestedChangesKeyword?.name}
+                                                        {report.suggestedChangesKeyword?.name !== report.originalKeyword?.name && (
+                                                        <span className="text-red-500 ml-1"> (Modified)</span>
+                                                    )}
+                                                </p>
+                                                <p className="font-medium">Keywords:</p>
+                                                <ul className="list-disc pl-5 space-y-1">
+                                                    {report.suggestedChangesKeyword?.keywords?.map((keyword, index) => {
+                                                        let modified = false;
+                                                        if (report.originalKeyword?.keywords && report.originalKeyword?.keywords[index] !== keyword) {
+                                                            modified = true;
+                                                        }
+                                                        return (
+                                                            <li key={index}>
+                                                                {keyword}
+                                                                {modified && (
+                                                                    <span className="text-red-500 ml-1"> (Modified)</span>
+                                                                )}
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
                                             </div>
                                         )}
                                     </div>

@@ -75,17 +75,29 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onApprove, onReject })
                                         </div>
                                     </div>
                                 )}
+                                
+                                {/* Question */}
+                                <div>
+                                    <h4 className="text-sm font-medium text-gray-700 mb-2">Question:</h4>
+                                    <p className="text-gray-800">{quiz.question}</p>
+                                </div>
 
                                 {/* Choices */}
                                 <div>
                                     <h4 className="text-sm font-medium text-gray-700 mb-2">Choices:</h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        {quiz.choice.map((choice, index) => (
-                                            <div key={index} className="p-2 bg-gray-50 rounded-md">
-                                                <span className="font-medium text-gray-600">Option {index + 1}:</span> {choice}
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <ul className="list-none pl-0">
+                                        {quiz.choice.map((choice, index) => {
+                                            const isCorrect = quiz.correctAnswer.includes(choice);
+                                            return (
+                                                <li 
+                                                    key={index} 
+                                                    className={`p-2 rounded-md mb-1 ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-gray-50'}`}
+                                                >
+                                                    <span className="font-medium text-gray-600"> {index + 1}:</span> {choice}
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
                                 </div>
 
                                 {/* Correct Answers */}

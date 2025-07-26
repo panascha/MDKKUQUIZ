@@ -15,6 +15,18 @@ const ReportDetailDropdown: React.FC<ReportDetailDropdownProps> = ({ report, ope
       <h4 className="font-bold text-base mb-2 text-gray-900 border-b pb-1">{title}</h4>
       <div className="grid grid-cols-1 gap-x-8 gap-y-2">
         <div><span className="font-semibold">Question:</span> {quiz?.question}</div>
+        {['written', 'both'].includes(quiz?.type) && (
+            <div>
+            <span className="font-semibold">Choices:</span>
+            <ul className="list-disc list-inside">
+              {quiz?.choice?.map((choice: string, index: number) => (
+              <li key={index}>{choice}</li>
+              ))}
+            </ul>
+            </div>
+
+        )}
+        <div><span className="font-semibold">Answer:</span> {quiz?.correctAnswer?.join(', ')}</div>
         <div><span className="font-semibold">Subject:</span> {quiz?.subject?.name}</div>
         <div><span className="font-semibold">Category:</span> {quiz?.category?.category}</div>
         <div><span className="font-semibold">Status:</span> {quiz?.status}</div>
@@ -36,7 +48,15 @@ const ReportDetailDropdown: React.FC<ReportDetailDropdownProps> = ({ report, ope
         <div><span className="font-semibold">Subject:</span> {keyword?.subject?.name}</div>
         <div><span className="font-semibold">Category:</span> {keyword?.category?.category}</div>
         <div><span className="font-semibold">Status:</span> {keyword?.status}</div>
-        <div><span className="font-semibold">Keywords:</span> {keyword?.keywords?.join(', ')}</div>
+        <div>
+          <span className="font-semibold">Keywords:</span>
+          <ul className="list-disc list-inside">
+            {keyword?.keywords?.map((keyword: string, index: number) => (
+              <li key={index}>{keyword}</li>
+            ))}
+          </ul>
+        </div>
+
       </div>
     </div>
   );
