@@ -25,7 +25,7 @@ interface AddQuizModalProps {
 }
 
 function filterKeywords(keywords: string[], value: string) {
-  return keywords.filter(k => k.toLowerCase().includes(value.toLowerCase())).slice(0, 10);
+  return keywords.filter(k => k.toLowerCase().includes(value.toLowerCase()));
 }
 
 const AddQuizModal: React.FC<AddQuizModalProps> = ({
@@ -59,9 +59,9 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
 
     const [dropdown, setDropdown] = useState<{[key: string]: boolean}>({});
     const keywordOptions = formData.category
-      ? getKeyword?.data
-          .filter((kw: Keyword) => kw.category && kw.category._id === formData.category)
-          .flatMap((kw: Keyword) => kw.keywords)
+      ? Array.from(new Set(getKeyword?.data
+        .filter((kw: Keyword) => kw.category && kw.category._id === formData.category)
+        .flatMap((kw: Keyword) => kw.keywords) as string[]))
       : [];
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -236,21 +236,15 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     }
   };
 
-  const usedCorrectAnswers = new Set(
-    getQuestionBySubjectandCategory.data?.flatMap((quiz: Quiz) => quiz.correctAnswer) || []
-  );
-  const UniqueKeyword = new Set(keywordOptions);
-  console.log('Used Correct Answers:', usedCorrectAnswers);
+const usedCorrectAnswers = new Set(
+  getQuestionBySubjectandCategory.data
+    ?.filter((quiz: Quiz) => quiz.status === 'approved')
+    .flatMap((quiz: Quiz) => quiz.correctAnswer) || []
+);
 
-    const unusedKeywords: string[] = [];
-  for (const keyword of UniqueKeyword) {
-    if (!usedCorrectAnswers.has(keyword)) {
-      unusedKeywords.push(keyword as string);
-      if (unusedKeywords.length >= 10) {
-        break;
-      }
-    }
-  }
+const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
+  .filter(keyword => !usedCorrectAnswers.has(keyword))
+  .slice(0, 10);
 
   return (
     <Dialog

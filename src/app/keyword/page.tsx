@@ -49,23 +49,23 @@ const KeywordPage = () => {
 
 
 const keywordStatuses = useMemo(() => {
-    // Return early with an empty object if data isn't ready.
     if (!quizzes?.length) {
         return {};
     }
-    console.log(quizzes.map(q => q.correctAnswer));
     const quizKeywordMap = new Map<string, 'isuse' | 'pending'>();
+    const uniqueQuizzes = Array.from(new Set(quizzes.map(quiz => quiz._id))).map(_id => {
+        return quizzes.find(quiz => quiz._id === _id) as typeof quizzes[0];
+    });
+    console.log('Unique quizzes:', uniqueQuizzes.map(q => q.correctAnswer));
     
-    for (const quiz of quizzes) {
+    for (const quiz of uniqueQuizzes) {
         const status = quiz.status;
         if (status === 'approved') {
             for (const kw of quiz.correctAnswer) {
-                // An 'approved' status always takes precedence.
                 quizKeywordMap.set(kw, 'isuse');
             }
-        } else if (status === 'pending' || status === 'reported') {
+        } else if (status === 'pending') {
             for (const kw of quiz.correctAnswer) {
-                // Only set 'pending' if it's not already 'isuse'.
                 if (!quizKeywordMap.has(kw)) {
                     quizKeywordMap.set(kw, 'pending');
                 }
@@ -102,16 +102,17 @@ const keywordStatuses = useMemo(() => {
         let roleFilteredKeywords = keywords;
         if (!isAdmin && !isSAdmin) {
             roleFilteredKeywords = keywords.filter((k: Keyword) => k.status === "approved");
-        } else if (isAdmin && !isSAdmin) {
+        }
+        else if (isAdmin && !isSAdmin) {
             roleFilteredKeywords = keywords.filter((k: Keyword) => k.status !== "reported");
         }
 
         const latestKeywords = Object.values(
             roleFilteredKeywords.reduce((acc: { [key: string]: Keyword }, keyword: Keyword) => {
-                if (!acc[keyword.name] || new Date(keyword.updatedAt) > new Date(acc[keyword.name].updatedAt)) {
-                    acc[keyword.name] = keyword;
-                }
-                return acc;
+            if (!acc[keyword.name] || new Date(keyword.updatedAt) > new Date(acc[keyword.name].updatedAt)) {
+                acc[keyword.name] = keyword;
+            }
+            return acc;
             }, {})
         );
 
@@ -371,7 +372,7 @@ const keywordStatuses = useMemo(() => {
                                                 {keyword.subject.name}
                                             </p>
                                         </div>
-                                        {isAdmin && (
+                                        {(
                                             <div className="flex items-center gap-2">
                                                 <Badge
                                                     className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
