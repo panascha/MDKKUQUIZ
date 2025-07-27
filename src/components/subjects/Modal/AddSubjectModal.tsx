@@ -154,7 +154,7 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
           {/* Image Upload */}
           <div>
             <label htmlFor="image" className="mb-1 block text-sm font-semibold">
-              Upload Image (Optional)
+              Upload Image
             </label>
             <input
               type="file"
