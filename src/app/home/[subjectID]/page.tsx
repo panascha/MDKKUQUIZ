@@ -26,14 +26,15 @@ export default function SubjectDetailPage() {
     const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
 
     const { data: userStat } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
-    const getKeyword = useGetKeyword();
-    const { data: quizzes } = useGetQuizzes({
-        subjectID: subjectID
-    });
+    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 4;
+    // const getKeyword = useGetKeyword();
+    // const { data: quizzes } = useGetQuizzes({
+    //     subjectID: subjectID
+    // });
 
-    const allKeywordsUsed = getKeyword.data?.filter((keyword: any) => keyword._id === subjectID).flatMap((keyword: any) => keyword.keywords);
-    console.log("All keywords used:", allKeywordsUsed);
-    const canTakeQuiz = isAdmin || allKeywordsUsed || (userStat?.quizCount ?? 0) >= 2;
+    // const allKeywordsUsed = getKeyword.data?.filter((keyword: any) => keyword._id === subjectID).flatMap((keyword: any) => keyword.keywords);
+    // console.log("All keywords used:", allKeywordsUsed);
+    // const canTakeQuiz = isAdmin || allKeywordsUsed || (userStat?.quizCount ?? 0) >= 2;
 
     const { data: subject, isLoading, error } = useQuery({
         queryKey: ["subject", subjectID],
