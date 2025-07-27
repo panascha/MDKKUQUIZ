@@ -25,7 +25,7 @@ export default function Problem() {
     const isAdmin = user?.role === Role_type.ADMIN || isSAdmin;
     const subjectID = params.subjectID as string;
     const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
-    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 5;
+    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 4;
 
     const answerMode = searchParams.get('answerMode');
     const questionCount = Number(searchParams.get('questionCount'));
@@ -282,7 +282,7 @@ export default function Problem() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
                 <div className="text-3xl font-bold text-gray-700 mb-4">Access Restricted</div>
-                <div className="text-lg text-gray-500 mb-6 max-w-md">You must create at least <span className="font-semibold text-blue-600">5 quizzes</span> to access the quiz of this subject. Start contributing quizzes to unlock this section!</div>
+                <div className="text-lg text-gray-500 mb-6 max-w-md">You must create at least <span className="font-semibold text-blue-600">4 quizzes</span> to access the quiz of this subject. Start contributing quizzes to unlock this section!</div>
                 <button onClick={() => router.push('/home')} className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition">Go to Home</button>
             </div>
         );
