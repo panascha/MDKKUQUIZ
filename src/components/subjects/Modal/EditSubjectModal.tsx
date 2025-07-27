@@ -116,7 +116,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
               onChange={handleInputChange}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
             />
-            {formData.image instanceof File ? (
+            {formData.image ? (
               <div className="mt-4 relative group">
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
                   <Image
