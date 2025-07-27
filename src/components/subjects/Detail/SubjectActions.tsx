@@ -26,7 +26,7 @@ export const SubjectActions = ({ subjectId, canTakeQuiz = true, isSAdmin = false
             </Link>
                 {!isSAdmin && !canTakeQuiz && (
                     <span className="absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-gray-800 text-white text-xs font-semibold rounded-lg px-3 py-2 shadow-xl whitespace-nowrap z-20 border border-gray-300 animate-fade-in">
-                        You must create at least 2 quizzes to take a quiz
+                        You must create at least 4 quizzes to take a quiz
                     </span>
                 )}
             </div>
