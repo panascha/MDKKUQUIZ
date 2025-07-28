@@ -51,7 +51,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const createQuizMutation = useCreateQuiz();
     const { user } = useUser();
-    const getKeyword = useGetKeyword();
+    const getKeyword = useGetKeyword({ status: 'approved' });
     const getQuestionBySubjectandCategory = useGetQuizzes({
       subjectID: formData.subject,
       categoryID: formData.category
