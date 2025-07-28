@@ -181,7 +181,7 @@ const Page = () => {
       email: pendingRegister.email,
       password: pendingRegister.password,
       year: pendingRegister.year,
-      role: "user",
+      role: "admin",
       ...questionAnswers, // Optionally send answers to backend if supported
     });
 
@@ -231,9 +231,9 @@ const Page = () => {
             Login
           </TabsTrigger>
           {/* TODO: for trial user for now */}
-          {/* <TabsTrigger value="register" className="transition-colors duration-300 ease-in-out cursor-pointer">
+          <TabsTrigger value="register" className="transition-colors duration-300 ease-in-out cursor-pointer">
             Register
-          </TabsTrigger> */}
+          </TabsTrigger>
         </TabsList>
 
         {/* Login Form */}
