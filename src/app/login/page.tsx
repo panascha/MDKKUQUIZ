@@ -169,7 +169,7 @@ const Page = () => {
       password: newPassword,
       year,
     });
-    setShowQuestionsModal(true);
+    // setShowQuestionsModal(true);
   };
 
   // Backend registration after modal submit
@@ -387,9 +387,9 @@ const Page = () => {
                   Register
                 </ButtonWithLogo>
                 {/* Terms of Service Modal (controlled) */}
-                {showTerms && (
+                {/* {showTerms && (
                   <TermOfServise open={showTerms} setOpen={setShowTerms} onAccept={() => setTermsAccepted(true)} />
-                )}
+                )} */}
               </CardFooter>
             </form>
           </Card>
