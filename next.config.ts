@@ -5,7 +5,9 @@ const nextConfig: NextConfig = {
     domains: ['localhost'],
     remotePatterns: [
       { protocol: 'https', hostname: 'medquizbackend-101913825665.asia-southeast1.run.app' },
+      { protocol: 'https', hostname: 'medquizbackend-production-04fe.up.railway.app' },
       { protocol: 'https', hostname: 'media1.tenor.com' },
+
     ],
   },
 };
