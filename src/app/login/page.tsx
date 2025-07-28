@@ -61,6 +61,8 @@ const Page = () => {
   const [registerErrors, setRegisterErrors] = useState<{ [key: string]: string }>({});
 
   const [error, setError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const [activeTab, setActiveTab] = useState('login');
 
@@ -73,6 +75,7 @@ const Page = () => {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setIsLoggingIn(true);
 
     const toastId = toast.loading("Logging in...");
 
@@ -93,6 +96,8 @@ const Page = () => {
     } catch {
       toast.error("Login failed. Please try again.", { id: toastId });
       setError("An unexpected error occurred.");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -147,19 +152,24 @@ const Page = () => {
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setIsRegistering(true);
+    
     const errors = validateRegisterForm();
     setRegisterErrors(errors);
     if (Object.keys(errors).length > 0) {
+      setIsRegistering(false);
       return;
     }
     if (!termsAccepted) {
       setShowTerms(true);
+      setIsRegistering(false);
       return;
     }
 
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match.");
       toast.error("Passwords do not match.");
+      setIsRegistering(false);
       return;
     }
 
@@ -169,12 +179,11 @@ const Page = () => {
       password: newPassword,
       year,
     });
-    // setShowQuestionsModal(true);
-  };
 
-  // Backend registration after modal submit
-  const handleModalSubmit = async () => {
-    if (!pendingRegister) return;
+    if (!pendingRegister) {
+      setIsRegistering(false);
+      return;
+    }
     setError(null);
     const registerPromise = axios.post(BackendRoutes.REGISTER, {
       name: pendingRegister.name,
@@ -216,8 +225,57 @@ const Page = () => {
     } finally {
       setPendingRegister(null);
       setShowQuestionsModal(false);
+      setIsRegistering(false);
     }
+    // setShowQuestionsModal(true);
   };
+
+  // Backend registration after modal submit
+  // const handleModalSubmit = async () => {
+  //   if (!pendingRegister) return;
+  //   setError(null);
+  //   const registerPromise = axios.post(BackendRoutes.REGISTER, {
+  //     name: pendingRegister.name,
+  //     email: pendingRegister.email,
+  //     password: pendingRegister.password,
+  //     year: pendingRegister.year,
+  //     role: "admin",
+  //     ...questionAnswers, // Optionally send answers to backend if supported
+  //   });
+
+  //   toast.promise(registerPromise, {
+  //     loading: "Creating your account...",
+  //     success: "Account created successfully!",
+  //     error: "Registration failed. Please try again.",
+  //   });
+
+  //   try {
+  //     await registerPromise;
+  //     const loginPromise = signIn("credentials", {
+  //       redirect: false,
+  //       email: pendingRegister.email,
+  //       password: pendingRegister.password,
+  //     });
+  //     toast.promise(loginPromise, {
+  //       loading: "Logging you in...",
+  //       success: "Logged in successfully!",
+  //       error: "Login failed after registration.",
+  //     });
+  //     const result = await loginPromise;
+  //     if (result?.error) {
+  //       setError(result.error);
+  //     } else {
+  //       router.push(FrontendRoutes.HOMEPAGE);
+  //     }
+  //   } catch (error) {
+  //     axios.isAxiosError(error)
+  //       ? setError(error.response?.data.message || "Registration failed.")
+  //       : setError("An unexpected error occurred.");
+  //   } finally {
+  //     setPendingRegister(null);
+  //     setShowQuestionsModal(false);
+  //   }
+  // };
 
   return (
     <main className="mx-auto pt-20 my-10 flex w-full max-w-screen-xl items-center justify-center justify-self-center px-8">
@@ -280,8 +338,8 @@ const Page = () => {
                 {/* <InteractiveHoverButton type="submit">
                   Log in
                   </InteractiveHoverButton> */}
-                <ButtonWithLogo type="submit"> 
-                    Login
+                <ButtonWithLogo type="submit" disabled={isLoggingIn}> 
+                    {isLoggingIn ? "Logging in..." : "Login"}
                   </ButtonWithLogo>
                   
                   {/* TO DO: DO when SSO KKU come */}
@@ -383,8 +441,8 @@ const Page = () => {
                 {error && <p className="text-red-500">{error}</p>}
               </CardContent>
               <CardFooter className="py-3 flex flex-col items-center gap-3">
-                <ButtonWithLogo type="submit"> 
-                  Register
+                <ButtonWithLogo type="submit" disabled={isRegistering}> 
+                  {isRegistering ? "Registering..." : "Register"}
                 </ButtonWithLogo>
                 {/* Terms of Service Modal (controlled) */}
                 {/* {showTerms && (
@@ -397,13 +455,13 @@ const Page = () => {
         </Tabs>
       </Card>
 
-      <RegistrationQuestionsModal
+      {/* <RegistrationQuestionsModal
         open={showQuestionsModal}
         setOpen={setShowQuestionsModal}
         answers={questionAnswers}
         setAnswers={setQuestionAnswers}
         onSubmit={handleModalSubmit}
-      />
+      /> */}
     </main>
   );
 };
