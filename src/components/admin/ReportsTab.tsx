@@ -13,6 +13,36 @@ interface ReportsTabProps {
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss }) => {
+  // Helper to compute diff items
+  const getDiffItems = (original: string[], suggested: string[]) => {
+    const origSet = new Set(original);
+    const suggSet = new Set(suggested);
+    const items: { text: string; status: 'added' | 'removed' | 'unchanged' }[] = [];
+    suggested.forEach(text => items.push({ text, status: origSet.has(text) ? 'unchanged' : 'added' }));
+    original.forEach(text => { if (!suggSet.has(text)) items.push({ text, status: 'removed' }); });
+    return items;
+  };
+  // Reusable diff renderer
+  const renderDiff = (original: string[] = [], suggested: string[] = [], isChoice = false) => {
+    const items = getDiffItems(original, suggested);
+    return (
+      <ul className="list-disc pl-5 space-y-1">
+        {items.map((item, idx) => {
+          const cls = ['text-sm', isChoice ? 'p-1 rounded' : ''];
+          if (item.status === 'added') cls.push('bg-green-100');
+          if (item.status === 'removed') cls.push('bg-red-100', 'line-through');
+          return (
+            <li key={idx} className={cls.filter(Boolean).join(' ')}>
+              {item.text}
+              {item.status === 'added' && <span className="text-green-700 font-semibold ml-2">(Added)</span>}
+              {item.status === 'removed' && <span className="text-red-700 font-semibold ml-2">(Removed)</span>}
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
     const [expandedReport, setExpandedReport] = useState<string | null>(null);
     const [reason, setReason] = useState<{[id: string]: string}>({});
 
@@ -27,7 +57,6 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
             </div>
         );
     }
-    
 
     return (
         <div className="space-y-4 sm:space-y-6">
@@ -74,20 +103,20 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                         </li>
                                                     ))}
                                                 </ul>
-
-                                                    {
-                                                        report.originalQuiz?.choice && report.originalQuiz.choice.length > 0 && (
-                                                    <div className="mt-2">
-                                                        <p className="font-medium mb-1">Choices:</p>
-                                                        <ul className="list-disc pl-5 space-y-1">
-                                                            {report.originalQuiz.choice.map((choice, index) => (
-                                                                <li key={index} className={`text-sm ${report.originalQuiz?.correctAnswer?.includes(choice) ? 'bg-green-100' : ''}`}>
-                                                                    {String.fromCharCode(65 + index)}. {choice}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
+                                                {
+                                                    report.originalQuiz?.choice && report.originalQuiz.choice.length > 0 && (
+                                                        <div className="mt-2">
+                                                            <p className="font-medium mb-1">Choices:</p>
+                                                            <ul className="list-disc pl-5 space-y-1">
+                                                                {report.originalQuiz.choice.map((choice, index) => (
+                                                                    <li key={index} className={`text-sm ${report.originalQuiz?.correctAnswer?.includes(choice) ? 'bg-green-100' : ''}`}>
+                                                                        {String.fromCharCode(65 + index)}. {choice}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )   
+                                                }
                                                 {report.originalQuiz?.img && report.originalQuiz.img.length > 0 && (
                                                     <div className="mt-2">
                                                         <p className="font-medium mb-1">Images:</p>
@@ -134,111 +163,15 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                 </p>
                                                 <p className="font-medium mb-1">Answer:</p>
 
-    {(() => {
-        const originalAnswers = report.originalQuiz?.correctAnswer || [];
-        const suggestedAnswers = report.suggestedChanges?.correctAnswer || [];
-
-        const originalAnswerSet = new Set(originalAnswers);
-        const suggestedAnswerSet = new Set(suggestedAnswers);
-
-        return (
-            <ul className="list-disc pl-5 space-y-1">
-                {/* Render suggested answers (marking new ones) */}
-                {suggestedAnswers.map((answer, index) => {
-                    // Check if this answer is new (wasn't in the original list)
-                    const isAdded = !originalAnswerSet.has(answer);
-
-                    return (
-                        <li 
-                            key={`suggested-${index}`} 
-                            className={`text-sm ${isAdded ? 'bg-green-100' : ''}`}
-                        >
-                            {answer}
-                            {isAdded && <span className="text-green-700 font-semibold ml-2">(Added)</span>}
-                        </li>
-                    );
-                })}
-
-                {/* Render original answers that were removed */}
-                {originalAnswers.map((answer, index) => {
-                    const isRemoved = !suggestedAnswerSet.has(answer);
-
-                    if (isRemoved) {
-                        return (
-                            <li 
-                                key={`original-${index}`} 
-                                className="text-sm bg-red-100 line-through"
-                            >
-                                {answer}
-                                <span className="text-red-700 font-semibold ml-2">(Removed)</span>
-                            </li>
-                        );
-                    }
-                    return null; // Don't render anything if it wasn't removed
-                })}
-            </ul>
-        );
-    })()}
+                                                {renderDiff(report.originalQuiz?.correctAnswer || [], report.suggestedChanges?.correctAnswer || [])}
                                                 {
                                                     report.suggestedChanges?.choice && report.suggestedChanges.choice.length > 0 && (
                                                         <div className="mt-2">
                                                             <p className="font-medium mb-1">Choices:</p>
-    
-    {(() => {
-        const originalChoices = report.originalQuiz?.choice || [];
-        const suggestedChoices = report.suggestedChanges?.choice || [];
-        
-        const originalChoiceSet = new Set(originalChoices);
-        const suggestedChoiceSet = new Set(suggestedChoices);
-        
-        const correctAnswersSet = new Set(report.suggestedChanges?.correctAnswer || []);
-
-        return (
-            <ul className="list-disc pl-5 space-y-1">
-                {suggestedChoices.map((choice, index) => {
-                    // Determine the status of this choice
-                    const isCorrect = correctAnswersSet.has(choice);
-                    const isAdded = !originalChoiceSet.has(choice);
-
-                    // Build the className dynamically
-                    const classNames = ['text-sm', 'p-1', 'rounded'];
-                    if (isCorrect) {
-                        classNames.push('bg-green-100'); // Highlight for correct answers
-                    }
-                    if (isAdded) {
-                        classNames.push('border', 'border-blue-400'); // Border for newly added choices
-                    }
-                    
-                    return (
-                        <li key={`suggested-choice-${index}`} className={classNames.join(' ')}>
-                            {String.fromCharCode(65 + index)}. {choice}
-                            {isAdded && <span className="text-blue-700 font-semibold ml-2">(Added)</span>}
-                        </li>
-                    );
-                })}
-
-                {/* Loop 2: Identify and render any choices that were removed */}
-                {originalChoices.map((choice, index) => {
-                    const isRemoved = !suggestedChoiceSet.has(choice);
-                    
-                    if (isRemoved) {
-                        return (
-                            <li 
-                                key={`removed-choice-${index}`} 
-                                className="text-sm bg-red-100 p-1 rounded line-through"
-                            >
-                                {choice}
-                                <span className="text-red-700 font-semibold ml-2">(Removed)</span>
-                            </li>
-                        );
-                    }
-                    return null; // Don't render if it's not removed
-                })}
-            </ul>
-        );
-    })()}
+                                                            {renderDiff(report.originalQuiz?.choice || [], report.suggestedChanges?.choice || [], true)}
                                                         </div>
-                                                    )}
+                                                    )
+                                                }
                                                 {report.suggestedChanges?.img && report.suggestedChanges.img.length > 0 && (
                                                     <div className="mt-2">
                                                         <p className="font-medium mb-1">Images:</p>
@@ -265,52 +198,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                                     )}
                                                 </p>
                                                 <p className="font-medium mb-1">Keywords:</p>
-
-    {(() => {
-        const originalKeywords = report.originalKeyword?.keywords || [];
-        const suggestedKeywords = report.suggestedChangesKeyword?.keywords || [];
-
-        // Create Sets for fast, order-independent lookups
-        const originalKeywordSet = new Set(originalKeywords);
-        const suggestedKeywordSet = new Set(suggestedKeywords);
-
-        // --- Step 2: Render the lists to show the differences ---
-        return (
-            <ul className="list-disc pl-5 space-y-1">
-                {/* Loop 1: Render the suggested keywords, highlighting new ones */}
-                {suggestedKeywords.map((keyword, index) => {
-                    const isAdded = !originalKeywordSet.has(keyword);
-
-                    return (
-                        <li 
-                            key={`suggested-kw-${index}`} 
-                            className={`text-sm p-1 rounded ${isAdded ? 'bg-green-100' : ''}`}
-                        >
-                            {keyword}
-                            {isAdded && <span className="text-green-700 font-semibold ml-2">(Added)</span>}
-                        </li>
-                    );
-                })}
-
-                {originalKeywords.map((keyword, index) => {
-                    const isRemoved = !suggestedKeywordSet.has(keyword);
-
-                    if (isRemoved) {
-                        return (
-                            <li 
-                                key={`removed-kw-${index}`} 
-                                className="text-sm bg-red-100 p-1 rounded line-through"
-                            >
-                                {keyword}
-                                <span className="text-red-700 font-semibold ml-2">(Removed)</span>
-                            </li>
-                        );
-                    }
-                    return null; // Essential: Don't render anything if it wasn't removed
-                })}
-            </ul>
-        );
-    })()}
+                                                {renderDiff(report.originalKeyword?.keywords || [], report.suggestedChangesKeyword?.keywords || [])}
                                             </div>
                                         )}
                                     </div>
@@ -358,4 +246,4 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
     );
 };
 
-export default ReportsTab; 
+export default ReportsTab;
