@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react';
 import { useUser } from '../../hooks/User/useUser';
 import Image from 'next/image';
 import { BACKEND_URL } from '../../config/apiRoutes';
+import { uploadImageToBackend } from '../../lib/utils';
 
 interface QuizFormData {
   user: string;
@@ -172,8 +173,18 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
       return toast.error("there is no user ID");
     }
     try {
+      // Prepare image URLs: start with original and always append new upload if provided
+      const imgUrls: string[] = originalQuiz.img ? [...originalQuiz.img] : [];
+      if (newImage && session.data?.user?.token) {
+        const url = await uploadImageToBackend(newImage, session.data.user.token);
+        imgUrls.push(url);
+      }
+
       // Create the suggested quiz first
-      const quizResult = await createQuizMutation.mutateAsync(formData);
+      const quizResult = await createQuizMutation.mutateAsync({
+        ...formData,
+        img: imgUrls // Use the prepared image URLs
+      });
       toast.success("create quiz success");
       // Create the report with the new quiz ID
       const newReportData: Omit<Report, '_id' | 'createdAt' | 'updatedAt'> = {
