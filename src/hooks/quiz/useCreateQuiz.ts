@@ -23,11 +23,12 @@ export const useCreateQuiz = () => {
         mutationFn: async (quizData: CreateQuizData) => {
             if (!session?.data?.user?.token) throw new Error("Authentication required");
 
-            let imgUrls: string[] = [];
+            const imgUrls: string[] = quizData.img ? [...quizData.img] : [];
             if (quizData.images && quizData.images.length > 0) {
-                imgUrls = await Promise.all(
+                const uploaded = await Promise.all(
                     quizData.images.map(file => uploadImageToBackend(file, session.data.user.token!))
                 );
+                imgUrls.push(...uploaded);
             }
 
             const payload = {
