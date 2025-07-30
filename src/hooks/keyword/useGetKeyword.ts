@@ -5,13 +5,14 @@ import { BackendRoutes } from '../../config/apiRoutes';
 
 interface UseGetKeywordOptions {
     status?: 'pending' | 'approved' | 'rejected' | 'reported';
+    isGlobal?: boolean;
 }
 
 export const useGetKeyword = (options?: UseGetKeywordOptions) => {
     const { data: session } = useSession();
 
     return useQuery({
-        queryKey: ['keywords', options?.status],
+        queryKey: ['keywords', options?.status, options?.isGlobal],
         queryFn: async () => {
             if (!session) throw new Error('No session');
                 const response = await axios.get(BackendRoutes.KEYWORD, {
@@ -19,7 +20,8 @@ export const useGetKeyword = (options?: UseGetKeywordOptions) => {
                         Authorization: `Bearer ${session.user.token}`,
                     },
                 params: {
-                    status: options?.status
+                    status: options?.status,
+                    isGlobal: options?.isGlobal
                 }
             });
             return response.data.data;

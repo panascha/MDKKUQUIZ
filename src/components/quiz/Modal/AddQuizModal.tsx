@@ -48,23 +48,31 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
   });
 
     const [error, setError] = useState<string | null>(null);
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
-    const createQuizMutation = useCreateQuiz();
-    const { user } = useUser();
-    const getKeyword = useGetKeyword({ status: 'approved' });
-    const getQuestionBySubjectandCategory = useGetQuizzes({
-      subjectID: formData.subject,
-      categoryID: formData.category
-    });
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const createQuizMutation = useCreateQuiz();
+  const { user } = useUser();
+  const getKeyword = useGetKeyword({ status: 'approved' }); // Get approved keywords
+  const getGlobalKeyword = useGetKeyword({ isGlobal: true }); // Get global keywords
+  const getQuestionBySubjectandCategory = useGetQuizzes({
+    subjectID: formData.subject,
+    categoryID: formData.category
+  });
 
-    const [dropdown, setDropdown] = useState<{[key: string]: boolean}>({});
-    const keywordOptions = formData.category
-      ? Array.from(new Set(getKeyword?.data
-        .filter((kw: Keyword) => kw.category && kw.category._id === formData.category)
-        .flatMap((kw: Keyword) => kw.keywords) as string[]))
-      : [];
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const [dropdown, setDropdown] = useState<{[key: string]: boolean}>({});
+  
+  // Combine approved and global keywords
+  const allKeywords = [
+    ...(getKeyword?.data || []),
+    ...(getGlobalKeyword?.data || [])
+  ];
+  
+  const keywordOptions = formData.category
+    ? Array.from(new Set(allKeywords
+      .filter((kw: Keyword) => 
+        kw.isGlobal || (kw.category && kw.category._id === formData.category)
+      )
+      .flatMap((kw: Keyword) => kw.keywords) as string[]))
+    : [];    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'type') {
       setFormData(prev => ({
@@ -260,14 +268,14 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
         <DialogHeader>
           <DialogTitle>Add Quiz</DialogTitle>
           {/* Loading indicator for keywords/questions */}
-          {(getKeyword.isLoading || getQuestionBySubjectandCategory.isLoading) && (formData.subject && formData.category) && (
+          {(getKeyword.isLoading || getGlobalKeyword.isLoading || getQuestionBySubjectandCategory.isLoading) && (formData.subject && formData.category) && (
             <div className="flex items-center gap-2 text-blue-600 my-2">
               <LoaderIcon className="animate-spin w-5 h-5" />
               <span>Loading suggestions...</span>
             </div>
           )}
           {/* Show unused keywords only when not loading */}
-          {!(getKeyword.isLoading || getQuestionBySubjectandCategory.isLoading) && unusedKeywords.length > 0 && (
+          {!(getKeyword.isLoading || getGlobalKeyword.isLoading || getQuestionBySubjectandCategory.isLoading) && unusedKeywords.length > 0 && (
             <div className="mb-4">
               <p className="text-sm text-gray-500 mb-2">
                 Here are some keywords that you can use as correct answers:
@@ -422,8 +430,10 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
           {/* Prepare keyword options for datalist */}
           {formData.category && (
             <datalist id="keyword-options">
-              {getKeyword?.data
-                .filter((kw: Keyword) => kw.category && kw.category._id === formData.category)
+              {allKeywords
+                .filter((kw: Keyword) => 
+                  kw.isGlobal || (kw.category && kw.category._id === formData.category)
+                )
                 .flatMap((kw: Keyword) => kw.keywords)
                 .map((keyword: string, idx: number) => (
                   <option value={keyword} key={idx} />

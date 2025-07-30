@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { CreateKeywordData, useCreateKeyword } from '../../hooks/keyword/useCreateKeyword';
 import { useUser } from '../../hooks/User/useUser';
 import toast from 'react-hot-toast';
+import { Role_type } from '../../config/role';
 
 interface AddKeywordModalProps {
   showModal: boolean;
@@ -32,11 +33,13 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
     category: '',
     keywords: [''],
     status: 'pending' as const,
+    isGlobal: false,
   });
 
   const [error, setError] = useState<string | null>(null);
   const createKeywordMutation = useCreateKeyword();
   const { user } = useUser();
+    const isSAdmin = user?.role === Role_type.SADMIN;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -68,6 +71,7 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
       category: '',
       keywords: [''],
       status: 'pending' as const,
+      isGlobal: false,
     });
     setError(null);
     setShowModal(false);
@@ -82,12 +86,12 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
       setError('Keyword name is required');
       return;
     }
-    if (!formData.subject) {
-      setError('Subject is required');
+    if (!formData.isGlobal && !formData.subject) {
+      setError('Subject is required for non-global keywords');
       return;
     }
-    if (!formData.category) {
-      setError('Category is required');
+    if (!formData.isGlobal && !formData.category) {
+      setError('Category is required for non-global keywords');
       return;
     }
     if (!formData.keywords.some(kw => kw.trim())) {
@@ -108,10 +112,13 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
       const keywordData: CreateKeywordData = {
         user: user._id,
         name: formData.name.trim(),
-        subject: formData.subject,
-        category: formData.category,
         keywords: filteredKeywords,
-        status: 'pending'
+        status: 'pending',
+        isGlobal: formData.isGlobal,
+        ...(formData.isGlobal ? {} : {
+          subject: formData.subject,
+          category: formData.category
+        })
       };
       
       await createKeywordMutation.mutateAsync(keywordData);
@@ -142,7 +149,28 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
           className="w-full space-y-4"
           onClick={(e) => e.stopPropagation()}
         >
+          {isSAdmin && (
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isGlobal"
+                checked={formData.isGlobal}
+                onChange={(e) => setFormData(prev => ({ 
+                  ...prev, 
+                  isGlobal: e.target.checked,
+                  subject: e.target.checked ? '' : prev.subject,
+                  category: e.target.checked ? '' : prev.category
+                }))}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="isGlobal" className="text-sm font-medium text-gray-700">
+                global keyword (available across all subjects and categories)
+              </label>
+            </div>
+          )}
+
           {/* Subject Selection */}
+          {!formData.isGlobal && (
           <div>
             <label className="mb-1 block text-sm font-semibold">Subject *</label>
             <DropdownMenu>
@@ -168,8 +196,10 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          )}
 
           {/* Category Selection */}
+          {!formData.isGlobal && (
           <div>
             <label className="mb-1 block text-sm font-semibold">Category *</label>
             <DropdownMenu>
@@ -204,6 +234,7 @@ const AddKeywordModal: React.FC<AddKeywordModalProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          )}
 
           {/* Keyword Name */}
           <div>
