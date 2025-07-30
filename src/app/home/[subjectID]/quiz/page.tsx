@@ -18,6 +18,7 @@ import { QuestionCountSelection } from "../../../../components/quiz/QuestionCoun
 import { useUser } from '../../../../hooks/User/useUser';
 import { useGetUserStatById } from '../../../../hooks/stats/useGetUserStatById';
 import { Role_type } from "../../../../config/role";
+import { BackButton } from "../../../../components/subjects/Detail/BackButton";
 
 export default function Quiz() {
     type QuizType = "chillquiz" | "realtest" | "custom";
@@ -177,6 +178,11 @@ export default function Quiz() {
     return (
         <ProtectedPage>
             <div className="min-h-screen w-full bg-gradient-to-br from-blue-100 via-white to-orange-100 flex items-center justify-center py-8 px-2 md:px-0">
+                {/* Glassmorphism Back Button Header */}
+                <div className="fixed top-20 left-4 z-50">
+                    <BackButton />
+                </div>
+                
                 <div className="w-full max-w-5xl p-4 sm:p-8 md:p-12 rounded-3xl mx-auto bg-white/80 shadow-2xl backdrop-blur-md border border-gray-200 animate-fade-in-up transition-all duration-500">
                     <Link href="/home" className="flex items-center gap-2 text-black hover:text-orange-800 transition duration-300 ease-in-out mb-8">
                         <h1 className="text-4xl md:text-5xl font-extrabold text-center w-full drop-shadow-lg tracking-tight animate-slide-down">

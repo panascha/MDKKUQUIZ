@@ -93,8 +93,8 @@ const QuestionDetail = () => {
                     {/* Back Button */}
                     <div className="mb-6">
                         <Link href={FrontendRoutes.QUESTION}>
-                            <button className="flex items-center gap-2 text-gray-600 hover:text-orange-500 transition-colors duration-200">
-                                <IoIosArrowBack className="text-xl" />
+                            <button className="group flex items-center gap-2 px-4 py-2.5 bg-gray-300/20 backdrop-blur-md border border-white/30 hover:bg-orange-400 hover:text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-out font-medium hover:scale-105 active:scale-95">
+                                <IoIosArrowBack className="text-xl group-hover:-translate-x-1 transition-transform duration-300" />
                                 <span>Back to Questions</span>
                             </button>
                         </Link>
