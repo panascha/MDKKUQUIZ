@@ -6,10 +6,11 @@ import { BackendRoutes } from "../../config/apiRoutes";
 export interface CreateKeywordData {
   user: string;
   name: string;
-  subject: string;
-  category: string;
+  subject?: string;
+  category?: string;
   keywords: Array<string>;
   status: 'pending' | 'approved' | 'rejected' | 'reported';
+  isGlobal?: boolean;
 }
 
 export const useCreateKeyword = () => {
