@@ -16,6 +16,7 @@ import ReportDetailDropdown from "./ReportDetailDropdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
 import { Trash2 } from 'lucide-react';
 import { useDeleteReport } from '../../hooks/report/useDeleteReport';
+import { BackButton } from "../subjects/Detail/BackButton";
 
 const ReportContainer = () => {
   const router = useRouter();
@@ -77,11 +78,7 @@ const ReportContainer = () => {
     <ProtectedPage>
       <div className="container mx-auto p-4 mt-20 flex flex-col items-center">
         <div className="absolute top-23 left-8 text-lg">
-          <Link href={FrontendRoutes.HOMEPAGE}>
-            <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white pr-2 py-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
-              <span className="flex items-center"><IoIosArrowBack className="text-xl" /> Back</span>
-            </button>
-          </Link>
+          <BackButton />
         </div>
         <h1 className="text-3xl font-bold text-center mb-4">Report List</h1>
         <div className="w-full max-w-5xl mb-4 flex justify-end">

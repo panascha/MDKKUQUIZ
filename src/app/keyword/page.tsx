@@ -21,6 +21,7 @@ import { Role_type } from '../../config/role';
 import { toast } from 'react-hot-toast';
 import { Badge } from '../../components/ui/Badge';
 import { useGetCategory } from "../../hooks/category/useGetCategory";
+import { BackButton } from '../../components/subjects/Detail/BackButton';
 
 const KeywordPage = () => {
     const router = useRouter();
@@ -272,11 +273,7 @@ const keywordStatuses = useMemo(() => {
         <ProtectedPage>
             <div className="container mx-auto p-4 mt-20 justify-center items-center flex flex-col">
                 <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
-                    <Link href={FrontendRoutes.HOMEPAGE}>
-                        <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white pr-2 py-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
-                            <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
-                        </button>
-                    </Link>
+                    <BackButton />
                 </div>
                 <div className='absolute top-22 md:top-25 right-4 md:right-15'>
                     <button 
