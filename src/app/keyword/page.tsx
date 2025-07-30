@@ -384,7 +384,7 @@ const keywordStatuses = useMemo(() => {
                         <p className=" text-lg text-gray-600 py-2">
                             Total Keywords: <span className="font-semibold">{filteredKeywords.length}</span>
                         </p>
-                        <div className="flex flex-wrap gap-4">
+                        <div className="flex flex-wrap gap-2 md:gap-4">
                             <div className="flex items-center gap-1">
                                 <span className="px-2 py-1 rounded-md bg-green-200 text-green-800 text-xs">
                                     Available
@@ -396,12 +396,6 @@ const keywordStatuses = useMemo(() => {
                                     In Use
                                 </span>
                                 <span>- Used in questions (can still be used)</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <span className="px-2 py-1 rounded-md bg-yellow-200 text-yellow-800 text-xs">
-                                    Pending
-                                </span>
-                                <span>- Waiting for admin approval (cannot be used yet) </span>
                             </div>
                         </div>
                     </div>
