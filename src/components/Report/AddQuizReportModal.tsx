@@ -433,9 +433,9 @@ const AddQuizReportModal: React.FC<AddReportModalProps> = ({
           <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4 pt-4 sticky bottom-0 bg-white">
             <Button
               type="submit"
-              textButton="Submit Report"
+              textButton={createQuizMutation.isPending || createReportMutation.isPending ? "Submitting..." : "Submit Report"}
               disabled={createQuizMutation.isPending || createReportMutation.isPending}
-              className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
+              className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createQuizMutation.isPending || createReportMutation.isPending ? (
                 <>

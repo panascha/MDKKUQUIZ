@@ -1,8 +1,6 @@
 "use client";
-import React, { useMemo } from 'react';
-import { useEffect, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useSession } from 'next-auth/react';
+import React, { useMemo, useEffect, useState } from 'react';
+import { useParams, useRouter } from "next/navigation";
 import { Question } from '../../../../../types/api/Question';
 import ProtectedPage from '../../../../../components/ProtectPage';
 import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule, Visibility, VisibilityOff } from '@mui/icons-material';
@@ -13,26 +11,27 @@ import { useSubmitScore } from '../../../../../hooks/score/useSubmitScore';
 import { Quiz } from '../../../../../types/api/Quiz';
 import { useGetUserStatById } from '../../../../../hooks/stats/useGetUserStatById';
 import { Role_type } from '../../../../../config/role';
+import { useQuiz } from '../../../../../context/quiz'
+import { FrontendRoutes } from '../../../../../config/apiRoutes'
 
 
 export default function Problem() {
-    const session = useSession();
     const router = useRouter();
     const params = useParams();
-    const searchParams = useSearchParams();
+    const { state } = useQuiz()
+    const { answerMode, questionType: selectedQuestionTypes, categories: selectCategory, questionCount } = state
+
     const { user, loading: userLoading } = useUser();
     const isSAdmin = user?.role === Role_type.SADMIN;
     const isAdmin = user?.role === Role_type.ADMIN || isSAdmin;
     const subjectID = params.subjectID as string;
+    useEffect(() => {
+        if (!selectCategory.length || questionCount <= 0 || !answerMode || !selectedQuestionTypes) {
+            router.replace(`${FrontendRoutes.HOMEPAGE}/${subjectID}/quiz`)
+        }
+    }, [selectCategory, questionCount, answerMode, selectedQuestionTypes, router, subjectID]);
     const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
     const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 4;
-
-    const answerMode = searchParams.get('answerMode');
-    const questionCount = Number(searchParams.get('questionCount'));
-    const selectedQuestionTypes = searchParams.get('questionType');
-    const selectCategory = useMemo(() => (
-        (searchParams.get('categories') || '').split(',').filter(Boolean)
-    ), [searchParams]);
 
     const [seconds, setSeconds] = useState(0);
     const [showQuestion, setShowQuestion] = useState<Question[]>([]);
