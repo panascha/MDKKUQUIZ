@@ -33,7 +33,8 @@ export const QuestionTypeSelection = ({
 }: QuestionTypeSelectionProps) => {
     return (
         <section className={`mb-8 animate-fade-in ${selectCategory.length === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Question Type</h2>
+            <h2 className="text-2xl font-semibold text-gray-800">Question Type</h2>
+            <p className="text-sm text-gray-600 my-2"><strong>MCQ : </strong> multiple-choice-quiz <strong>Short Answer : </strong> requires you to type in the response.</p>
             <div className="grid grid-cols-2 gap-6">
                 {questionTypes.map((type) => (
                     <SelectableButton

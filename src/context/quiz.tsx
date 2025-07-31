@@ -2,7 +2,7 @@
 import React, { createContext, useReducer, useContext, ReactNode } from 'react'
 
 export type QuizType = 'chillquiz' | 'realtest' | 'custom'
-export type AnswerMode = 'reveal-at-end' | 'reveal-after-each'
+export type AnswerMode = 'end-of-quiz' | 'each-question'
 export type QuestionType = 'mcq' | 'shortanswer'
 
 interface State {
@@ -22,7 +22,7 @@ type Action =
 
 const initialState: State = {
   quizType: 'chillquiz',
-  answerMode: 'reveal-at-end',
+  answerMode: 'end-of-quiz',
   questionType: 'mcq',
   categories: [],
   questionCount: 0,
