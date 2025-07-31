@@ -15,11 +15,9 @@ export const useUpdateSubject = () => {
         mutationFn: async ({ id, updatedData }: { id: string; updatedData: Partial<Subject> }) => {
             if (!session?.data?.user.token) throw new Error("Authentication required");
 
-            let imageUrl = "";
+            let imageUrl: string | undefined;
             if (isFile(updatedData.img)) {
                 imageUrl = await uploadImageToBackend(updatedData.img, session.data.user.token);
-            } else if (typeof updatedData.img === 'string') {
-                imageUrl = updatedData.img;
             }
 
             const payload: Partial<Subject> = {
@@ -28,7 +26,7 @@ export const useUpdateSubject = () => {
                 year: updatedData.year,
             };
 
-            // Only add img to payload if we have an image (new upload or existing)
+            // Include img field only when a new image was uploaded
             if (imageUrl) {
                 payload.img = imageUrl;
             }

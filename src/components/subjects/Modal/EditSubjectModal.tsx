@@ -155,7 +155,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
             <Button
               textButton="Update"
               disabled={editMutation.isPending}
-              className="bg-blue-500 hover:bg-blue-600"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold flex items-center justify-center gap-2"
             >
               {editMutation.isPending ? (
                 <>
