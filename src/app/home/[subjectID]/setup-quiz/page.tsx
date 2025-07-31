@@ -65,29 +65,29 @@ export default function SetupQuizPage() {
         setMaxQuestions(max);
     }, [filteredQuiz, selectedQuestionTypes]);
 
-    const handleStartQuiz = useCallback(() => {
+        const handleStartQuiz = useCallback(() => {
         if (selectCategory.length === 0) {
-            if (!answerMode) {
-                alert('Please select an answer mode');
-                return;
-            }
-            if (questionCount <= 0) {
-                alert('Please select at least one question');
-                return;
-            }
-            if (selectedQuestionTypes.length === 0) {
-                alert('Please select a question type');
-                return;
-            }
-            if (questionCount > maxQuestions) {
-                alert(`You can only select up to ${maxQuestions} questions`);
-                return;
-            }
+            alert('Please select at least one topic.');
+            return;
         }
-
-        // navigate into problem page; state stored in context
+        if (!answerMode) {
+            alert('Please select an answer mode.');
+            return;
+        }
+        if (!selectedQuestionTypes) {
+            alert('Please select a question type.');
+            return;
+        }
+        if (questionCount <= 0) {
+            alert('Please select at least one question.');
+            return;
+        }
+        if (questionCount > maxQuestions) {
+            alert(`You can only select up to ${maxQuestions} questions for the selected topics and type.`);
+            return;
+        }
         router.push(`${FrontendRoutes.HOMEPAGE}/${subjectID}/setup-quiz/quiz`);
-    }, [ selectCategory, answerMode, questionCount, selectedQuestionTypes, maxQuestions, subjectID, router]);
+    }, [selectCategory, answerMode, questionCount, selectedQuestionTypes, maxQuestions, subjectID, router]);
 
     const { user, loading: userLoading } = useUser();
     const isSAdmin = user?.role === Role_type.SADMIN;
