@@ -48,9 +48,11 @@ export default function SetupQuizPage() {
     });
 
     const filteredQuiz = useMemo(() => {
-        if (!selectCategory.length) return [];
-        if (!Array.isArray(quizzes)) return [];
-        return quizzes.filter((item: Quiz) => selectCategory.includes(item.category._id));
+        const cats: string[] = Array.isArray(selectCategory)
+            ? selectCategory
+            : (typeof selectCategory === 'string' ? [selectCategory] : []);
+        if (!cats.length || !Array.isArray(quizzes)) return [];
+        return quizzes.filter((item: Quiz) => cats.includes(item.category._id));
     }, [quizzes, selectCategory]);
 
     useEffect(() => {
