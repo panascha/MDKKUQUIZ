@@ -197,12 +197,12 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
             <Button
               textButton="Submit"
               disabled={createMutation.isPending}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center justify-center gap-2"
             >
               {createMutation.isPending ? (
-                <>
-                  <LoaderIcon className="mr-2 inline animate-spin" size={16} />
-                  Saving...
+                <> 
+                  <LoaderIcon className="inline animate-spin" size={16} />
+                  <span>Saving...</span>
                 </>
               ) : (
                 "Save Subject"
