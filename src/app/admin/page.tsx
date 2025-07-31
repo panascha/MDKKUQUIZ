@@ -37,22 +37,15 @@ export default function AdminPanel() {
     const { data: session, status } = useSession();
     const { user, loading: isUserLoading } = useUser();
     const { data: stats, isLoading: isStatsLoading } = useGetStatOverAll();
-    const { data: keywords = [], isLoading: isKeywordsLoading } = useGetKeyword({ status: 'pending' });
-    const { data: quizzes = [], isLoading: isQuizLoading } = useGetQuizzes({ status: 'pending' });
-    const { data: reports = [], isLoading: isReportsLoading } = useGetReport({ status: 'pending' });
+    const { data: keywords = [], isLoading: isKeywordsLoading, isFetching: isKeywordsFetching } = useGetKeyword({ status: 'pending' });
+    const { data: quizzes = [], isLoading: isQuizLoading, isFetching: isQuizFetching } = useGetQuizzes({ status: 'pending' });
+    const { data: reports = [], isLoading: isReportsLoading, isFetching: isReportsFetching } = useGetReport({ status: 'pending' });
     const { mutate: approveReport } = useApprovedReport();
     const { mutate: approveQuiz } = useApprovedQuiz();
     const { mutate: approveKeyword } = useApprovedKeyword();
     const router = useRouter();
-
-    // Check both session and user role
     const isAdmin = user?.role === "admin" || user?.role === "S-admin";
-
-    // Add year filter state
-    const defaultYear = user?.year ? Number(user.year) : null;
-    const [selectedYear, setSelectedYear] = useState<number | null>(defaultYear);
-
-    // Add active tab state
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<string>('overview');
 
     useEffect(() => {
@@ -128,7 +121,14 @@ export default function AdminPanel() {
         })
         : reports;
 
-    if (status === "loading" || isStatsLoading || isKeywordsLoading || isQuizLoading || isReportsLoading || isUserLoading) {
+    if (
+        status === "loading" ||
+        isStatsLoading ||
+        isKeywordsLoading || isKeywordsFetching ||
+        isQuizLoading    || isQuizFetching    ||
+        isReportsLoading|| isReportsFetching||
+        isUserLoading
+    ) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <LoaderIcon className="w-8 h-8 animate-spin text-primary" />
