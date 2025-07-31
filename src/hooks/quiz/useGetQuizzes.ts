@@ -21,7 +21,7 @@ export const useGetQuizzes = ({
     const { data: session } = useSession();
 
   return useQuery({
-    queryKey: ['quizzes', { subjectID, status, categoryID }],
+    queryKey: ['quizzes', { subjectID, status, categoryID, transformed: Boolean(transformData) }],
     queryFn: async () => {
         if (!session?.user.token) throw new Error("Authentication required");
 

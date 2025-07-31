@@ -1,8 +1,6 @@
 "use client";
-import React, { useMemo } from 'react';
-import { useEffect, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useSession } from 'next-auth/react';
+import React, { useMemo, useEffect, useState } from 'react';
+import { useParams, useRouter } from "next/navigation";
 import { Question } from '../../../../../types/api/Question';
 import ProtectedPage from '../../../../../components/ProtectPage';
 import { Bookmark, BookmarkBorder, CheckCircle, Cancel, ErrorOutline, ViewList, ViewModule, Visibility, VisibilityOff } from '@mui/icons-material';
@@ -13,26 +11,27 @@ import { useSubmitScore } from '../../../../../hooks/score/useSubmitScore';
 import { Quiz } from '../../../../../types/api/Quiz';
 import { useGetUserStatById } from '../../../../../hooks/stats/useGetUserStatById';
 import { Role_type } from '../../../../../config/role';
+import { useQuiz } from '../../../../../context/quiz'
+import { FrontendRoutes } from '../../../../../config/apiRoutes'
 
 
 export default function Problem() {
-    const session = useSession();
     const router = useRouter();
     const params = useParams();
-    const searchParams = useSearchParams();
+    const { state } = useQuiz()
+    const { answerMode, questionType: selectedQuestionTypes, categories: selectCategory, questionCount } = state
+
     const { user, loading: userLoading } = useUser();
     const isSAdmin = user?.role === Role_type.SADMIN;
     const isAdmin = user?.role === Role_type.ADMIN || isSAdmin;
     const subjectID = params.subjectID as string;
+    useEffect(() => {
+        if (!selectCategory.length || questionCount <= 0 || !answerMode || !selectedQuestionTypes) {
+            router.replace(`${FrontendRoutes.HOMEPAGE}/${subjectID}/quiz`)
+        }
+    }, [selectCategory, questionCount, answerMode, selectedQuestionTypes, router, subjectID]);
     const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
     const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 4;
-
-    const answerMode = searchParams.get('answerMode');
-    const questionCount = Number(searchParams.get('questionCount'));
-    const selectedQuestionTypes = searchParams.get('questionType');
-    const selectCategory = useMemo(() => (
-        (searchParams.get('categories') || '').split(',').filter(Boolean)
-    ), [searchParams]);
 
     const [seconds, setSeconds] = useState(0);
     const [showQuestion, setShowQuestion] = useState<Question[]>([]);
@@ -48,7 +47,6 @@ export default function Problem() {
         subjectID,
         status: 'approved',
         transformData: (quizzes) => {
-            console.log(quizzes);
             const mapToQuestion = (data: Quiz[]): Question[] => {
                 return data.map((item) => ({
                     quiz: item,
@@ -418,7 +416,7 @@ export default function Problem() {
                                     </div>
                                 ) : null}
                                 <div className="flex flex-col gap-3 mt-6 w-full">
-                                    {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-after-each' && !showQuestion[currentQuestionIndex].isSubmitted && showQuestion[currentQuestionIndex].isAnswered && (
+                                    {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'each-question' && !showQuestion[currentQuestionIndex].isSubmitted && showQuestion[currentQuestionIndex].isAnswered && (
                                         <div className="flex gap-3">
                                             <button
                                                 className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2"
@@ -438,7 +436,7 @@ export default function Problem() {
                                             </button>
                                         </div>
                                     )}
-                                            {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-at-end' && showQuestion[currentQuestionIndex].isAnswered && (
+                                            {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'end-of-quiz' && showQuestion[currentQuestionIndex].isAnswered && (
                                         <div className="flex w-full justify-end gap-3">
                                             <button
                                                 className="px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
@@ -480,7 +478,7 @@ export default function Problem() {
                     >
                         View All Questions
                     </button>
-                    {answerMode === 'reveal-at-end' && allQuestionsAnswered && (
+                    {answerMode === 'end-of-quiz' && allQuestionsAnswered && (
                         <button
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handleSubmit}
@@ -489,7 +487,7 @@ export default function Problem() {
                             {isSubmitting ? "Submitting..." : "Submit All & Go to Summary"}
                         </button>
                     )}
-                    {answerMode === 'reveal-after-each' && allQuestionsSubmitted && (
+                    {answerMode === 'each-question' && allQuestionsSubmitted && (
                         <button
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handleSubmit}

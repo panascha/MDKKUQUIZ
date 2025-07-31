@@ -12,7 +12,7 @@ export const SubjectActions = ({ subjectId, canTakeQuiz, isSAdmin }: SubjectActi
         <div className=" p-6 flex flex-col justify-center items-center mt-8 gap-6">
             <div className="relative flex flex-col items-center">
                 <Link
-                    href={allowQuiz ? `${subjectId}/quiz` : "#"}
+                    href={allowQuiz ? `${subjectId}/setup-quiz` : "#"}
                     className={
                         `min-w-[200px] px-8 py-4 text-white text-xl font-bold rounded-xl shadow-lg transition duration-200 text-center flex items-center justify-center ` +
                         (allowQuiz

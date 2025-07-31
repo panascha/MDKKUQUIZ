@@ -11,7 +11,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useGetSubjectByID } from "../../../../hooks/subject/useGetSubjectByID";
 import { useGetCategoryBySubjectID } from "../../../../hooks/category/useGetCategoryBySubjectID";
 import { TopicSelection } from "../../../../components/quiz/TopicSelection";
-import { QuizTypeSelection } from "../../../../components/quiz/QuizTypeSelection";
 import { AnswerModeSelection } from "../../../../components/quiz/AnswerModeSelection";
 import { QuestionTypeSelection } from "../../../../components/quiz/QuestionTypeSelection";
 import { QuestionCountSelection } from "../../../../components/quiz/QuestionCountSelection";
@@ -19,20 +18,18 @@ import { useUser } from '../../../../hooks/User/useUser';
 import { useGetUserStatById } from '../../../../hooks/stats/useGetUserStatById';
 import { Role_type } from "../../../../config/role";
 import { BackButton } from "../../../../components/subjects/Detail/BackButton";
+import { useQuiz } from '../../../../context/quiz'
+import type { AnswerMode, QuestionType } from '../../../../context/quiz'
 
-export default function Quiz() {
-    type QuizType = "chillquiz" | "realtest" | "custom";
-    type AnswerModes = "reveal-at-end"| "reveal-after-each"
-    const quizTypes: QuizType[] = ["chillquiz", "realtest", "custom"];
-    const answerModes: AnswerModes[] = ["reveal-at-end", "reveal-after-each"];
-    const questionTypes = ["mcq", "shortanswer"];
+export default function SetupQuizPage() {
 
-    const [quizType, setQuizType] = useState('');
-    const [answerMode, setAnswerMode] = useState('');
-    const [selectedQuestionTypes, setSelectedQuestionTypes] = useState('');
-    const [questionCount, setQuestionCount] = useState(0);
-    const [selectCategory, setSelectCategory] = useState<String[]>([]);
-    const [maxQuestions, setMaxQuestions] = useState(0);
+    const answerModes: AnswerMode[] = ['end-of-quiz', 'each-question'] // Keeping this line as it is used later
+    const questionTypes: QuestionType[] = ['mcq', 'shortanswer'] // Keeping this line as it is used later
+
+    const { state, dispatch } = useQuiz()
+    const { answerMode, questionType: selectedQuestionTypes, categories: selectCategory, questionCount } = state
+    const [maxQuestions, setMaxQuestions] = useState(0)
+
     const params = useParams();
     const router = useRouter();
     const subjectID = params.subjectID as string;
@@ -52,6 +49,7 @@ export default function Quiz() {
 
     const filteredQuiz = useMemo(() => {
         if (!selectCategory.length) return [];
+        if (!Array.isArray(quizzes)) return [];
         return quizzes.filter((item: Quiz) => selectCategory.includes(item.category._id));
     }, [quizzes, selectCategory]);
 
@@ -67,54 +65,29 @@ export default function Quiz() {
         setMaxQuestions(max);
     }, [filteredQuiz, selectedQuestionTypes]);
 
-    const defaultValues_AnswerMode = useMemo(() => ({
-        chillquiz: answerModes[1],
-        realtest: answerModes[0],
-        custom: answerModes[0],
-    }), [answerModes]);
-
-    const defaultValues_QuestionType = useMemo(() => ({
-        chillquiz: 'mcq',
-        realtest: 'mcq',
-        custom: 'shortanswer',
-    }), []);
-
-    const handleStartQuiz = useCallback(() => {
-        if (!quizType) {
-            alert('Please select a quiz type');
-            return;
-        }
+        const handleStartQuiz = useCallback(() => {
         if (selectCategory.length === 0) {
-            alert('Please select at least one category');
+            alert('Please select at least one topic.');
             return;
         }
         if (!answerMode) {
-            alert('Please select an answer mode');
+            alert('Please select an answer mode.');
+            return;
+        }
+        if (!selectedQuestionTypes) {
+            alert('Please select a question type.');
             return;
         }
         if (questionCount <= 0) {
-            alert('Please select at least one question');
-            return;
-        }
-        if (selectedQuestionTypes.length === 0) {
-            alert('Please select a question type');
+            alert('Please select at least one question.');
             return;
         }
         if (questionCount > maxQuestions) {
-            alert(`You can only select up to ${maxQuestions} questions`);
+            alert(`You can only select up to ${maxQuestions} questions for the selected topics and type.`);
             return;
         }
-
-        const queryParams = new URLSearchParams({
-            quizType,
-            answerMode,
-            questionCount: questionCount.toString(),
-            questionType: selectedQuestionTypes,
-            categories: selectCategory.join(','), 
-        }).toString();
-
-        router.push(`${FrontendRoutes.HOMEPAGE}/${subjectID}/quiz/problem?${queryParams}`);
-    }, [quizType, selectCategory, answerMode, questionCount, selectedQuestionTypes, maxQuestions, subjectID, router]);
+        router.push(`${FrontendRoutes.HOMEPAGE}/${subjectID}/setup-quiz/quiz`);
+    }, [selectCategory, answerMode, questionCount, selectedQuestionTypes, maxQuestions, subjectID, router]);
 
     const { user, loading: userLoading } = useUser();
     const isSAdmin = user?.role === Role_type.SADMIN;
@@ -194,44 +167,31 @@ export default function Quiz() {
                         <TopicSelection
                             category={categories}
                             selectCategory={selectCategory}
-                            setSelectCategory={setSelectCategory}
+                            setSelectCategory={(arr: string[]) => dispatch({ type: 'SET_CATEGORIES', payload: arr })}
                             setMaxQuestions={setMaxQuestions}
                             quiz={quizzes}
                             selectedQuestionTypes={selectedQuestionTypes}
-                        />
-
-                        <QuizTypeSelection
-                            quizTypes={quizTypes}
-                            quizType={quizType}
-                            setQuizType={setQuizType}
-                            setQuestionCount={setQuestionCount}
-                            setAnswerMode={setAnswerMode}
-                            setSelectedQuestionTypes={setSelectedQuestionTypes}
-                            selectCategory={selectCategory}
-                            defaultValues_QuestionType={defaultValues_QuestionType}
-                            defaultValues_AnswerMode={defaultValues_AnswerMode}
-                            answerModes={answerModes}
-                            quiz={quizzes}
-                            setMaxQuestions={setMaxQuestions}
                         />
 
                         <AnswerModeSelection
                             answerModes={answerModes}
                             answerMode={answerMode}
-                            setAnswerMode={setAnswerMode}
+                            setAnswerMode={(v) => dispatch({ type: 'SET_ANSWER_MODE', payload: v })}
                             selectCategory={selectCategory}
                         />
-
                         <QuestionTypeSelection
                             questionTypes={questionTypes}
                             selectedQuestionTypes={selectedQuestionTypes}
-                            setSelectedQuestionTypes={setSelectedQuestionTypes}
+                            setSelectedQuestionTypes={(v) => dispatch({ type: 'SET_QUESTION_TYPE', payload: v as QuestionType })}
                             selectCategory={selectCategory}
                         />
 
                         <QuestionCountSelection
                             questionCount={questionCount}
-                            setQuestionCount={setQuestionCount}
+                            setQuestionCount={(n) => {
+                                const next = typeof n === 'function' ? (n as (prev: number) => number)(questionCount) : n
+                                dispatch({ type: 'SET_COUNT', payload: next })
+                            }}
                             selectCategory={selectCategory}
                             selectedQuestionTypes={selectedQuestionTypes}
                             filteredQuiz={filteredQuiz}
