@@ -1,7 +1,7 @@
 import { ButtonWithLogo } from "../magicui/Buttonwithlogo";
 import React from "react";
 
-type AnswerModes = "reveal-at-end"| "reveal-after-each";
+type AnswerModes = "end-of-quiz" | "each-question";
 
 interface AnswerModeSelectionProps {
     answerModes: AnswerModes[];
@@ -35,7 +35,8 @@ export const AnswerModeSelection = ({
 }: AnswerModeSelectionProps) => {
     return (
         <section className={`mb-8 animate-fade-in ${selectCategory.length === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Answer Mode</h2>
+            <h2 className="text-2xl font-semibold text-gray-800">Answer Mode</h2>
+            <p className="text-sm text-gray-600 my-2"><strong>End of quiz : </strong> review answer only after you complete and submit all questions. <strong>Each question : </strong> review right after you answer each question.</p>
             <div className="grid grid-cols-2 gap-6">
                 {answerModes.map((mode) => (
                     <SelectableButton

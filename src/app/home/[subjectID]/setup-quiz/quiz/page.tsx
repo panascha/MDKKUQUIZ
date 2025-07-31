@@ -417,7 +417,7 @@ export default function Problem() {
                                     </div>
                                 ) : null}
                                 <div className="flex flex-col gap-3 mt-6 w-full">
-                                    {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-after-each' && !showQuestion[currentQuestionIndex].isSubmitted && showQuestion[currentQuestionIndex].isAnswered && (
+                                    {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'each-question' && !showQuestion[currentQuestionIndex].isSubmitted && showQuestion[currentQuestionIndex].isAnswered && (
                                         <div className="flex gap-3">
                                             <button
                                                 className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2"
@@ -437,7 +437,7 @@ export default function Problem() {
                                             </button>
                                         </div>
                                     )}
-                                            {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'reveal-at-end' && showQuestion[currentQuestionIndex].isAnswered && (
+                                            {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && answerMode === 'end-of-quiz' && showQuestion[currentQuestionIndex].isAnswered && (
                                         <div className="flex w-full justify-end gap-3">
                                             <button
                                                 className="px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
@@ -479,7 +479,7 @@ export default function Problem() {
                     >
                         View All Questions
                     </button>
-                    {answerMode === 'reveal-at-end' && allQuestionsAnswered && (
+                    {answerMode === 'end-of-quiz' && allQuestionsAnswered && (
                         <button
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handleSubmit}
@@ -488,7 +488,7 @@ export default function Problem() {
                             {isSubmitting ? "Submitting..." : "Submit All & Go to Summary"}
                         </button>
                     )}
-                    {answerMode === 'reveal-after-each' && allQuestionsSubmitted && (
+                    {answerMode === 'each-question' && allQuestionsSubmitted && (
                         <button
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handleSubmit}
