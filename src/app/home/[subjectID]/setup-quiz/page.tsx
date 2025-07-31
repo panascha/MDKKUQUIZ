@@ -169,7 +169,12 @@ export default function SetupQuizPage() {
                         <TopicSelection
                             category={categories}
                             selectCategory={selectCategory}
-                            setSelectCategory={(arr: string[]) => dispatch({ type: 'SET_CATEGORIES', payload: arr })}
+                            setSelectCategory={(categoriesOrUpdater: string[] | ((prev: string[]) => string[])) => {
+                              const newCategories = typeof categoriesOrUpdater === 'function'
+                                ? categoriesOrUpdater(selectCategory)
+                                : categoriesOrUpdater;
+                              dispatch({ type: 'SET_CATEGORIES', payload: newCategories });
+                            }}
                             setMaxQuestions={setMaxQuestions}
                             quiz={quizzes}
                             selectedQuestionTypes={selectedQuestionTypes}
