@@ -47,7 +47,6 @@ export default function Problem() {
         subjectID,
         status: 'approved',
         transformData: (quizzes) => {
-            console.log(quizzes);
             const mapToQuestion = (data: Quiz[]): Question[] => {
                 return data.map((item) => ({
                     quiz: item,
