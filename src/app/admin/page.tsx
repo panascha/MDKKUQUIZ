@@ -49,8 +49,7 @@ export default function AdminPanel() {
     const isAdmin = user?.role === "admin" || user?.role === "S-admin";
 
     // Add year filter state
-    const defaultYear = user?.year ? Number(user.year) : null;
-    const [selectedYear, setSelectedYear] = useState<number | null>(defaultYear);
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
     // Add active tab state
     const [activeTab, setActiveTab] = useState<string>('overview');
@@ -115,10 +114,10 @@ export default function AdminPanel() {
 
     // Filter data by selected year
     const filteredQuizzes = selectedYear
-        ? quizzes.filter((q: Quiz) => q.category?.subject?.year === selectedYear)
+        ? quizzes.filter((q: Quiz) => q.subject?.year === selectedYear)
         : quizzes;
     const filteredKeywords = selectedYear
-        ? keywords.filter((k: Keyword) => k.category?.subject?.year === selectedYear)
+        ? keywords.filter((k: Keyword) => k.subject?.year === selectedYear)
         : keywords;
     const filteredReports = selectedYear
         ? reports.filter((r: Report) => {
