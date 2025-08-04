@@ -7,8 +7,10 @@ export interface Keyword {
     user: UserProps;
     name: string;
     subject: Subject;
+    status: string;
     category: Category;
     keywords: Array<string>;
-    status: string;
+    isGlobal: boolean;
+    createdAt: Date;
     updatedAt: Date;
 }

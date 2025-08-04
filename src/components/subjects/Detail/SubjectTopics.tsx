@@ -17,7 +17,7 @@ export default function SubjectTopics({ categories, subject }: SubjectTopicsProp
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const { mutate: deleteCategory } = useDeleteCategory();
     const { user } = useUser();
-    const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
+    const isSAdmin = user?.role === Role_type.SADMIN;
 
     const handleDelete = (categoryId: string) => {
         if (window.confirm('Are you sure you want to delete this category?')) {
@@ -41,7 +41,7 @@ export default function SubjectTopics({ categories, subject }: SubjectTopicsProp
                             <h3 className="text-lg font-semibold text-gray-900">{category.category}</h3>
                             <p className="text-gray-600 mt-1">{category.description}</p>
                         </div>
-                        {isAdmin && (
+                        {isSAdmin && (
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setEditingCategory(category)}

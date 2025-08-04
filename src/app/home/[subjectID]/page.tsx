@@ -74,7 +74,7 @@ export default function SubjectDetailPage() {
                     <div className="mt-8 text-center">
                         <h2 className="text-xl font-semibold text-gray-700 mb-2">No Categories Available</h2>
                         <p className="text-gray-500 mb-4">There are no categories for this subject yet.</p>
-                        {isAdmin && (
+                        {isSAdmin && (
                             <button
                                 onClick={() => setShowAddCategoryModal(true)}
                                 className="p-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-full transition-colors shadow-md hover:shadow-lg"
@@ -96,15 +96,21 @@ export default function SubjectDetailPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                <BackButton />
-                <SubjectDetailHeader subject={subject} />
+            {/* Fixed Back Button at Top with Glassmorphism */}
+            <div className="sticky top-0 z-50 pt-2">
+                <div className="max-w-4xl mx-auto px-4 py-3">
+                    <BackButton />
+                </div>
+            </div>
+            
+            <div className="max-w-4xl mx-auto px-4">
+                <SubjectDetailHeader subject={subject}/>
                 <SubjectActions subjectId={subjectID} canTakeQuiz={canTakeQuiz} isSAdmin={isSAdmin} />
                 <div className="flex justify-between items-start gap-4 mt-6">
                     <div className="flex-1">
                         <SubjectTopics categories={categories} subject={subject} />
                     </div>
-                    {isAdmin && (
+                    {isSAdmin && (
                         <button
                             onClick={() => setShowAddCategoryModal(true)}
                             className="p-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-full transition-colors shadow-md hover:shadow-lg"

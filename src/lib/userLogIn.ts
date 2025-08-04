@@ -22,7 +22,7 @@ export default async function userLogIn(
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
-      throw new Error(error.response?.data?.message || "Failed to log in");
+      throw new Error(error.response?.data?.message || "the email or password is incorrect");
     }
     throw new Error("An unexpected error occurred");
   }

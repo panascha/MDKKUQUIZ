@@ -68,16 +68,20 @@ export const QuestionCountSelection = ({
                 <button
                     className={`cursor-pointer px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105
                         ${selectCategory.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
-                    onClick={() => setQuestionCount((prev: number) => Math.min(
-                        Math.min(5, selectedQuestionTypes.includes('mcq')
-                            ? filteredQuiz.filter((q: Quiz) => q.type === "choice" || q.type === "both").length
-                            : filteredQuiz.filter((q: Quiz) => q.type === "written" || q.type === "both").length),
-                        prev + 5
-                    ))}
+                    onClick={() => setQuestionCount((prev: number) => Math.min(maxAvailableQuestions, prev + 5))}
                     aria-label="Increase number of questions"
                     disabled={selectCategory.length === 0}
                 >
                     +
+                </button>
+                <button
+                    className={`cursor-pointer px-5 py-2 bg-gray-300 rounded-lg text-lg font-semibold transition-transform duration-300 transform hover:scale-105
+                        ${selectCategory.length === 0 || maxAvailableQuestions === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
+                    onClick={() => setQuestionCount(maxAvailableQuestions)}
+                    aria-label="Max questions"
+                    disabled={selectCategory.length === 0 || maxAvailableQuestions === 0}
+                >
+                    Max
                 </button>
             </div>
             <p className="text-sm text-gray-600 mt-2 max-w-md mx-auto text-center">

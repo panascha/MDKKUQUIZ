@@ -1,4 +1,5 @@
 export const BACKEND_URL = "https://medquizbackend-101913825665.asia-southeast1.run.app";
+//export const BACKEND_URL = "https://medquizbackend-production-04fe.up.railway.app";
 //export const BACKEND_URL = "http://localhost:5001";
 const BackendRootRoutes = `${BACKEND_URL}/api/v1`;
 
@@ -65,6 +66,7 @@ export enum FrontendRootRoutes {
   PROFILE = "/profile",
   MAIN = "/main",
   HOMEPAGE = "/home",
+  SETUP_QUIZ = "/setup-quiz",
   QUIZ = "/quiz",
   QUESTION = "/question",
   KEYWORD = "/keyword",
@@ -79,6 +81,7 @@ export enum FrontendRoutes {
   MAIN = FrontendRootRoutes.MAIN,
   LOGIN = `${FrontendRootRoutes.LOGIN}`,
   PROFILE = `${FrontendRootRoutes.PROFILE}`,
+  SETUP_QUIZ = `${FrontendRootRoutes.SETUP_QUIZ}`,
   QUIZ = `${FrontendRootRoutes.QUIZ}`,
   QUESTION = `${FrontendRootRoutes.QUESTION}`,
   KEYWORD = `${FrontendRootRoutes.KEYWORD}`,

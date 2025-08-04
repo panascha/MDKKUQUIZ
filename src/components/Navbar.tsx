@@ -41,17 +41,11 @@ export default function Navbar() {
                 <nav className="flex items-center justify-between h-16 px-6 bg-blue-950 text-white shadow-md">
                     {/* Logo and Home */}
                     <div className="flex items-center gap-4">
-                        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition duration-300 ease-in-out">
+                        <a href="/home" className="flex items-center gap-2 hover:opacity-80 transition duration-300 ease-in-out">
                             <img src={"/MSEBlogowhite.svg"} alt="Logo" className="h-16 w-28 object-contain" />
                         </a>
                         {user && (
-                            <div className="hidden lg:flex gap-3 ml-4">
-                                <button
-                                    onClick={() => router.push(FrontendRoutes.HOMEPAGE)}
-                                    className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
-                                >
-                                    Home
-                                </button>
+                            <div className="hidden lg:flex gap-3 ml-4">                                
                                 <button
                                     onClick={() => router.push(FrontendRoutes.QUESTION)}
                                     className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"

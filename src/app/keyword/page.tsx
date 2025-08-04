@@ -21,6 +21,7 @@ import { Role_type } from '../../config/role';
 import { toast } from 'react-hot-toast';
 import { Badge } from '../../components/ui/Badge';
 import { useGetCategory } from "../../hooks/category/useGetCategory";
+import { BackButton } from '../../components/subjects/Detail/BackButton';
 
 const KeywordPage = () => {
     const router = useRouter();
@@ -104,7 +105,7 @@ const keywordStatuses = useMemo(() => {
         // First filter by user role
         let roleFilteredKeywords = keywords;
         if (!isAdmin && !isSAdmin) {
-            roleFilteredKeywords = keywords.filter((k: Keyword) => k.status === "approved");
+            roleFilteredKeywords = keywords.filter((k: Keyword) => k.status === "approved" || k.isGlobal === true);
         }
         else if (isAdmin && !isSAdmin) {
             roleFilteredKeywords = keywords.filter((k: Keyword) => k.status !== "reported");
@@ -126,45 +127,69 @@ const keywordStatuses = useMemo(() => {
                 ?.map(term => term.replace(/["""]/g, '').toLowerCase()) || [];
 
         const subjectFilter = (k: Keyword) => {
-            return !selectedSubject || (k.subject._id === selectedSubject);
+            if (selectedSubject) {
+                return !k.isGlobal && k.subject && k.subject._id === selectedSubject;
+            }
+            return true;
         };
 
         const categoryFilter = (k: Keyword) => {
-            return !selectedCategory || (k.category._id === selectedCategory);
+            if (selectedCategory) {
+                return !k.isGlobal && k.category && k.category._id === selectedCategory;
+            }
+            return true;
         };
 
         if (!searchTerms.length) {
-            return (latestKeywords as Keyword[]).filter((k: Keyword) => subjectFilter(k) && categoryFilter(k));
+            return (latestKeywords as Keyword[])
+                .filter((k: Keyword) => subjectFilter(k) && categoryFilter(k))
+                .sort((a, b) => {
+                    if (!selectedSubject && !selectedCategory) {
+                        if (a.isGlobal && !b.isGlobal) return -1;
+                        if (!a.isGlobal && b.isGlobal) return 1;
+                    }
+                    return a.name.localeCompare(b.name);
+                });
         }
 
-        return (latestKeywords as Keyword[]).filter((k: Keyword) => {
-            let includeKeyword: boolean | null = null;
-            let currentOperator = 'or';
+        return (latestKeywords as Keyword[])
+            .filter((k: Keyword) => {
+                let includeKeyword: boolean | null = null;
+                let currentOperator = 'or';
 
-            for (let i = 0; i < searchTerms.length; i++) {
-                const term = searchTerms[i];
+                for (let i = 0; i < searchTerms.length; i++) {
+                    const term = searchTerms[i];
 
-                if (operators.includes(term)) {
-                    currentOperator = term;
-                    continue;
+                    if (operators.includes(term)) {
+                        currentOperator = term;
+                        continue;
+                    }
+
+                    const termInKeyword =
+                        (k.name && k.name.toLowerCase().includes(term)) ||
+                        (Array.isArray(k.keywords) && k.keywords.some((c: string) => c.toLowerCase().includes(term)));
+
+                    if (includeKeyword === null) {
+                        includeKeyword = termInKeyword;
+                    } else if (currentOperator === 'and') {
+                        includeKeyword = includeKeyword && termInKeyword;
+                    } else if (currentOperator === 'or') {
+                        includeKeyword = includeKeyword || termInKeyword;
+                    } else if (currentOperator === 'not') {
+                        includeKeyword = includeKeyword && !termInKeyword;
+                    }
                 }
-
-                const termInKeyword =
-                    (k.name && k.name.toLowerCase().includes(term)) ||
-                    (Array.isArray(k.keywords) && k.keywords.some((c: string) => c.toLowerCase().includes(term)));
-
-                if (includeKeyword === null) {
-                    includeKeyword = termInKeyword;
-                } else if (currentOperator === 'and') {
-                    includeKeyword = includeKeyword && termInKeyword;
-                } else if (currentOperator === 'or') {
-                    includeKeyword = includeKeyword || termInKeyword;
-                } else if (currentOperator === 'not') {
-                    includeKeyword = includeKeyword && !termInKeyword;
+                return !!includeKeyword && subjectFilter(k) && categoryFilter(k);
+            })
+            .sort((a, b) => {
+                    // Only sort global keywords to the top when no filters are applied
+                if (!selectedSubject && !selectedCategory) {
+                    if (a.isGlobal && !b.isGlobal) return -1;
+                    if (!a.isGlobal && b.isGlobal) return 1;
                 }
-            }
-            return !!includeKeyword && subjectFilter(k) && categoryFilter(k);
-        });
+                    // If both are global or both are not global, sort by name
+                return a.name.localeCompare(b.name);
+            });
     }, [keywords, searchTerm, selectedSubject, selectedCategory, isAdmin, isSAdmin]);
 
 
@@ -248,11 +273,7 @@ const keywordStatuses = useMemo(() => {
         <ProtectedPage>
             <div className="container mx-auto p-4 mt-20 justify-center items-center flex flex-col">
                 <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
-                    <Link href={FrontendRoutes.HOMEPAGE}>
-                        <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white pr-2 py-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
-                            <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
-                        </button>
-                    </Link>
+                    <BackButton />
                 </div>
                 <div className='absolute top-22 md:top-25 right-4 md:right-15'>
                     <button 
@@ -356,9 +377,25 @@ const keywordStatuses = useMemo(() => {
 
                 {/* Total count display */}
                 <div className="w-full max-w-5xl mb-4 text-right">
-                    <p className="text-gray-600">
-                        Total Keywords: <span className="font-semibold">{filteredKeywords.length}</span>
-                    </p>
+                    <div className="text-xs text-gray-500 mt-2 text-left">
+                        <p className=" text-lg text-gray-600 py-2">
+                            Total Keywords: <span className="font-semibold">{filteredKeywords.length}</span>
+                        </p>
+                        <div className="flex flex-wrap gap-2 md:gap-4">
+                            <div className="flex items-center gap-1">
+                                <span className="px-2 py-1 rounded-md bg-green-200 text-green-800 text-xs">
+                                    Available
+                                </span>
+                                <span>- Not used in any question (recommended for new quizzes)</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <span className="px-2 py-1 rounded-md bg-gray-200 text-gray-800 text-xs">
+                                    In Use
+                                </span>
+                                <span>- Used in questions (can still be used)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid gap-6 w-full max-w-5xl">
@@ -371,9 +408,17 @@ const keywordStatuses = useMemo(() => {
                                             <p className="text-sm font-semibold text-gray-700">
                                                 {keyword.name}
                                             </p>
-                                            <p className="text-sm text-gray-500">
-                                                {keyword.subject.name}
-                                            </p>
+                                            {keyword.isGlobal ? (
+                                                <div className="flex items-center gap-2">
+                                                    <Badge className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 text-xs">
+                                                        Global
+                                                    </Badge>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-gray-500">
+                                                    {keyword.subject?.name} • {keyword.category?.category}
+                                                </p>
+                                            )}
                                         </div>
                                         {(isAdmin &&
                                             <div className="flex items-center gap-2">
@@ -419,9 +464,9 @@ const keywordStatuses = useMemo(() => {
                                                 keyword.keywords.map((kw: string, index: number) => {
                                                 const status = keywordStatuses[kw];
                                                 const statusStyles = {
-                                                    isuse: 'bg-green-200 text-green-800',
+                                                    isuse: 'bg-gray-200 text-gray-800',
                                                     pending: 'bg-yellow-200 text-yellow-800',
-                                                    notuse: 'bg-red-200 text-red-800',
+                                                    notuse: 'bg-green-200 text-green-800',
                                                 };
                                                 const style = statusStyles[status as keyof typeof statusStyles] ?? 'bg-gray-100 text-gray-800';
                                                 
@@ -451,4 +496,4 @@ const keywordStatuses = useMemo(() => {
     );
 }
 
-export default KeywordPage; 
+export default KeywordPage;

@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import { LoaderIcon, X } from "lucide-react";
 import { UserProps } from '../../types/api/UserProps';
 import { Keyword } from '../../types/api/Keyword';
-import { useCreateKeyword } from '../../hooks/keyword/useCreateKeyword';
+import { useCreateKeyword, CreateKeywordData } from '../../hooks/keyword/useCreateKeyword';
 import { useCreateReport } from '../../hooks/report/useCreateReport';
 import { Report } from '../../types/api/Report';
 import toast from 'react-hot-toast';
@@ -14,10 +14,11 @@ import { useUser } from '../../hooks/User/useUser';
 interface KeywordFormData {
   user: string;
   name: string;
-  subject: string;
-  category: string;
+  subject?: string;
+  category?: string;
   keywords: Array<string>;
   status: 'pending' | 'approved' | 'rejected' | 'reported';
+  isGlobal?: boolean;
 }
 
 interface AddKeywordReportModalProps {
@@ -36,10 +37,13 @@ const AddKeywordReportModal: React.FC<AddKeywordReportModalProps> = ({
   const [formData, setFormData] = useState<KeywordFormData>({
     user: userProp._id,
     name: originalKeyword.name,
-    subject: originalKeyword.subject._id,
-    category: originalKeyword.category._id,
     keywords: originalKeyword.keywords,
-    status: 'reported'
+    status: 'reported',
+    isGlobal: originalKeyword.isGlobal,
+    ...(originalKeyword.isGlobal ? {} : {
+      subject: originalKeyword.subject?._id,
+      category: originalKeyword.category?._id
+    })
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -66,10 +70,13 @@ const AddKeywordReportModal: React.FC<AddKeywordReportModalProps> = ({
     setFormData({
       user: userProp._id,
       name: originalKeyword.name,
-      subject: originalKeyword.subject._id,
-      category: originalKeyword.category._id,
       keywords: originalKeyword.keywords,
-      status: 'reported'
+      status: 'reported',
+      isGlobal: originalKeyword.isGlobal,
+      ...(originalKeyword.isGlobal ? {} : {
+        subject: originalKeyword.subject?._id,
+        category: originalKeyword.category?._id
+      })
     });
     setError(null);
     setShowModal(false);
@@ -85,7 +92,19 @@ const AddKeywordReportModal: React.FC<AddKeywordReportModalProps> = ({
 
     try {
       // Create the suggested keyword first
-      const keywordResult = await createKeywordMutation.mutateAsync(formData);
+      const keywordData: CreateKeywordData = {
+        user: user._id,
+        name: formData.name,
+        keywords: formData.keywords,
+        status: 'reported',
+        isGlobal: formData.isGlobal,
+        ...(formData.isGlobal ? {} : {
+          subject: formData.subject,
+          category: formData.category
+        })
+      };
+      
+      const keywordResult = await createKeywordMutation.mutateAsync(keywordData);
       toast.success("Keyword created successfully");
 
       // Create the report with the new keyword ID
@@ -139,24 +158,43 @@ const AddKeywordReportModal: React.FC<AddKeywordReportModalProps> = ({
         >
           {/* Original Keyword Section */}
           <div className="border-b pb-4">
-            <div>
-              <label className="mb-1 block text-sm font-semibold">Subject</label>
-              <input
-                type="text"
-                value={originalKeyword.subject.name}
-                disabled={true}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-semibold">Category</label>
-              <input
-                type="text"
-                value={originalKeyword.category.category}
-                disabled={true}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
-              />
-            </div>
+            {originalKeyword.isGlobal ? (
+              <div>
+                <label className="mb-1 block text-sm font-semibold">Type</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value="Global Keyword"
+                    disabled={true}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-blue-50 text-blue-700"
+                  />
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 border border-blue-200 text-xs rounded">
+                    Global
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold">Subject</label>
+                  <input
+                    type="text"
+                    value={originalKeyword.subject?.name || ''}
+                    disabled={true}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold">Category</label>
+                  <input
+                    type="text"
+                    value={originalKeyword.category?.category || ''}
+                    disabled={true}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-gray-50"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {/* Suggested Changes Section */}

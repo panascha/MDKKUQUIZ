@@ -105,8 +105,19 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                             </div>
                                         ) : (
                                             <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                                                <p>Subject: {report.originalKeyword?.subject?.name}</p>
-                                                <p>Category: {report.originalKeyword?.category?.category}</p>
+                                                {report.originalKeyword?.isGlobal ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <p>Type: Global Keyword</p>
+                                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 border border-blue-200 text-xs rounded">
+                                                            Global
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <p>Subject: {report.originalKeyword?.subject?.name}</p>
+                                                        <p>Category: {report.originalKeyword?.category?.category}</p>
+                                                    </>
+                                                )}
                                                 <br />
                                                 <p className="font-medium">Keyword: {report.originalKeyword?.name}</p>
                                                 <p className="font-medium">Keywords:</p>
@@ -256,13 +267,24 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                             </div>
                                         ) : (
                                             <div className="bg-yellow-50 p-3 rounded-lg space-y-2">
-                                                <p>Subject: {report.suggestedChangesKeyword?.subject?.name}</p>
-                                                    <p>Category: {report.suggestedChangesKeyword?.category?.category}</p>
+                                                {report.suggestedChangesKeyword?.isGlobal ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <p>Type: Global Keyword</p>
+                                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 border border-blue-200 text-xs rounded">
+                                                            Global
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <p>Subject: {report.suggestedChangesKeyword?.subject?.name}</p>
+                                                        <p>Category: {report.suggestedChangesKeyword?.category?.category}</p>
+                                                    </>
+                                                )}
                                                 <br />
-                                                    <p className="font-medium">Keyword: {report.suggestedChangesKeyword?.name}
-                                                        {report.suggestedChangesKeyword?.name !== report.originalKeyword?.name && (
-                                                        <span className="text-red-500 ml-1"> (Modified)</span>
-                                                    )}
+                                                <p className="font-medium">Keyword: {report.suggestedChangesKeyword?.name}
+                                                    {report.suggestedChangesKeyword?.name !== report.originalKeyword?.name && (
+                                                    <span className="text-red-500 ml-1"> (Modified)</span>
+                                                )}
                                                 </p>
                                                 <p className="font-medium mb-1">Keywords:</p>
 

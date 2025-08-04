@@ -65,8 +65,9 @@ const KeywordDetail = () => {
             <div className="mx-auto p-4 mt-20 justify-center items-center flex flex-col">
                 <div className="absolute top-23 md:top-25 left-8 md:left-15 text-lg">
                     <Link href={FrontendRoutes.KEYWORD}>
-                        <button className="flex items-center mb-4 hover:bg-orange-400 hover:text-white p-2 rounded-sm transition duration-300 ease-in-out hover:opacity-80 cursor-pointer">
-                            <span className='flex items-center'> <IoIosArrowBack className="text-xl" /> Back</span>
+                        <button className="group flex items-center gap-2 px-4 py-2.5 bg-gray-300/20 backdrop-blur-md border border-white/30 hover:bg-orange-400 hover:text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-out font-medium hover:scale-105 active:scale-95">
+                            <IoIosArrowBack className="text-xl group-hover:-translate-x-1 transition-transform duration-300" />
+                            <span>Back to Keywords</span>
                         </button>
                     </Link>
                 </div>
@@ -75,8 +76,22 @@ const KeywordDetail = () => {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
-                                <p className="text-sm text-gray-500">Subject</p>
-                                <p className="text-base md:text-lg font-medium text-gray-900">{keyword?.subject?.name}</p>
+                                {keyword?.isGlobal ? (
+                                    <>
+                                        <p className="text-sm text-gray-500">Type</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-base md:text-lg font-medium text-blue-600">Global Keyword</p>
+                                            <Badge className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 text-xs">
+                                                Global
+                                            </Badge>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-sm text-gray-500">Subject</p>
+                                        <p className="text-base md:text-lg font-medium text-gray-900">{keyword?.subject?.name}</p>
+                                    </>
+                                )}
                             </div>
                             {(isAdmin &&
                                 <Badge
@@ -100,10 +115,12 @@ const KeywordDetail = () => {
                                 </Badge>
                             )}
                         </div>
-                        <div className="space-y-1">
-                            <p className="text-sm text-gray-500">Category</p>
-                            <p className="text-base md:text-lg font-medium text-gray-900">{keyword?.category?.category}</p>
-                        </div>
+                        {!keyword?.isGlobal && (
+                            <div className="space-y-1">
+                                <p className="text-sm text-gray-500">Category</p>
+                                <p className="text-base md:text-lg font-medium text-gray-900">{keyword?.category?.category}</p>
+                            </div>
+                        )}
                         {keyword?.status !== 'pending' && keyword?.status !== 'reported' && (
                             <button
                                 className="mt-4 w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow-sm transition-colors duration-200 flex items-center justify-center gap-2"

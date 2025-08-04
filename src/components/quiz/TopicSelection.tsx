@@ -5,8 +5,8 @@ import React from "react";
 
 interface TopicSelectionProps {
     category: Category[];
-    selectCategory: String[];
-    setSelectCategory: (categories: String[] | ((prev: String[]) => String[])) => void;
+    selectCategory: string[];
+    setSelectCategory: (categories: string[] | ((prev: string[]) => string[])) => void;
     setMaxQuestions: (count: number) => void;
     quiz: Quiz[];
     selectedQuestionTypes: string;
@@ -37,21 +37,19 @@ export const TopicSelection = ({
     selectedQuestionTypes
 }: TopicSelectionProps) => {
     const handleTopicToggle = useCallback((categoryId: string) => {
-        setSelectCategory((prev: String[]) => {
-            const newSelection = prev.includes(categoryId) 
-                ? prev.filter((t: String) => t !== categoryId) 
-                : [...prev, categoryId];
-            
-            // Update maxQuestions based on the new selection
-            const filteredQuizzes = quiz.filter((item: Quiz) => 
-                newSelection.includes(item.category._id) && 
-                (selectedQuestionTypes === 'mcq' ? item.type === "choice" : item.type === "written")
-            );
-            setMaxQuestions(filteredQuizzes.length);
-            
-            return newSelection;
-        });
-    }, [quiz, selectedQuestionTypes, setSelectCategory, setMaxQuestions]);
+        // build new selection array
+        const newSelection = selectCategory.includes(categoryId)
+            ? selectCategory.filter((t) => t !== categoryId)
+            : [...selectCategory, categoryId]
+        // update categories
+        setSelectCategory(newSelection)
+        // Update maxQuestions based on the new selection
+        const filteredQuizzes = quiz.filter((item: Quiz) => 
+            newSelection.includes(item.category._id) && 
+            (selectedQuestionTypes === 'mcq' ? item.type === "choice" : item.type === "written")
+        );
+        setMaxQuestions(filteredQuizzes.length)
+    }, [quiz, selectedQuestionTypes, selectCategory, setSelectCategory, setMaxQuestions])
 
     return (
         <section className="mb-8 animate-fade-in">
@@ -80,15 +78,20 @@ export const TopicSelection = ({
                 </button>
             </div>
             <div className="flex flex-wrap gap-4">
-                {category.map((cat: Category) => (
-                    <SelectableButton
-                        key={cat._id}
-                        selected={selectCategory.includes(String(cat._id))}
-                        onSelect={() => handleTopicToggle(cat._id)}
-                    >
-                        {cat.category}
-                    </SelectableButton>
-                ))}
+                {category.map((cat: Category) => {
+                    const selectedIds: string[] = Array.isArray(selectCategory)
+                        ? selectCategory
+                        : (typeof selectCategory === 'string' ? [selectCategory] : [])
+                    return (
+                        <SelectableButton
+                            key={cat._id}
+                            selected={selectedIds.includes(cat._id)}
+                            onSelect={() => handleTopicToggle(cat._id)}
+                        >
+                            {cat.category}
+                        </SelectableButton>
+                    )
+                })}
             </div>
         </section>
     );
