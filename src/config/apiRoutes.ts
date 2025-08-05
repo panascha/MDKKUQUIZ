@@ -1,4 +1,4 @@
-export const MAINTENANCE_MODE = true;
+export const MAINTENANCE_MODE = false;
 
 export const BACKEND_URL = "https://medquizbackend-101913825665.asia-southeast1.run.app";
 //export const BACKEND_URL = "https://medquizbackend-production-04fe.up.railway.app";
@@ -9,7 +9,8 @@ export enum BackendRoutes {
   LOGOUT = `${BackendRootRoutes}/auth/logout`,
   LOGIN = `${BackendRootRoutes}/auth/login`,
   REQUEST_OTP = `${BackendRootRoutes}/auth/request-reset-otp`,
-  RESET_PASSWORD = `${BackendRootRoutes}/auth/reset-password-otp`,
+  VERIFY_OTP = `${BackendRootRoutes}/auth/verify-otp`,
+  RESET_PASSWORD = `${BackendRootRoutes}/auth/reset-password`,
   REGISTER = `${BackendRootRoutes}/auth/register`,
   UPDATE_USER = `${BackendRootRoutes}/auth/updateUser`,
   USER_INFO = `${BackendRootRoutes}/auth/me`,
