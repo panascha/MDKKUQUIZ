@@ -1,117 +1,110 @@
-"use client";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { Input } from "../../components/ui/Input";
-import Button from "../../components/ui/Button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../../components/ui/Card";
-import { useRouter } from "next/navigation";
-import { BackendRoutes, FrontendRoutes } from "../../config/apiRoutes";
-import { useResetPassword } from "../../hooks/User/useGetResetPassword";
-import { useGetOTP } from "../../hooks/User/useGetOTP";
-import { useSession } from "next-auth/react";
+'use client';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useGetOTP } from '../../hooks/User/useGetOTP';
+import { useVerifyOTP } from '../../hooks/User/useVerifyOTP';
+import { useResetPassword } from '../../hooks/User/useGetResetPassword';
+import Button from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../components/ui/Card';
+import { AlertCircle, CheckCircle, Send, Eye, EyeOff, RotateCcw } from 'lucide-react';
+import { FrontendRoutes } from '../../config/apiRoutes';
+import toast from 'react-hot-toast';
 
 const ResetPasswordPage = () => {
   const { data: session, status } = useSession();
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [serverOtp, setServerOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [cooldown, setCooldown] = useState(0);
-  const { resetPassword, loading: resetLoading, error: resetError } = useResetPassword();
-  const { getOTP, loading: otpLoading, error: otpError } = useGetOTP();
   const router = useRouter();
+  const { getOTP, loading: sendingOTP, error: otpError } = useGetOTP();
+  const { verifyOTP, loading: verifyingOTP, error: verifyError } = useVerifyOTP();
+  const { resetPassword, loading: resettingPassword, error: resetError } = useResetPassword();
 
+  const [currentStep, setCurrentStep] = useState<'email' | 'otp' | 'password'>('email');
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(0);
+
+  // Redirect authenticated users
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       router.push(FrontendRoutes.HOMEPAGE);
     }
   }, [status, router]);
 
   useEffect(() => {
-    if (cooldown > 0) {
-      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     }
-  }, [cooldown]);
+  }, [countdown]);
 
-  function isOtpResponse(response: unknown): response is { data: { data: string } } {
-    const res = response as any;
-    return (
-      typeof res === 'object' &&
-      res !== null &&
-      'data' in res &&
-      typeof res.data === 'object' &&
-      res.data !== null &&
-      'data' in res.data &&
-      typeof res.data.data === 'string'
-    );
-  }
-
-  // Step 1: Send OTP
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (cooldown > 0) return;
-    setError(null);
-    try {
-      const response = await getOTP(email);
-      console.log('OTP API response:', response);
-      // If getOTP returns the OTP, store it
-      if (isOtpResponse(response)) {
-        setServerOtp(response.data.data);
-        toast.success("OTP sent to your email.");
-        setStep(2);
-        setCooldown(60); // 60 seconds cooldown
-      } else {
-        setError("Failed to get OTP from server.");
-      }
-    } catch {
-      setError("Failed to send OTP.");
-    }
-    // error is handled by the hook
-  };
-
-  // Step 2: Verify OTP
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (otp === serverOtp) {
-      toast.success("OTP verified. Please set your new password.");
-      setStep(3);
-    } else {
-      setError("Invalid OTP.");
+    const response = await getOTP(email);
+    if (response) {
+      setCurrentStep('otp');
+      setCountdown(60);
+      toast.success('OTP sent to your email successfully!');
     }
   };
 
-  // Step 3: Reset Password
+  const handleResendOTP = async () => {
+    setError(null);
+    const response = await getOTP(email);
+    if (response) {
+      setCountdown(60);
+      toast.success('OTP sent again to your email!');
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const token = await verifyOTP(email, otp);
+    if (token) {
+      setResetToken(token);
+      setCurrentStep('password');
+      toast.success('OTP verified successfully!');
+    }
+  };
+
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError('Passwords do not match.');
       return;
     }
+    
     if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError('Password must be at least 6 characters.');
       return;
     }
-    // Password must contain at least one uppercase, one lowercase, one number, and one special character
+    
+    // Password validation regex
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/;
     if (!passwordRegex.test(newPassword)) {
-      setError("Password must contain at least one uppercase letter, one lowercase letter, one number and one special character.");
+      setError('Password must contain at least one uppercase letter, one lowercase letter, one number and one special character.');
       return;
     }
-    const success = await resetPassword({ email, otp, newPassword });
+
+    const success = await resetPassword(newPassword, resetToken);
+
     if (success) {
-      toast.success("Password reset successfully! Please log in.");
-      router.push(FrontendRoutes.LOGIN);
+      toast.success('Password reset successfully! Redirecting to login...');
+      setTimeout(() => {
+        router.push(FrontendRoutes.LOGIN);
+      }, 2000);
     }
-    // error is handled by the hook
   };
+
+  if (status === 'loading') return <div>Loading...</div>;
 
   return (
     <main className="mx-auto pt-20 my-10 flex w-full max-w-screen-xl items-center justify-center px-8">
@@ -120,8 +113,8 @@ const ResetPasswordPage = () => {
           <CardTitle>Reset Password</CardTitle>
         </CardHeader>
         <CardContent>
-          {step === 1 && (
-            <form onSubmit={handleSendOtp} className="space-y-4">
+          {currentStep === 'email' && (
+            <form onSubmit={handleSendOTP} className="space-y-4">
               <div>
                 <label htmlFor="email" className="block mb-1">Email</label>
                 <Input
@@ -137,14 +130,15 @@ const ResetPasswordPage = () => {
               <CardFooter>
                 <Button
                   type="submit"
-                  disabled={otpLoading || cooldown > 0}
-                  textButton={cooldown > 0 ? `Resend in ${cooldown}s` : otpLoading ? "Sending..." : "Send OTP"}
+                  disabled={sendingOTP}
+                  textButton={sendingOTP ? "Sending..." : "Send OTP"}
                 />
               </CardFooter>
             </form>
           )}
-          {step === 2 && (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
+          
+          {currentStep === 'otp' && (
+            <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div>
                 <label htmlFor="otp" className="block mb-1">Enter OTP</label>
                 <Input
@@ -153,17 +147,39 @@ const ResetPasswordPage = () => {
                   placeholder="Enter the OTP sent to your email"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
+                  maxLength={6}
                   required
                 />
+                <p className="text-sm text-gray-600 mt-1">OTP sent to: {email}</p>
               </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
+              {(error || verifyError) && <p className="text-red-500 text-sm">{error || verifyError}</p>}
               <CardFooter className="flex flex-col gap-2">
-                <Button type="submit" disabled={loading} className="w-full" textButton={loading ? "Verifying..." : "Verify OTP"} />
-                <Button type="button" onClick={() => setStep(1)} className="w-full" textButton="Back" />
+                <Button 
+                  type="submit" 
+                  disabled={verifyingOTP} 
+                  className="w-full" 
+                  textButton={verifyingOTP ? "Verifying..." : "Verify OTP"} 
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    onClick={() => setCurrentStep('email')} 
+                    className="flex-1" 
+                    textButton="Back" 
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleResendOTP}
+                    disabled={countdown > 0 || sendingOTP}
+                    className="flex-1"
+                    textButton={countdown > 0 ? `Resend (${countdown}s)` : sendingOTP ? "Sending..." : "Resend OTP"}
+                  />
+                </div>
               </CardFooter>
             </form>
           )}
-          {step === 3 && (
+          
+          {currentStep === 'password' && (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
                 <label htmlFor="new-password" className="block mb-1">New Password</label>
@@ -189,7 +205,18 @@ const ResetPasswordPage = () => {
               </div>
               {(error || resetError) && <p className="text-red-500 text-sm">{error || resetError}</p>}
               <CardFooter className="flex flex-col gap-2">
-                <Button type="submit" disabled={resetLoading} className="w-full" textButton={resetLoading ? "Resetting..." : "Reset Password"} />
+                <Button 
+                  type="submit" 
+                  disabled={resettingPassword} 
+                  className="w-full" 
+                  textButton={resettingPassword ? "Resetting..." : "Reset Password"} 
+                />
+                <Button 
+                  type="button" 
+                  onClick={() => setCurrentStep('otp')} 
+                  className="w-full" 
+                  textButton="Back to OTP" 
+                />
               </CardFooter>
             </form>
           )}
