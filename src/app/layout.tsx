@@ -1,4 +1,5 @@
 import Navbar from "../components/Navbar";
+import MaintenanceCheck from "../components/MaintenanceCheck";
 import NextAuthProvider from "../providers/NextAuthProvider";
 import { TanstackQueryProvider } from "../providers/TanstackQueryProvider";
 import type { Metadata } from "next";
@@ -38,9 +39,11 @@ export default async function RootLayout({
         <Analytics />
         <TanstackQueryProvider>
           <NextAuthProvider session={session}>
-            <Toaster position="bottom-right" />
-            <Navbar/>
-            <main className="w-full">{children}</main>
+            <MaintenanceCheck>
+              <Toaster position="bottom-right" />
+              <Navbar/>
+              <main className="w-full">{children}</main>
+            </MaintenanceCheck>
           </NextAuthProvider>
         </TanstackQueryProvider>
       </body>

@@ -1,7 +1,11 @@
 "use client";
-import { FrontendRoutes } from "../config/apiRoutes";
+import { FrontendRoutes, MAINTENANCE_MODE } from "../config/apiRoutes";
 import { redirect } from "next/navigation";
 
 export default function Home() {
-  redirect(FrontendRoutes.MAIN);
+  if (MAINTENANCE_MODE) {
+    redirect(FrontendRoutes.MAINTENANCE);
+  } else {
+    redirect(FrontendRoutes.MAIN);
+  }
 }

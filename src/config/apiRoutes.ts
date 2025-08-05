@@ -1,3 +1,5 @@
+export const MAINTENANCE_MODE = true;
+
 export const BACKEND_URL = "https://medquizbackend-101913825665.asia-southeast1.run.app";
 //export const BACKEND_URL = "https://medquizbackend-production-04fe.up.railway.app";
 //export const BACKEND_URL = "http://localhost:5001";
@@ -74,7 +76,8 @@ export enum FrontendRootRoutes {
   QUESTION_CREATE = "/question/create",
   ADMIN = "/admin",
   BAN = "/ban",
-  RESET_PASSWORD = "/reset-password"
+  RESET_PASSWORD = "/reset-password",
+  MAINTENANCE = "/maintenance"
 }
 export enum FrontendRoutes {
   HOMEPAGE = FrontendRootRoutes.HOMEPAGE,
@@ -90,4 +93,5 @@ export enum FrontendRoutes {
   ADMIN = `${FrontendRootRoutes.ADMIN}`,
   BAN = `${FrontendRootRoutes.BAN}`,
   RESET_PASSWORD = `${FrontendRootRoutes.RESET_PASSWORD}`,
+  MAINTENANCE = `${FrontendRootRoutes.MAINTENANCE}`,
 }
