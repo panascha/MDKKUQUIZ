@@ -182,7 +182,41 @@ export default function Problem() {
         }
     }, [quizData, subjectID, selectedQuestionTypes, questionCount, selectCategory]);
 
-    // Save progress whenever showQuestion changes
+    useEffect(() => {
+        if (showQuestion.length > 0) {
+            const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
+            
+            const timeoutId = setTimeout(() => {
+                try {
+                    sessionStorage.setItem(`${sessionKey}_progress`, JSON.stringify(showQuestion));
+                } catch (error) {
+                    console.warn('Failed to save progress to session storage:', error);
+                }
+            }, 500);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [showQuestion, subjectID, selectedQuestionTypes, questionCount, selectCategory]);
+
+    useEffect(() => {
+        const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
+        
+        const saveProgress = () => {
+            if (showQuestion.length > 0) {
+                try {
+                    sessionStorage.setItem(`${sessionKey}_progress`, JSON.stringify(showQuestion));
+                } catch (error) {
+                    console.warn('Failed to save progress to session storage:', error);
+                }
+            }
+        };
+
+        return () => {
+            saveProgress();
+        };
+    }, [showQuestion, subjectID, selectedQuestionTypes, questionCount, selectCategory]);
+
+    // Save progress when navigating between questions
     useEffect(() => {
         if (showQuestion.length > 0) {
             const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
@@ -192,7 +226,7 @@ export default function Problem() {
                 console.warn('Failed to save progress to session storage:', error);
             }
         }
-    }, [showQuestion, subjectID, selectedQuestionTypes, questionCount, selectCategory]);
+    }, [currentQuestionIndex]); // Only save when question index changes
 
     useEffect(() => {
         const interval = setInterval(() => {
