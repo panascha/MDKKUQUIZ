@@ -50,8 +50,8 @@ export const RegisterForm = () => {
       errors.password = "Password is required.";
     } else if (newPassword.length < 6) {
       errors.password = "Password must be at least 6 characters.";
-    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(newPassword)) {
-      errors.password = "Password must contain upper, lower, number, and special character.";
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/.test(newPassword)) {
+      errors.password = "Password must contain at least one uppercase letter, one lowercase letter and one number.";
     }
     if (newPassword !== confirmPassword) {
       errors.confirmPassword = "Passwords do not match.";

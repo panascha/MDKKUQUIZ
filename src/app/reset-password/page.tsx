@@ -87,10 +87,10 @@ const ResetPasswordPage = () => {
       return;
     }
     
-    // Password validation regex
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/;
+    // Password validation regex - matches backend validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
     if (!passwordRegex.test(newPassword)) {
-      setError('Password must contain at least one uppercase letter, one lowercase letter, one number and one special character.');
+      setError('Password must contain at least one uppercase letter, one lowercase letter and one number.');
       return;
     }
 
