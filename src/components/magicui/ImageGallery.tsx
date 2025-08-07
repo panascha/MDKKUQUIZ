@@ -1,170 +1,47 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { cn } from '../../lib/utils';
-import { 
-  XMarkIcon, 
-  MagnifyingGlassPlusIcon, 
-  MagnifyingGlassMinusIcon,
-  ArrowsPointingOutIcon,
-  PhotoIcon
-} from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { BACKEND_URL } from '../../config/apiRoutes';
 
 interface ImageGalleryProps {
   images: string[];
-  className?: string;
 }
 
-const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
+const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(true);
-  const [imageError, setImageError] = useState(false);
-  const [fullscreenMode, setFullscreenMode] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null); // Ref สำหรับ Modal Container
   const [isDragging, setIsDragging] = useState(false);
-  const [touchDistance, setTouchDistance] = useState(0);
-  const [touchStartPos, setTouchStartPos] = useState({ x: 0, y: 0 });
-  const [isTouchDragging, setIsTouchDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
   const currentImage = images[currentIndex];
-  const minZoom = 0.5;
-  const maxZoom = 5;
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
-    resetImageState();
+    setPosition({ x: 0, y: 0 });
+    setZoomLevel(1);
   }, [images.length]);
 
   const goToNext = useCallback(() => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    resetImageState();
-  }, [images.length]);
-
-  const resetImageState = useCallback(() => {
     setPosition({ x: 0, y: 0 });
     setZoomLevel(1);
-    setIsLoading(true);
-    setImageError(false);
-  }, []);
+  }, [images.length]);
 
   const openModal = useCallback(() => {
     setIsModalOpen(true);
-    resetImageState();
-    document.body.style.overflow = 'hidden'; // Prevent body scroll
-  }, [resetImageState]);
-
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-    setFullscreenMode(false);
-    document.body.style.overflow = 'unset'; // Restore body scroll
-  }, []);
-
-  const zoomIn = useCallback(() => {
-    setZoomLevel(prev => Math.min(prev + 0.2, maxZoom));
-  }, [maxZoom]);
-
-  const zoomOut = useCallback(() => {
-    setZoomLevel(prev => Math.max(prev - 0.2, minZoom));
-  }, [minZoom]);
-
-  const resetZoom = useCallback(() => {
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
   }, []);
 
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      modalRef.current?.requestFullscreen?.();
-      setFullscreenMode(true);
-    } else {
-      document.exitFullscreen?.();
-      setFullscreenMode(false);
-    }
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
   }, []);
-
-  // Touch handling for mobile zoom and pan
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 1 && zoomLevel > 1) {
-      // Single touch for panning when zoomed
-      const touch = e.touches[0];
-      setIsTouchDragging(true);
-      setTouchStartPos({
-        x: touch.clientX - position.x,
-        y: touch.clientY - position.y,
-      });
-    } else if (e.touches.length === 2) {
-      // Two finger pinch for zooming
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      const distance = Math.sqrt(
-        Math.pow(touch2.clientX - touch1.clientX, 2) + 
-        Math.pow(touch2.clientY - touch1.clientY, 2)
-      );
-      setTouchDistance(distance);
-      setIsTouchDragging(false); // Disable dragging during pinch
-    }
-  }, [zoomLevel, position]);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    e.preventDefault(); // Prevent page scroll
-    
-    if (e.touches.length === 1 && isTouchDragging && zoomLevel > 1) {
-      // Handle single touch panning
-      const touch = e.touches[0];
-      const newX = touch.clientX - touchStartPos.x;
-      const newY = touch.clientY - touchStartPos.y;
-
-      // Calculate boundaries similar to mouse drag
-      if (imageRef.current && modalRef.current) {
-        const imageWidth = imageRef.current.offsetWidth * zoomLevel;
-        const imageHeight = imageRef.current.offsetHeight * zoomLevel;
-        const modalWidth = modalRef.current.offsetWidth;
-        const modalHeight = modalRef.current.offsetHeight;
-
-        const maxX = Math.max(0, imageWidth - modalWidth) / 2;
-        const maxY = Math.max(0, imageHeight - modalHeight) / 2;
-        const minX = -maxX;
-        const minY = -maxY;
-
-        setPosition({
-          x: Math.max(minX, Math.min(maxX, newX)),
-          y: Math.max(minY, Math.min(maxY, newY)),
-        });
-      }
-    } else if (e.touches.length === 2) {
-      // Handle two finger pinch zoom
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      const distance = Math.sqrt(
-        Math.pow(touch2.clientX - touch1.clientX, 2) + 
-        Math.pow(touch2.clientY - touch1.clientY, 2)
-      );
-      
-      if (touchDistance > 0) {
-        const scale = distance / touchDistance;
-        const newZoom = Math.max(minZoom, Math.min(maxZoom, zoomLevel * scale));
-        setZoomLevel(newZoom);
-        setTouchDistance(distance);
-      }
-    }
-  }, [touchDistance, zoomLevel, minZoom, maxZoom, isTouchDragging, touchStartPos]);
-
-  const handleTouchEnd = useCallback(() => {
-    setIsTouchDragging(false);
-    setTouchDistance(0);
-  }, []);
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    setZoomLevel(prev => Math.max(minZoom, Math.min(maxZoom, prev + delta)));
-  }, [minZoom, maxZoom]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (zoomLevel > 1 && imageRef.current && modalRef.current) {
@@ -176,8 +53,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
       if (modalRef.current) {
         modalRef.current.style.cursor = 'grabbing';
       }
-      // Prevent text selection during drag
-      e.preventDefault();
     }
   }, [zoomLevel, position]);
 
@@ -194,8 +69,8 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
     const modalWidth = modalRef.current.offsetWidth;
     const modalHeight = modalRef.current.offsetHeight;
 
-    const maxX = Math.max(0, (imageWidth - modalWidth) / 2);
-    const maxY = Math.max(0, (imageHeight - modalHeight) / 2);
+    const maxX = Math.max(0, imageWidth - modalWidth) / 2;
+    const maxY = Math.max(0, imageHeight - modalHeight) / 2;
     const minX = -maxX;
     const minY = -maxY;
 
@@ -208,16 +83,16 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     if (modalRef.current) {
-      modalRef.current.style.cursor = zoomLevel > 1 ? 'grab' : 'zoom-in';
+      modalRef.current.style.cursor = 'grab';
     }
-  }, [zoomLevel]);
+  }, []);
 
   const handleMouseLeave = useCallback(() => {
     setIsDragging(false);
     if (modalRef.current) {
-      modalRef.current.style.cursor = zoomLevel > 1 ? 'grab' : 'zoom-in';
+      modalRef.current.style.cursor = 'grab';
     }
-  }, [zoomLevel]);
+  }, []);
 
   // Function to calculate initial position to center the image
   const getInitialPosition = useCallback(() => {
@@ -283,346 +158,164 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
 
     switch (e.key) {
       case 'ArrowLeft':
-        e.preventDefault();
         goToPrevious();
         break;
       case 'ArrowRight':
-        e.preventDefault();
         goToNext();
         break;
       case 'Escape':
-        e.preventDefault();
         closeModal();
         break;
-      case '+':
-      case '=':
-        e.preventDefault();
-        zoomIn();
-        break;
-      case '-':
-        e.preventDefault();
-        zoomOut();
-        break;
-      case '0':
-        e.preventDefault();
-        resetZoom();
-        break;
-      case 'f':
-      case 'F':
-        e.preventDefault();
-        toggleFullscreen();
-        break;
     }
-  }, [isModalOpen, goToPrevious, goToNext, closeModal, zoomIn, zoomOut, resetZoom, toggleFullscreen]);
+  }, [isModalOpen, goToPrevious, goToNext, closeModal]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset'; // Cleanup on unmount
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
   const handleImageLoad = () => {
     setIsLoading(false);
-    setImageError(false);
   };
-
-  const handleImageError = () => {
-    setIsLoading(false);
-    setImageError(true);
-  };
-
-  const ErrorDisplay = () => (
-    <div className="flex flex-col items-center justify-center h-full bg-gray-100 text-gray-500">
-      <PhotoIcon className="h-12 w-12 mb-2" />
-      <span className="text-sm">Failed to load image</span>
-    </div>
-  );
-
-  const LoadingDisplay = () => (
-    <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-      <div className="flex flex-col items-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-        <span className="text-xs text-gray-500">Loading...</span>
-      </div>
-    </div>
-  );
 
   return (
-    <div className={cn("relative w-[280px] md:w-[250px]", className)} ref={containerRef}>
+    <div className="relative w-[280px] md:w-[250px]">
       {images.length > 1 && (
         <button
           onClick={goToPrevious}
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/30 text-white rounded-full p-2 z-10 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-200"
+          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/20 text-white rounded-full p-2 z-10 hover:bg-black/50 focus:outline-none"
           aria-label="Previous image"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="h-6 w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2.5}
+            aria-hidden="true"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
       )}
 
       <div
-        className="relative aspect-square cursor-pointer overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 group"
+        className="relative aspect-square md:aspect-square sm:aspect-square cursor-pointer overflow-hidden rounded-md shadow-md"
         onClick={openModal}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && openModal()}
-        aria-label={`Open image gallery - Image ${currentIndex + 1} of ${images.length}`}
+        aria-label="Open image gallery"
       >
-        {isLoading && <LoadingDisplay />}
-        {imageError ? (
-          <ErrorDisplay />
-        ) : (
-          <>
-            <Image
-              src={`${BACKEND_URL}${currentImage}`}
-              alt={`Image ${currentIndex + 1} of ${images.length}`}
-              className={cn(
-                "object-cover w-full h-full transition-all duration-300 group-hover:scale-105",
-                isLoading && "opacity-0"
-              )}
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-              width={280}
-              height={280}
-              priority={currentIndex === 0}
-            />
-            {/* Preview overlay */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3">
-                <MagnifyingGlassPlusIcon className="h-6 w-6 text-gray-700" />
-              </div>
-            </div>
-          </>
-        )}
-        
-        {/* Image counter */}
-        {images.length > 1 && (
-          <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-            {currentIndex + 1}/{images.length}
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           </div>
         )}
-        
-        {/* Watermark */}
-        <div className="absolute bottom-2 right-2 bg-white/70 text-xs font-medium text-gray-700 px-2 py-1 rounded opacity-80 select-none">
-          MSEB
+        <Image
+          src={`${BACKEND_URL}${currentImage}`}
+          alt={`Image ${currentIndex + 1} of ${images.length}`}
+          className={cn(
+            "object-cover w-full h-full transition-transform duration-300 hover:scale-105",
+            isLoading && "opacity-0"
+          )}
+          onLoad={handleImageLoad}
+          width={280}
+          height={280}
+          priority
+        />
+        {/* Watermark overlay for thumbnail */}
+        <div className="absolute inset-0 flex items-end justify-end pointer-events-none">
+          <span className="m-2 px-2 py-1 bg-white/60 text-xs font-bold text-gray-700 rounded opacity-70 select-none">
+            {/* คณะแพทยศาสตร์ มหาวิทยาลัยขอนแก่น */}
+            MSEB
+          </span>
         </div>
       </div>
 
       {images.length > 1 && (
         <button
           onClick={goToNext}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/30 text-white rounded-full p-2 z-10 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-200"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/20 text-white rounded-full p-2 z-10 hover:bg-black/50 focus:outline-none"
           aria-label="Next image"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="h-6 w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2.5}
+            aria-hidden="true"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
           </svg>
         </button>
       )}
 
       {isModalOpen && (
         <div
-          className={cn(
-            "fixed inset-0 bg-black/90 z-50 flex items-center justify-center",
-            fullscreenMode ? "bg-black" : ""
-          )}
+          className="fixed top-0 left-0 w-full h-full bg-black/80 z-50 flex items-center justify-center cursor-pointer"
           ref={modalRef}
           onClick={handleModalClick}
-          onWheel={handleWheel}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
           role="dialog"
           aria-modal="true"
           aria-label="Image gallery modal"
         >
           <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex flex-col items-center text-white">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
-                  <span>Loading image...</span>
-                </div>
-              </div>
-            )}
-            
-            {imageError ? (
-              <div className="flex flex-col items-center text-white">
-                <PhotoIcon className="h-24 w-24 mb-4" />
-                <span className="text-xl">Failed to load image</span>
-                <button 
-                  onClick={() => setCurrentIndex(currentIndex)}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Retry
-                </button>
-              </div>
-            ) : (
-              <Image
-                ref={imageRef}
-                src={`${BACKEND_URL}${currentImage}`}
-                alt={`Large Image ${currentIndex + 1} of ${images.length}`}
-                className={cn(
-                  "transition-transform duration-300 select-none",
-                  zoomLevel > 1 ? (isDragging || isTouchDragging ? "cursor-grabbing" : "cursor-grab") : "cursor-zoom-in",
-                  isLoading && "opacity-0"
-                )}
-                style={{ 
-                  transform: `scale(${zoomLevel}) translate(${position.x}px, ${position.y}px)`,
-                  maxWidth: '90vw',
-                  maxHeight: '90vh',
-                  objectFit: 'contain'
-                }}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseLeave}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (zoomLevel === 1) zoomIn();
-                }}
-                width={800}
-                height={800}
-                quality={95}
-                priority
-              />
-            )}
-            
-            {/* Watermark for modal */}
-            <div className="absolute bottom-4 right-4 bg-white/80 text-sm font-medium text-gray-700 px-3 py-2 rounded-lg opacity-90 select-none shadow-lg">
-              MSEB
+            <Image
+              ref={imageRef}
+              src={`${BACKEND_URL}${currentImage}`}
+              alt={`Large Image ${currentIndex + 1} of ${images.length}`}
+              className={`transition-transform duration-300 cursor-grab`}
+              style={{ transform: `scale(${zoomLevel}) translate(${position.x}px, ${position.y}px)` }}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              width={500}
+              height={500}
+              quality={100}
+              priority
+            />
+            {/* Watermark overlay for modal */}
+            <div className="absolute inset-0 flex items-end justify-end pointer-events-none">
+              <span className="m-4 px-3 py-1 bg-white/70 text-base font-bold text-gray-700 rounded opacity-80 select-none shadow">
+                {/* คณะแพทยศาสตร์ มหาวิทยาลัยขอนแก่น */}
+                MSEB
+              </span>
             </div>
-            
-            {/* Control buttons */}
-            <div className="absolute top-4 right-4 flex space-x-2">
-              <div className="flex bg-black/50 rounded-lg overflow-hidden">
-                <button
-                  onClick={zoomOut}
-                  disabled={zoomLevel <= minZoom}
-                  className="p-2 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Zoom out (-)"
-                >
-                  <MagnifyingGlassMinusIcon className="h-5 w-5" />
-                </button>
-                <div className="px-3 py-2 text-white text-sm bg-black/30 flex items-center min-w-[60px] justify-center">
-                  {Math.round(zoomLevel * 100)}%
-                </div>
-                <button
-                  onClick={zoomIn}
-                  disabled={zoomLevel >= maxZoom}
-                  className="p-2 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Zoom in (+)"
-                >
-                  <MagnifyingGlassPlusIcon className="h-5 w-5" />
-                </button>
-              </div>
-              
-              <button
-                onClick={resetZoom}
-                className="bg-black/50 text-white rounded-lg p-2 hover:bg-black/70"
-                title="Reset zoom (0)"
-              >
-                <span className="text-sm font-medium">1:1</span>
-              </button>
-              
-              <button
-                onClick={toggleFullscreen}
-                className="bg-black/50 text-white rounded-lg p-2 hover:bg-black/70"
-                title="Toggle fullscreen (F)"
-              >
-                <ArrowsPointingOutIcon className="h-5 w-5" />
-              </button>
-              
+            <div className="absolute top-2 right-2 flex space-x-2">
               <button
                 onClick={closeModal}
-                className="bg-black/50 text-white rounded-lg p-2 hover:bg-black/70"
-                title="Close (Esc)"
+                className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 focus:outline-none"
+                aria-label="Close modal"
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
-            
-            {/* Navigation arrows for modal */}
-            {images.length > 1 && (
-              <>
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {images.map((_, index) => (
                 <button
-                  onClick={goToPrevious}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/50"
-                  title="Previous image (←)"
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                
-                <button
-                  onClick={goToNext}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/50"
-                  title="Next image (→)"
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </>
-            )}
-            
-            {/* Image indicators */}
-            {images.length > 1 && (
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 bg-black/50 rounded-full px-4 py-2">
-                {images.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentIndex(index)}
-                    className={cn(
-                      "w-3 h-3 rounded-full transition-all duration-200",
-                      index === currentIndex 
-                        ? "bg-white scale-125" 
-                        : "bg-white/50 hover:bg-white/80"
-                    )}
-                    aria-label={`Go to image ${index + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-            
-            {/* Keyboard shortcuts help */}
-            <div className="absolute bottom-4 left-4 bg-black/50 text-white text-xs rounded-lg p-3 hidden lg:block">
-              <div className="space-y-1">
-                <div>← → Navigate</div>
-                <div>+ - Zoom</div>
-                <div>0 Reset</div>
-                <div>F Fullscreen</div>
-                <div>Esc Close</div>
-                {zoomLevel > 1 && <div className="text-yellow-400">🖱️ Drag to pan</div>}
-              </div>
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={cn(
+                    "w-2 h-2 rounded-full",
+                    index === currentIndex ? "bg-white" : "bg-white/50"
+                  )}
+                  aria-label={`Go to image ${index + 1}`}
+                />
+              ))}
             </div>
-            
-            {/* Mobile touch instructions */}
-            {zoomLevel > 1 && (
-              <div className="absolute top-4 left-4 bg-black/50 text-white text-xs rounded-lg p-2 lg:hidden">
-                <div>👆 Drag to pan • 🤏 Pinch to zoom</div>
-              </div>
-            )}
           </div>
         </div>
       )}

@@ -100,42 +100,15 @@ const QuizResultPage = () => {
                     bookmarkFilter={bookmarkFilter}
                     setBookmarkFilter={setBookmarkFilter}
                 />
-                <section className="grid grid-cols-1 gap-6 mx-4 p-4 md:p-6 sm:mx-10 w-full md:w-2/3">
-                    {filteredQuestions?.map((question: Question, index: number) => {
-                        if (!question.Quiz || !question.Quiz._id || question.Quiz.status !== 'approved') {
-                            return (
-                                <div
-                                    key={`error-${index}`}
-                                    className="card bg-red-100 shadow-md rounded-lg p-6 border-gray-400 border-2 relative"
-                                >
-                                    <div className="absolute top-0 left-0 h-full w-1.5 bg-red-600 rounded-l-md" />
-                                    <h3 className="text-lg font-bold mb-1 question-text">Question {index + 1}</h3>
-                                    <div className="text-center py-8">
-                                        <div className="text-red-600 text-6xl mb-4">
-                                            ⚠️
-                                        </div>
-                                        <div className="text-red-600 text-xl font-semibold mb-2">
-                                            Question Reported
-                                        </div>
-                                        <p className="text-red-700 text-lg">
-                                            This question has been reported and cannot be displayed properly.
-                                        </p>
-                                        <p className="text-sm text-red-600 mt-4">
-                                            Sorry for the inconvenience.
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        }
 
-                        return (
-                            <QuizQuestionCard
-                                key={question.Quiz._id}
-                                question={question}
-                                index={index}
-                            />
-                        );
-                    })}
+                <section className="grid grid-cols-1 gap-6 mx-4 p-4 md:p-6 sm:mx-10 w-full md:w-2/3">
+                    {filteredQuestions?.map((question: Question, index: number) => (
+                        <QuizQuestionCard
+                            key={question.Quiz._id}
+                            question={question}
+                            index={index}
+                        />
+                    ))}
                 </section>
             </div>
         </ProtectedPage>

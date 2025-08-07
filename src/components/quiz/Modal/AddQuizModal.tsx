@@ -15,7 +15,6 @@ import { useGetKeyword } from '../../../hooks/keyword/useGetKeyword';
 import { useGetQuizzes } from '../../../hooks/quiz/useGetQuizzes';
 import { LoaderIcon } from 'lucide-react';
 import { Quiz } from '../../../types/api/Quiz';
-import { useImageGallery } from '../../../hooks/useImageGallery';
 
 interface AddQuizModalProps {
   showModal: boolean;
@@ -28,162 +27,6 @@ interface AddQuizModalProps {
 function filterKeywords(keywords: string[], value: string) {
   return keywords.filter(k => k.toLowerCase().includes(value.toLowerCase()));
 }
-
-// Image Preview Gallery Component
-const ImagePreviewGallery: React.FC<{
-  imageFiles: File[];
-  onRemoveImage: (index: number) => void;
-}> = ({ imageFiles, onRemoveImage }) => {
-  const imageUrls = imageFiles.map(file => URL.createObjectURL(file));
-  
-  const {
-    currentIndex,
-    isModalOpen,
-    isLoading,
-    imageError,
-    currentImage,
-    hasMultipleImages,
-    goToPrevious,
-    goToNext,
-    openModal,
-    closeModal,
-    setIsLoading,
-    setImageError,
-    setImageIndex
-  } = useImageGallery({ 
-    images: imageUrls,
-    initialIndex: 0
-  });
-
-  const handleImageLoad = useCallback(() => {
-    setIsLoading(false);
-    setImageError(false);
-  }, [setIsLoading, setImageError]);
-
-  const handleImageError = useCallback(() => {
-    setIsLoading(false);
-    setImageError(true);
-  }, [setIsLoading, setImageError]);
-
-  return (
-    <>
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
-        {imageFiles.map((file, index) => (
-          <div key={index} className="relative group">
-            <div 
-              className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => {
-                setImageIndex(index);
-                openModal();
-              }}
-            >
-              <Image
-                src={URL.createObjectURL(file)}
-                alt={`Preview ${index + 1}`}
-                fill
-                className="object-cover"
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-              />
-              {/* Preview overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center">
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/90 rounded-full p-2">
-                  <svg className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemoveImage(index);
-              }}
-              className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-              title="Remove image"
-            >
-              <X className="h-3 w-3 sm:h-4 sm:w-4" />
-            </button>
-            <p className="mt-1 text-xs text-gray-600 truncate">{file.name}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Enhanced Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center">
-          <div className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center">
-            <Image
-              src={currentImage}
-              alt={`Preview ${currentIndex + 1} of ${imageFiles.length}`}
-              className="max-w-full max-h-full object-contain"
-              width={800}
-              height={600}
-              quality={95}
-              priority
-            />
-
-            {/* Close button */}
-            <button
-              onClick={closeModal}
-              className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
-              title="Close preview"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            {/* Navigation for multiple images */}
-            {hasMultipleImages && (
-              <>
-                <button
-                  onClick={goToPrevious}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors"
-                  title="Previous image"
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                
-                <button
-                  onClick={goToNext}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors"
-                  title="Next image"
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-
-                {/* Image indicators */}
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 bg-black/50 rounded-full px-3 py-2">
-                  {imageFiles.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setImageIndex(index)}
-                      className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                        index === currentIndex ? "bg-white" : "bg-white/50 hover:bg-white/80"
-                      }`}
-                      title={`Go to image ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* Image info */}
-            <div className="absolute top-4 left-4 bg-black/50 text-white rounded-lg px-3 py-2">
-              <span className="text-sm">
-                {currentIndex + 1} of {imageFiles.length}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-};
 
 const AddQuizModal: React.FC<AddQuizModalProps> = ({
   showModal,
@@ -733,10 +576,28 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
               className="w-full border border-gray-300 rounded-lg px-2 sm:px-3 py-2 text-sm file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
             />
             {imageFiles.length > 0 && (
-              <ImagePreviewGallery 
-                imageFiles={imageFiles} 
-                onRemoveImage={removeImage}
-              />
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                {imageFiles.map((file, index) => (
+                  <div key={index} className="relative group">
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      <Image
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                    </button>
+                    <p className="mt-1 text-xs text-gray-600 truncate">{file.name}</p>
+                  </div>
+                ))}
+              </div>
             )}
             {error && error.includes('image') && (
               <p className="text-red-500 text-sm">Please upload valid images.</p>
