@@ -67,6 +67,27 @@ export default function Problem() {
                 return newArray;
             };
 
+            // Create a unique key for this quiz session
+            const sessionKey = `quiz_${subjectID}_${selectCategory.sort().join('_')}_${selectedQuestionTypes}_${questionCount}`;
+            
+            // Try to get cached questions from sessionStorage
+            const cachedQuestions = typeof window !== 'undefined' ? sessionStorage.getItem(sessionKey) : null;
+            
+            if (cachedQuestions) {
+                try {
+                    const parsedQuestions = JSON.parse(cachedQuestions);
+                    // Validate that cached questions are still valid
+                    if (parsedQuestions.length === questionCount) {
+                        return {
+                            questions: parsedQuestions,
+                        };
+                    }
+                } catch (error) {
+                    console.error('Error parsing cached questions:', error);
+                }
+            }
+
+            // If no valid cached questions, generate new ones
             const allQuestions = mapToQuestion(quizzes);
 
             const filteredQuestions = allQuestions.filter((q) => {
@@ -80,6 +101,15 @@ export default function Problem() {
             const shuffledQuestions = shuffleArray(filteredQuestions);
             const limitedQuestions = shuffledQuestions.slice(0, questionCount);
 
+            // Save to sessionStorage
+            if (typeof window !== 'undefined') {
+                try {
+                    sessionStorage.setItem(sessionKey, JSON.stringify(limitedQuestions));
+                } catch (error) {
+                    console.error('Error saving questions to sessionStorage:', error);
+                }
+            }
+
             return {
                 questions: limitedQuestions,
             };
@@ -90,9 +120,40 @@ export default function Problem() {
 
     useEffect(() => {
         if (quizData?.questions) {
-            setShowQuestion(quizData.questions);
+            // Create session key for user answers
+            const sessionKey = `quiz_${subjectID}_${selectCategory.sort().join('_')}_${selectedQuestionTypes}_${questionCount}`;
+            const answersKey = `${sessionKey}_answers`;
+            
+            // Try to restore user answers from session storage
+            const savedAnswers = typeof window !== 'undefined' ? sessionStorage.getItem(answersKey) : null;
+            
+            if (savedAnswers) {
+                try {
+                    const parsedAnswers = JSON.parse(savedAnswers);
+                    const questionsWithAnswers = quizData.questions.map((question, index) => {
+                        const savedAnswer = parsedAnswers[index];
+                        if (savedAnswer) {
+                            return {
+                                ...question,
+                                select: savedAnswer.select,
+                                isAnswered: savedAnswer.isAnswered,
+                                isBookmarked: savedAnswer.isBookmarked,
+                                isSubmitted: savedAnswer.isSubmitted,
+                                isCorrect: savedAnswer.isCorrect
+                            };
+                        }
+                        return question;
+                    });
+                    setShowQuestion(questionsWithAnswers);
+                } catch (error) {
+                    console.error('Error parsing saved answers:', error);
+                    setShowQuestion(quizData.questions);
+                }
+            } else {
+                setShowQuestion(quizData.questions);
+            }
         }
-    }, [quizData]);
+    }, [quizData, subjectID, selectCategory, selectedQuestionTypes, questionCount]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -110,6 +171,27 @@ export default function Problem() {
 
     const currentQuestion = showQuestion[currentQuestionIndex];
 
+    // Function to save answers to session storage
+    const saveAnswersToSession = (questions: Question[]) => {
+        const sessionKey = `quiz_${subjectID}_${selectCategory.sort().join('_')}_${selectedQuestionTypes}_${questionCount}`;
+        const answersKey = `${sessionKey}_answers`;
+        
+        if (typeof window !== 'undefined') {
+            try {
+                const answersData = questions.map(q => ({
+                    select: q.select,
+                    isAnswered: q.isAnswered,
+                    isBookmarked: q.isBookmarked,
+                    isSubmitted: q.isSubmitted,
+                    isCorrect: q.isCorrect
+                }));
+                sessionStorage.setItem(answersKey, JSON.stringify(answersData));
+            } catch (error) {
+                console.error('Error saving answers to sessionStorage:', error);
+            }
+        }
+    };
+
     const handleQuestionNavigation = (direction: 'next' | 'previous') => {
         if (direction === 'next') {
             setCurrentQuestionIndex((prevIndex: number) => (prevIndex + 1) % showQuestion.length);
@@ -126,6 +208,19 @@ export default function Problem() {
             return;
         }
         setIsSubmitting(true);
+        
+        // Clear the session storage for this quiz when submitting
+        const sessionKey = `quiz_${subjectID}_${selectCategory.sort().join('_')}_${selectedQuestionTypes}_${questionCount}`;
+        const answersKey = `${sessionKey}_answers`;
+        if (typeof window !== 'undefined') {
+            try {
+                sessionStorage.removeItem(sessionKey);
+                sessionStorage.removeItem(answersKey);
+            } catch (error) {
+                console.error('Error clearing quiz session:', error);
+            }
+        }
+        
         // Mark all questions as correct or incorrect
         const updatedQuestions = showQuestion.map(question => {
             let isCorrect = false;
@@ -188,6 +283,7 @@ export default function Problem() {
             updatedQuestions[currentQuestionIndex].isAnswered = false;
             updatedQuestions[currentQuestionIndex].isCorrect = null;
             setShowQuestion(updatedQuestions);
+            saveAnswersToSession(updatedQuestions);
         }
     };
 
@@ -195,6 +291,7 @@ export default function Problem() {
         const updatedQuestions = [...showQuestion];
         updatedQuestions[index].isBookmarked = !updatedQuestions[index].isBookmarked;
         setShowQuestion(updatedQuestions);
+        saveAnswersToSession(updatedQuestions);
     };
 
     const handleAnswerSelection = (answer: string) => {
@@ -203,6 +300,7 @@ export default function Problem() {
             updatedQuestions[currentQuestionIndex].select = answer;
             updatedQuestions[currentQuestionIndex].isAnswered = true;
             setShowQuestion(updatedQuestions);
+            saveAnswersToSession(updatedQuestions);
         }
     };
 
@@ -212,6 +310,7 @@ export default function Problem() {
             updatedQuestions[currentQuestionIndex].select = value;
             updatedQuestions[currentQuestionIndex].isAnswered = value !== '';
             setShowQuestion(updatedQuestions);
+            saveAnswersToSession(updatedQuestions);
         }
     };
 
@@ -235,6 +334,7 @@ export default function Problem() {
         currentQuestion.isCorrect = isCorrect;
         currentQuestion.isSubmitted = true;
         setShowQuestion(updatedQuestions);
+        saveAnswersToSession(updatedQuestions);
     };
 
     const navigateToQuestion = (index: number) => {
