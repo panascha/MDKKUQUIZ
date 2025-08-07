@@ -21,7 +21,6 @@ import QuizActions from '../../../../../components/quiz/quizQuestion/QuizActions
 import CorrectAnswerDisplay from '../../../../../components/quiz/quizQuestion/CorrectAnswerDisplay';
 import QuizSubmitButtons from '../../../../../components/quiz/quizQuestion/QuizSubmitButtons';
 import QuizQuestionTable from '../../../../../components/quiz/quizQuestion/QuizQuestionTable';
-import QuizImageModal from '../../../../../components/quiz/quizQuestion/QuizImageModal';
 import KeyboardShortcutsHelp from '../../../../../components/quiz/KeyboardShortcutsHelp';
 
 
@@ -47,7 +46,6 @@ export default function Problem() {
 
     const [seconds, setSeconds] = useState(0);
     const [showQuestion, setShowQuestion] = useState<Question[]>([]);
-    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [isQuestionTableOpen, setIsQuestionTableOpen] = useState(false);
     const [questionViewMode, setQuestionViewMode] = useState<'grid' | 'list'>('grid');
@@ -149,15 +147,13 @@ export default function Problem() {
 
     useEffect(() => {
         if (quizData?.questions) {
-            // Check if we have saved progress in session storage
             const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
             const savedProgress = sessionStorage.getItem(`${sessionKey}_progress`);
             
             if (savedProgress) {
                 try {
                     const parsedProgress = JSON.parse(savedProgress);
-                    // Merge saved answers with fresh questions
-                    const questionsWithProgress = quizData.questions.map((question, index) => {
+                    const questionsWithProgress = quizData.questions.map((question: Question, index: number) => {
                         const savedQuestion = parsedProgress[index];
                         if (savedQuestion && savedQuestion.quiz._id === question.quiz._id) {
                             return {
@@ -486,12 +482,6 @@ export default function Problem() {
                 onClose={() => setIsQuestionTableOpen(false)}
                 onToggleViewMode={toggleQuestionViewMode}
                 onNavigateToQuestion={navigateToQuestion}
-            />
-            
-            <QuizImageModal
-                isOpen={isImageModalOpen}
-                currentQuestion={currentQuestion}
-                onClose={() => setIsImageModalOpen(false)}
             />
             
             <KeyboardShortcutsHelp />

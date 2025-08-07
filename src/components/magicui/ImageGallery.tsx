@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { cn } from '../../lib/utils';
 import { 
   XMarkIcon, 
@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { BACKEND_URL } from '../../config/apiRoutes';
+import { useImageGallery } from '../../hooks/useImageGallery';
 
 interface ImageGalleryProps {
   images: string[];
@@ -16,77 +17,53 @@ interface ImageGalleryProps {
 }
 
 const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isLoading, setIsLoading] = useState(true);
-  const [imageError, setImageError] = useState(false);
-  const [fullscreenMode, setFullscreenMode] = useState(false);
+  const {
+    // State
+    currentIndex,
+    isModalOpen,
+    zoomLevel,
+    position,
+    isLoading,
+    imageError,
+    fullscreenMode,
+    isDragging,
+    touchDistance,
+    touchStartPos,
+    isTouchDragging,
+    dragStart,
+    minZoom,
+    maxZoom,
+    
+    // Computed
+    currentImage,
+    hasMultipleImages,
+    
+    // Actions
+    goToPrevious,
+    goToNext,
+    openModal,
+    closeModal,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    resetImageState,
+    setImageIndex,
+    toggleFullscreen,
+    
+    // Setters
+    setIsLoading,
+    setImageError,
+    setZoomLevel,
+    setPosition,
+    setIsDragging,
+    setTouchDistance,
+    setTouchStartPos,
+    setIsTouchDragging,
+  } = useImageGallery({ images });
+
   const imageRef = useRef<HTMLImageElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [touchDistance, setTouchDistance] = useState(0);
-  const [touchStartPos, setTouchStartPos] = useState({ x: 0, y: 0 });
-  const [isTouchDragging, setIsTouchDragging] = useState(false);
-  const dragStart = useRef({ x: 0, y: 0 });
-
-  const currentImage = images[currentIndex];
-  const minZoom = 0.5;
-  const maxZoom = 5;
-
-  const goToPrevious = useCallback(() => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
-    resetImageState();
-  }, [images.length]);
-
-  const goToNext = useCallback(() => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    resetImageState();
-  }, [images.length]);
-
-  const resetImageState = useCallback(() => {
-    setPosition({ x: 0, y: 0 });
-    setZoomLevel(1);
-    setIsLoading(true);
-    setImageError(false);
-  }, []);
-
-  const openModal = useCallback(() => {
-    setIsModalOpen(true);
-    resetImageState();
-    document.body.style.overflow = 'hidden'; // Prevent body scroll
-  }, [resetImageState]);
-
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-    setFullscreenMode(false);
-    document.body.style.overflow = 'unset'; // Restore body scroll
-  }, []);
-
-  const zoomIn = useCallback(() => {
-    setZoomLevel(prev => Math.min(prev + 0.2, maxZoom));
-  }, [maxZoom]);
-
-  const zoomOut = useCallback(() => {
-    setZoomLevel(prev => Math.max(prev - 0.2, minZoom));
-  }, [minZoom]);
-
-  const resetZoom = useCallback(() => {
-    setZoomLevel(1);
-    setPosition({ x: 0, y: 0 });
-  }, []);
-
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      modalRef.current?.requestFullscreen?.();
-      setFullscreenMode(true);
-    } else {
-      document.exitFullscreen?.();
-      setFullscreenMode(false);
-    }
-  }, []);
 
   // Touch handling for mobile zoom and pan
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -468,7 +445,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
                 <PhotoIcon className="h-24 w-24 mb-4" />
                 <span className="text-xl">Failed to load image</span>
                 <button 
-                  onClick={() => setCurrentIndex(currentIndex)}
+                  onClick={() => setImageIndex(currentIndex)}
                   className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   Retry
@@ -592,7 +569,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
                 {images.map((_, index) => (
                   <button
                     key={index}
-                    onClick={() => setCurrentIndex(index)}
+                    onClick={() => setImageIndex(index)}
                     className={cn(
                       "w-3 h-3 rounded-full transition-all duration-200",
                       index === currentIndex 

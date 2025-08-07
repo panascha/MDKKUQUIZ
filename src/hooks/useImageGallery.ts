@@ -15,6 +15,8 @@ export const useImageGallery = ({ images, initialIndex = 0 }: UseImageGalleryPro
   const [fullscreenMode, setFullscreenMode] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [touchDistance, setTouchDistance] = useState(0);
+  const [touchStartPos, setTouchStartPos] = useState({ x: 0, y: 0 });
+  const [isTouchDragging, setIsTouchDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
   const minZoom = 0.5;
@@ -44,7 +46,6 @@ export const useImageGallery = ({ images, initialIndex = 0 }: UseImageGalleryPro
   }, [resetImageState]);
 
   const closeModal = useCallback(() => {
-    setIsModalOpen(false);
     setIsModalOpen(false);
     setFullscreenMode(false);
     document.body.style.overflow = 'unset';
@@ -90,6 +91,8 @@ export const useImageGallery = ({ images, initialIndex = 0 }: UseImageGalleryPro
     fullscreenMode,
     isDragging,
     touchDistance,
+    touchStartPos,
+    isTouchDragging,
     dragStart,
     minZoom,
     maxZoom,
@@ -117,5 +120,7 @@ export const useImageGallery = ({ images, initialIndex = 0 }: UseImageGalleryPro
     setPosition,
     setIsDragging,
     setTouchDistance,
+    setTouchStartPos,
+    setIsTouchDragging,
   };
 };
