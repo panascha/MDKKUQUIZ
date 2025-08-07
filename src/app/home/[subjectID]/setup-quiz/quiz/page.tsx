@@ -27,7 +27,6 @@ export default function Problem() {
     const subjectID = params.subjectID as string;
     useEffect(() => {
         if (!selectCategory.length || questionCount <= 0 || !answerMode || !selectedQuestionTypes) {
-            console.log('Redirecting due to missing quiz state:', { selectCategory, questionCount, answerMode, selectedQuestionTypes });
             router.replace(`${FrontendRoutes.HOMEPAGE}/${subjectID}/setup-quiz`)
         }
     }, [selectCategory, questionCount, answerMode, selectedQuestionTypes, router, subjectID]);
@@ -464,7 +463,7 @@ export default function Problem() {
                                 </div>
                                 {showQuestion[currentQuestionIndex].isSubmitted && (
                                             <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 w-full">
-                                        <p className="text-sm font-medium">Correct Answer: <span className="text-blue-600 font-semibold">{currentQuestion.quiz.correctAnswer}</span></p>
+                                        <p className="text-sm font-medium">Correct Answer: <span className="text-blue-600 font-semibold">{Array.isArray(currentQuestion.quiz.correctAnswer) ? currentQuestion.quiz.correctAnswer.join(', ') : currentQuestion.quiz.correctAnswer}</span></p>
                                     </div>
                                 )}
                             </div>
