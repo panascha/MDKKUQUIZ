@@ -27,7 +27,8 @@ export default function Problem() {
     const subjectID = params.subjectID as string;
     useEffect(() => {
         if (!selectCategory.length || questionCount <= 0 || !answerMode || !selectedQuestionTypes) {
-            router.replace(`${FrontendRoutes.HOMEPAGE}/${subjectID}/quiz`)
+            console.log('Redirecting due to missing quiz state:', { selectCategory, questionCount, answerMode, selectedQuestionTypes });
+            router.replace(`${FrontendRoutes.HOMEPAGE}/${subjectID}/setup-quiz`)
         }
     }, [selectCategory, questionCount, answerMode, selectedQuestionTypes, router, subjectID]);
     const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
