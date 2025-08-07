@@ -2,9 +2,17 @@ export interface User {
   _id: string;
   email: string;
   name: string;
-  role: string;
-  year: string;
+  role: 'user' | 'admin' | 'S-admin';
+  year: number;
+  status: {
+    isBanned: boolean;
+    banReason: string;
+    banUntil: Date | null;
+  };
+  otpCode?: string;
+  otpExpire?: Date;
+  otpVerified: boolean;
   createdAt: string;
-  __v: number;
   updatedAt: Date;
+  __v: number;
 }
