@@ -9,15 +9,20 @@ import { useSubmitScore } from '../../../../../hooks/score/useSubmitScore';
 import { Quiz } from '../../../../../types/api/Quiz';
 import { useGetUserStatById } from '../../../../../hooks/stats/useGetUserStatById';
 import { Role_type } from '../../../../../config/role';
-import { useQuiz } from '../../../../../context/quiz';
-import { FrontendRoutes } from '../../../../../config/apiRoutes';
+import { useQuiz } from '../../../../../context/quiz'
+import { FrontendRoutes } from '../../../../../config/apiRoutes'
+import { useShuffledChoices } from '../../../../../hooks/quiz/useShuffledChoices';
 import { useQuizSessionStorage } from '../../../../../hooks/quiz/useQuizSessionStorage';
-
+import { useQuizKeyboardNavigation } from '../../../../../hooks/quiz/useQuizKeyboardNavigation';
 import QuizHeader from '../../../../../components/quiz/quizQuestion/QuizHeader';
 import QuizNavigation from '../../../../../components/quiz/quizQuestion/QuizNavigation';
-import QuizQuestionDisplay from '../../../../../components/quiz/quizQuestion/QuizQuestionDisplay';
+import QuizQuestion from '../../../../../components/quiz/quizQuestion/QuizQuestion';
 import QuizActions from '../../../../../components/quiz/quizQuestion/QuizActions';
+import CorrectAnswerDisplay from '../../../../../components/quiz/quizQuestion/CorrectAnswerDisplay';
+import QuizSubmitButtons from '../../../../../components/quiz/quizQuestion/QuizSubmitButtons';
 import QuizQuestionTable from '../../../../../components/quiz/quizQuestion/QuizQuestionTable';
+import QuizImageModal from '../../../../../components/quiz/quizQuestion/QuizImageModal';
+import KeyboardShortcutsHelp from '../../../../../components/quiz/KeyboardShortcutsHelp';
 
 
 export default function Problem() {
@@ -31,14 +36,6 @@ export default function Problem() {
     const isAdmin = user?.role === Role_type.ADMIN || isSAdmin;
     const subjectID = params.subjectID as string;
     
-    // Initialize session storage hook
-    const { saveAnswersToSession, loadAnswersFromSession, clearQuizSession, getSessionKey } = useQuizSessionStorage({
-        subjectID,
-        selectCategory,
-        selectedQuestionTypes,
-        questionCount
-    });
-
     useEffect(() => {
         if (!selectCategory.length || questionCount <= 0 || !answerMode || !selectedQuestionTypes) {
             router.replace(`${FrontendRoutes.HOMEPAGE}/${subjectID}/setup-quiz`)
@@ -50,11 +47,20 @@ export default function Problem() {
 
     const [seconds, setSeconds] = useState(0);
     const [showQuestion, setShowQuestion] = useState<Question[]>([]);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [isQuestionTableOpen, setIsQuestionTableOpen] = useState(false);
     const [questionViewMode, setQuestionViewMode] = useState<'grid' | 'list'>('grid');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isTimerVisible, setIsTimerVisible] = useState(true);
+
+    // Use custom hooks
+    const { clearQuizSessionStorage } = useQuizSessionStorage({
+        subjectID,
+        selectedQuestionTypes: selectedQuestionTypes || '',
+        questionCount,
+        selectCategory
+    });
 
     const { data: quizData, isLoading } = useGetQuizzes({
         subjectID,
@@ -80,27 +86,29 @@ export default function Problem() {
                 return newArray;
             };
 
-            // Create a unique key for this quiz session
-            const sessionKey = getSessionKey();
+            // Create a unique session key based on quiz parameters
+            const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
             
-            // Try to get cached questions from sessionStorage
-            const cachedQuestions = typeof window !== 'undefined' ? sessionStorage.getItem(sessionKey) : null;
-            
+            // Check if shuffled questions exist in session storage
+            const cachedQuestions = sessionStorage.getItem(sessionKey);
             if (cachedQuestions) {
                 try {
                     const parsedQuestions = JSON.parse(cachedQuestions);
-                    // Validate that cached questions are still valid
-                    if (parsedQuestions.length === questionCount) {
+                    // Validate that the cached questions are still valid
+                    const validQuestions = parsedQuestions.filter((q: Question) => 
+                        quizzes.some(quiz => quiz._id === q.quiz._id)
+                    );
+                    
+                    if (validQuestions.length === parsedQuestions.length) {
                         return {
-                            questions: parsedQuestions,
+                            questions: validQuestions,
                         };
                     }
                 } catch (error) {
-                    console.error('Error parsing cached questions:', error);
+                    console.warn('Failed to parse cached questions:', error);
                 }
             }
 
-            // If no valid cached questions, generate new ones
             const allQuestions = mapToQuestion(quizzes);
 
             const filteredQuestions = allQuestions.filter((q) => {
@@ -114,13 +122,11 @@ export default function Problem() {
             const shuffledQuestions = shuffleArray(filteredQuestions);
             const limitedQuestions = shuffledQuestions.slice(0, questionCount);
 
-            // Save to sessionStorage
-            if (typeof window !== 'undefined') {
-                try {
-                    sessionStorage.setItem(sessionKey, JSON.stringify(limitedQuestions));
-                } catch (error) {
-                    console.error('Error saving questions to sessionStorage:', error);
-                }
+            // Save shuffled questions to session storage
+            try {
+                sessionStorage.setItem(sessionKey, JSON.stringify(limitedQuestions));
+            } catch (error) {
+                console.warn('Failed to save questions to session storage:', error);
             }
 
             return {
@@ -131,12 +137,62 @@ export default function Problem() {
 
     const { submitScore, calculateScore } = useSubmitScore();
 
+    const currentQuestion = showQuestion[currentQuestionIndex];
+    
+    const shuffledChoices = useShuffledChoices({
+        currentQuestion,
+        selectedQuestionTypes: selectedQuestionTypes || '',
+        subjectID,
+        questionCount,
+        selectCategory
+    });
+
     useEffect(() => {
         if (quizData?.questions) {
-            const questionsWithAnswers = loadAnswersFromSession(quizData.questions);
-            setShowQuestion(questionsWithAnswers);
+            // Check if we have saved progress in session storage
+            const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
+            const savedProgress = sessionStorage.getItem(`${sessionKey}_progress`);
+            
+            if (savedProgress) {
+                try {
+                    const parsedProgress = JSON.parse(savedProgress);
+                    // Merge saved answers with fresh questions
+                    const questionsWithProgress = quizData.questions.map((question, index) => {
+                        const savedQuestion = parsedProgress[index];
+                        if (savedQuestion && savedQuestion.quiz._id === question.quiz._id) {
+                            return {
+                                ...question,
+                                select: savedQuestion.select,
+                                isBookmarked: savedQuestion.isBookmarked,
+                                isAnswered: savedQuestion.isAnswered,
+                                isSubmitted: savedQuestion.isSubmitted,
+                                isCorrect: savedQuestion.isCorrect
+                            };
+                        }
+                        return question;
+                    });
+                    setShowQuestion(questionsWithProgress);
+                } catch (error) {
+                    console.warn('Failed to parse saved progress:', error);
+                    setShowQuestion(quizData.questions);
+                }
+            } else {
+                setShowQuestion(quizData.questions);
+            }
         }
-    }, [quizData, loadAnswersFromSession]);
+    }, [quizData, subjectID, selectedQuestionTypes, questionCount, selectCategory]);
+
+    // Save progress whenever showQuestion changes
+    useEffect(() => {
+        if (showQuestion.length > 0) {
+            const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
+            try {
+                sessionStorage.setItem(`${sessionKey}_progress`, JSON.stringify(showQuestion));
+            } catch (error) {
+                console.warn('Failed to save progress to session storage:', error);
+            }
+        }
+    }, [showQuestion, subjectID, selectedQuestionTypes, questionCount, selectCategory]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -145,8 +201,6 @@ export default function Problem() {
 
         return () => clearInterval(interval);
     }, []);
-
-    const currentQuestion = showQuestion[currentQuestionIndex];
 
     const handleQuestionNavigation = (direction: 'next' | 'previous') => {
         if (direction === 'next') {
@@ -162,10 +216,6 @@ export default function Problem() {
             return;
         }
         setIsSubmitting(true);
-        
-        // Clear the session storage for this quiz when submitting
-        clearQuizSession();
-        
         // Mark all questions as correct or incorrect
         const updatedQuestions = showQuestion.map(question => {
             let isCorrect = false;
@@ -210,6 +260,7 @@ export default function Problem() {
         try {
             const result = await submitScore(scoreData);
             if (result?._id) {
+                clearQuizSessionStorage();
                 router.push(`/profile/${result._id}`);
             } else {
                 console.error('No score ID returned from submission');
@@ -228,7 +279,6 @@ export default function Problem() {
             updatedQuestions[currentQuestionIndex].isAnswered = false;
             updatedQuestions[currentQuestionIndex].isCorrect = null;
             setShowQuestion(updatedQuestions);
-            saveAnswersToSession(updatedQuestions);
         }
     };
 
@@ -236,7 +286,6 @@ export default function Problem() {
         const updatedQuestions = [...showQuestion];
         updatedQuestions[index].isBookmarked = !updatedQuestions[index].isBookmarked;
         setShowQuestion(updatedQuestions);
-        saveAnswersToSession(updatedQuestions);
     };
 
     const handleAnswerSelection = (answer: string) => {
@@ -245,7 +294,6 @@ export default function Problem() {
             updatedQuestions[currentQuestionIndex].select = answer;
             updatedQuestions[currentQuestionIndex].isAnswered = true;
             setShowQuestion(updatedQuestions);
-            saveAnswersToSession(updatedQuestions);
         }
     };
 
@@ -255,7 +303,6 @@ export default function Problem() {
             updatedQuestions[currentQuestionIndex].select = value;
             updatedQuestions[currentQuestionIndex].isAnswered = value !== '';
             setShowQuestion(updatedQuestions);
-            saveAnswersToSession(updatedQuestions);
         }
     };
 
@@ -279,7 +326,6 @@ export default function Problem() {
         currentQuestion.isCorrect = isCorrect;
         currentQuestion.isSubmitted = true;
         setShowQuestion(updatedQuestions);
-        saveAnswersToSession(updatedQuestions);
     };
 
     const navigateToQuestion = (index: number) => {
@@ -299,19 +345,17 @@ export default function Problem() {
         Array.isArray(showQuestion) && showQuestion.length > 0 && showQuestion.every(q => q.isSubmitted)
     , [showQuestion]);
 
-    // Add shuffled choices memo
-    const shuffledChoices = useMemo(() => {
-        if (!currentQuestion || selectedQuestionTypes !== 'mcq') return [];
-        
-        // Create a copy of choices with their indices
-        const choicesWithIndices = currentQuestion.quiz.choice.map((choice, index) => ({
-            choice,
-            originalIndex: index
-        }));
-        
-        // Shuffle the choices
-        return [...choicesWithIndices].sort(() => Math.random() - 0.5);
-    }, [currentQuestion, selectedQuestionTypes]);
+    // Add keyboard navigation
+    useQuizKeyboardNavigation({
+        currentQuestion,
+        currentQuestionIndex,
+        totalQuestions: showQuestion.length,
+        selectedQuestionTypes: selectedQuestionTypes || '',
+        shuffledChoices,
+        onNavigateQuestion: handleQuestionNavigation,
+        onAnswerSelection: handleAnswerSelection,
+        isSubmitted: currentQuestion?.isSubmitted || false
+    });
 
     if (userLoading || statLoading) {
         return (
@@ -348,44 +392,53 @@ export default function Problem() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
                     <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
                         <QuizHeader
-                            subjectName={showQuestion[0]?.quiz?.subject?.name}
+                            subjectName={showQuestion[0]?.quiz?.subject?.name || ''}
                             currentQuestionIndex={currentQuestionIndex}
                             totalQuestions={showQuestion.length}
-                            isTimerVisible={isTimerVisible}
                             seconds={seconds}
-                            onToggleTimer={() => setIsTimerVisible(v => !v)}
+                            isTimerVisible={isTimerVisible}
+                            onToggleTimer={() => setIsTimerVisible((v) => !v)}
                         />
 
                         <QuizNavigation
                             currentQuestionIndex={currentQuestionIndex}
                             totalQuestions={showQuestion.length}
-                            onPrevious={() => handleQuestionNavigation('previous')}
-                            onNext={() => handleQuestionNavigation('next')}
+                            onNavigate={handleQuestionNavigation}
                         />
 
                         <div className="flex flex-col items-center justify-center mb-8 sm:mb-12">
                             {currentQuestion && (
-                                <QuizQuestionDisplay
-                                    currentQuestion={currentQuestion}
-                                    currentQuestionIndex={currentQuestionIndex}
-                                    selectedQuestionTypes={selectedQuestionTypes}
-                                    answerMode={answerMode}
-                                    onToggleBookmark={toggleBookmark}
-                                    onAnswerSelection={handleAnswerSelection}
-                                    onShortAnswerChange={handleShortAnswerChange}
-                                    onSubmitCurrentQuestion={submitCurrentQuestion}
-                                    onClearAnswer={clearAnswer}
-                                />
+                                <>
+                                    <QuizQuestion
+                                        currentQuestion={currentQuestion}
+                                        currentQuestionIndex={currentQuestionIndex}
+                                        selectedQuestionTypes={selectedQuestionTypes || ''}
+                                        shuffledChoices={shuffledChoices}
+                                        onBookmarkToggle={toggleBookmark}
+                                        onAnswerSelection={handleAnswerSelection}
+                                        onShortAnswerChange={handleShortAnswerChange}
+                                    />
+                                    
+                                    <QuizActions
+                                        currentQuestion={currentQuestion}
+                                        selectedQuestionTypes={selectedQuestionTypes || ''}
+                                        answerMode={answerMode || ''}
+                                        onSubmitCurrentQuestion={submitCurrentQuestion}
+                                        onClearAnswer={clearAnswer}
+                                    />
+                                    
+                                    <CorrectAnswerDisplay currentQuestion={currentQuestion} />
+                                </>
                             )}
                         </div>
 
-                        <QuizActions
-                            answerMode={answerMode}
+                        <QuizSubmitButtons
+                            answerMode={answerMode || ''}
                             allQuestionsAnswered={allQuestionsAnswered}
                             allQuestionsSubmitted={allQuestionsSubmitted}
                             isSubmitting={isSubmitting}
+                            onSubmit={handleSubmit}
                             onViewAllQuestions={() => setIsQuestionTableOpen(true)}
-                            onSubmitQuiz={handleSubmit}
                         />
                     </div>
                 </div>
@@ -393,13 +446,21 @@ export default function Problem() {
             
             <QuizQuestionTable
                 isOpen={isQuestionTableOpen}
-                questions={showQuestion}
+                showQuestion={showQuestion}
                 currentQuestionIndex={currentQuestionIndex}
                 questionViewMode={questionViewMode}
                 onClose={() => setIsQuestionTableOpen(false)}
                 onToggleViewMode={toggleQuestionViewMode}
                 onNavigateToQuestion={navigateToQuestion}
             />
+            
+            <QuizImageModal
+                isOpen={isImageModalOpen}
+                currentQuestion={currentQuestion}
+                onClose={() => setIsImageModalOpen(false)}
+            />
+            
+            <KeyboardShortcutsHelp />
         </ProtectedPage>
     );
 }

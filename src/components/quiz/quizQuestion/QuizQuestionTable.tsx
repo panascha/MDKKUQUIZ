@@ -1,11 +1,11 @@
 "use client";
 import React from 'react';
-import { ViewList, ViewModule } from '@mui/icons-material';
 import { Question } from '../../../types/api/Question';
+import { ViewList, ViewModule } from '@mui/icons-material';
 
 interface QuizQuestionTableProps {
     isOpen: boolean;
-    questions: Question[];
+    showQuestion: Question[];
     currentQuestionIndex: number;
     questionViewMode: 'grid' | 'list';
     onClose: () => void;
@@ -13,15 +13,15 @@ interface QuizQuestionTableProps {
     onNavigateToQuestion: (index: number) => void;
 }
 
-const QuizQuestionTable: React.FC<QuizQuestionTableProps> = ({
+export default function QuizQuestionTable({
     isOpen,
-    questions,
+    showQuestion,
     currentQuestionIndex,
     questionViewMode,
     onClose,
     onToggleViewMode,
     onNavigateToQuestion
-}) => {
+}: QuizQuestionTableProps) {
     if (!isOpen) return null;
 
     return (
@@ -49,7 +49,7 @@ const QuizQuestionTable: React.FC<QuizQuestionTableProps> = ({
                 </div>
             
                 <div className={`grid ${questionViewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4' : 'flex flex-col gap-3'}`}>
-                    {questions.map((q, index) => (
+                    {showQuestion.map((q, index) => (
                         <button
                             key={index}
                             className={`p-3 rounded-lg text-sm sm:text-base text-left transition-all duration-300 font-medium border hover:bg-gray-100
@@ -72,6 +72,4 @@ const QuizQuestionTable: React.FC<QuizQuestionTableProps> = ({
             </div>
         </div>
     );
-};
-
-export default QuizQuestionTable;
+}

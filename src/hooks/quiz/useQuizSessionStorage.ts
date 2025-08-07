@@ -1,89 +1,61 @@
+"use client";
 import { useEffect } from 'react';
-import { Question } from '../../types/api/Question';
 
 interface UseQuizSessionStorageProps {
     subjectID: string;
-    selectCategory: string[];
     selectedQuestionTypes: string;
     questionCount: number;
+    selectCategory: string[];
 }
 
-export const useQuizSessionStorage = ({
+export function useQuizSessionStorage({
     subjectID,
-    selectCategory,
     selectedQuestionTypes,
-    questionCount
-}: UseQuizSessionStorageProps) => {
-    const getSessionKey = () => 
-        `quiz_${subjectID}_${selectCategory.sort().join('_')}_${selectedQuestionTypes}_${questionCount}`;
-
-    const getAnswersKey = () => `${getSessionKey()}_answers`;
-
-    const saveAnswersToSession = (questions: Question[]) => {
-        const answersKey = getAnswersKey();
+    questionCount,
+    selectCategory
+}: UseQuizSessionStorageProps) {
+    // Cleanup session storage when component unmounts
+    useEffect(() => {
+        const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
         
-        if (typeof window !== 'undefined') {
+        return () => {
+            // Clear session storage when leaving the quiz
             try {
-                const answersData = questions.map(q => ({
-                    select: q.select,
-                    isAnswered: q.isAnswered,
-                    isBookmarked: q.isBookmarked,
-                    isSubmitted: q.isSubmitted,
-                    isCorrect: q.isCorrect
-                }));
-                sessionStorage.setItem(answersKey, JSON.stringify(answersData));
-            } catch (error) {
-                console.error('Error saving answers to sessionStorage:', error);
-            }
-        }
-    };
-
-    const loadAnswersFromSession = (questions: Question[]): Question[] => {
-        const answersKey = getAnswersKey();
-        const savedAnswers = typeof window !== 'undefined' ? sessionStorage.getItem(answersKey) : null;
-        
-        if (savedAnswers) {
-            try {
-                const parsedAnswers = JSON.parse(savedAnswers);
-                return questions.map((question, index) => {
-                    const savedAnswer = parsedAnswers[index];
-                    if (savedAnswer) {
-                        return {
-                            ...question,
-                            select: savedAnswer.select,
-                            isAnswered: savedAnswer.isAnswered,
-                            isBookmarked: savedAnswer.isBookmarked,
-                            isSubmitted: savedAnswer.isSubmitted,
-                            isCorrect: savedAnswer.isCorrect
-                        };
-                    }
-                    return question;
-                });
-            } catch (error) {
-                console.error('Error parsing saved answers:', error);
-                return questions;
-            }
-        }
-        return questions;
-    };
-
-    const clearQuizSession = () => {
-        const sessionKey = getSessionKey();
-        const answersKey = getAnswersKey();
-        if (typeof window !== 'undefined') {
-            try {
+                // Clear main quiz data and progress
                 sessionStorage.removeItem(sessionKey);
-                sessionStorage.removeItem(answersKey);
+                sessionStorage.removeItem(`${sessionKey}_progress`);
+                
+                // Clear choice order for all questions
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    if (key && key.startsWith(`${sessionKey}_choice_order_`)) {
+                        sessionStorage.removeItem(key);
+                    }
+                }
             } catch (error) {
-                console.error('Error clearing quiz session:', error);
+                console.warn('Failed to clear session storage:', error);
             }
+        };
+    }, [subjectID, selectedQuestionTypes, questionCount, selectCategory]);
+
+    const clearQuizSessionStorage = () => {
+        const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
+        try {
+            // Clear main quiz data and progress
+            sessionStorage.removeItem(sessionKey);
+            sessionStorage.removeItem(`${sessionKey}_progress`);
+            
+            // Clear choice order for all questions
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && key.startsWith(`${sessionKey}_choice_order_`)) {
+                    sessionStorage.removeItem(key);
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to clear session storage:', error);
         }
     };
 
-    return {
-        saveAnswersToSession,
-        loadAnswersFromSession,
-        clearQuizSession,
-        getSessionKey
-    };
-};
+    return { clearQuizSessionStorage };
+}

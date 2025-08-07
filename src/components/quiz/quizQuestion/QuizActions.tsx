@@ -1,51 +1,74 @@
 "use client";
 import React from 'react';
+import { Question } from '../../../types/api/Question';
+import { CheckCircle, Cancel, ErrorOutline } from '@mui/icons-material';
 
 interface QuizActionsProps {
+    currentQuestion: Question;
+    selectedQuestionTypes: string;
     answerMode: string;
-    allQuestionsAnswered: boolean;
-    allQuestionsSubmitted: boolean;
-    isSubmitting: boolean;
-    onViewAllQuestions: () => void;
-    onSubmitQuiz: () => void;
+    onSubmitCurrentQuestion: () => void;
+    onClearAnswer: () => void;
 }
 
-const QuizActions: React.FC<QuizActionsProps> = ({
+export default function QuizActions({
+    currentQuestion,
+    selectedQuestionTypes,
     answerMode,
-    allQuestionsAnswered,
-    allQuestionsSubmitted,
-    isSubmitting,
-    onViewAllQuestions,
-    onSubmitQuiz
-}) => {
+    onSubmitCurrentQuestion,
+    onClearAnswer
+}: QuizActionsProps) {
     return (
-        <div className="flex justify-center gap-4 mt-8">
-            <button
-                className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                onClick={onViewAllQuestions}
-            >
-                View All Questions
-            </button>
-            {answerMode === 'end-of-quiz' && allQuestionsAnswered && (
-                <button
-                    className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={onSubmitQuiz}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? "Submitting..." : "Submit All & Go to Summary"}
-                </button>
+        <div className="flex flex-col gap-3 mt-6 w-full">
+            {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && 
+             answerMode === 'each-question' && 
+             !currentQuestion.isSubmitted && 
+             currentQuestion.isAnswered && (
+                <div className="flex gap-3">
+                    <button
+                        className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2"
+                        onClick={onSubmitCurrentQuestion}
+                    >
+                        <CheckCircle className="mr-2" />
+                        Submit
+                    </button>
+                    <button
+                        className={`
+                        px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2
+                        ${currentQuestion.isAnswered ? 'opacity-75 cursor-not-allowed' : ''}`}
+                        onClick={onClearAnswer}
+                    >
+                        <Cancel className="mr-2" />
+                        Clear Answer
+                    </button>
+                </div>
             )}
-            {answerMode === 'each-question' && allQuestionsSubmitted && (
-                <button
-                    className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={onSubmitQuiz}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? "Submitting..." : "Go to Summary"}
-                </button>
+            {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && 
+             answerMode === 'end-of-quiz' && 
+             currentQuestion.isAnswered && (
+                <div className="flex w-full justify-end gap-3">
+                    <button
+                        className="px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        onClick={onClearAnswer}
+                    >
+                        <Cancel className="mr-2" />
+                        Clear Answer
+                    </button>
+                </div>
+            )}
+            
+            {currentQuestion.isSubmitted && (
+                <div className={`px-4 py-3 rounded-lg text-sm sm:text-base flex items-center font-medium
+                    ${currentQuestion.isCorrect === true ? 'bg-green-100 text-green-700 border border-green-200'
+                        : currentQuestion.isCorrect === false ? 'bg-red-100 text-red-700 border border-red-200'
+                            : 'bg-yellow-100 text-yellow-700 border border-yellow-200'}`}>
+                    {currentQuestion.isCorrect === true ?
+                        <><CheckCircle className="mr-2" /> Correct Answer</> :
+                        currentQuestion.isCorrect === false ?
+                            <><Cancel className="mr-2" /> Wrong Answer</> :
+                            <><ErrorOutline className="mr-2" /> Answer Submitted</>}
+                </div>
             )}
         </div>
     );
-};
-
-export default QuizActions;
+}

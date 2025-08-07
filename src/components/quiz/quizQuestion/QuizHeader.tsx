@@ -6,19 +6,19 @@ interface QuizHeaderProps {
     subjectName: string;
     currentQuestionIndex: number;
     totalQuestions: number;
-    isTimerVisible: boolean;
     seconds: number;
+    isTimerVisible: boolean;
     onToggleTimer: () => void;
 }
 
-const QuizHeader: React.FC<QuizHeaderProps> = ({
+export default function QuizHeader({
     subjectName,
     currentQuestionIndex,
     totalQuestions,
-    isTimerVisible,
     seconds,
+    isTimerVisible,
     onToggleTimer
-}) => {
+}: QuizHeaderProps) {
     const formatTime = (s: number) => {
         const mins = Math.floor(s / 60);
         const secs = s % 60;
@@ -51,6 +51,4 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
             </div>
         </div>
     );
-};
-
-export default QuizHeader;
+}
