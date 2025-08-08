@@ -51,9 +51,9 @@ const Page = () => {
               Login
             </TabsTrigger>
             {/* TODO: remove comment when it's not trial mode */}
-            {/* <TabsTrigger value="register" className="transition-colors duration-300 ease-in-out cursor-pointer">
+            <TabsTrigger value="register" className="transition-colors duration-300 ease-in-out cursor-pointer">
               Register
-            </TabsTrigger> */}
+            </TabsTrigger>
           </TabsList>
 
           {/* Login Form */}
