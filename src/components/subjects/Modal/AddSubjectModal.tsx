@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../ui/Dialog';
 import Button from '../../ui/Button';
 import { LoaderIcon, X } from "lucide-react";
 import Image from 'next/image';
+import { useFormSessionStorage } from '../../../hooks/useFormSessionStorage';
 
 interface AddSubjectModalProps {
   showModal: boolean;
@@ -20,6 +21,7 @@ interface AddSubjectModalProps {
   createMutation: {
     isPending: boolean;
   };
+  onLoadSavedData?: (savedData: any) => void; // Add callback for loading saved data
 }
 
 const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
@@ -31,8 +33,62 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   resetForm,
   error,
   createMutation,
+  onLoadSavedData,
 }) => {
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  // Prepare serializable form data (excluding File object)
+  const serializableFormData = {
+    name: formData.name,
+    description: formData.description,
+    year: formData.year,
+    imageName: formData.image?.name || null,
+    imageSize: formData.image?.size || null,
+    imageType: formData.image?.type || null
+  };
+
+  // Dynamic session storage with tab change detection
+  const { saveFormData, clearFormData } = useFormSessionStorage({
+    formData: serializableFormData,
+    storageKey: 'add_subject_form',
+    saveOnChange: true,
+    saveOnTabChange: true,
+    saveOnUnload: true,
+    debounceMs: 1000, // Save 1 second after user stops typing
+    onDataLoaded: (savedData) => {
+      if (!isDataLoaded && onLoadSavedData && savedData) {
+        // Only restore text data, not file data (files can't be serialized)
+        const restoreData = {
+          name: savedData.name || '',
+          description: savedData.description || '', 
+          year: savedData.year || '',
+          // Don't restore image file - user needs to re-select
+          image: null
+        };
+        onLoadSavedData(restoreData);
+        setIsDataLoaded(true);
+        
+        // Show notification if data was restored
+        if (savedData.name || savedData.description || savedData.year) {
+          console.log('Previous form data restored (image needs to be re-selected)');
+        }
+      }
+    },
+    validateData: (data): data is typeof serializableFormData => {
+      return data && typeof data === 'object' && 
+             'name' in data && 'description' in data && 'year' in data;
+    }
+  });
+
+  // Clear saved data when modal is closed successfully
+  useEffect(() => {
+    if (!showModal && !createMutation.isPending) {
+      // Clear saved data when modal closes (form was either submitted or cancelled)
+      clearFormData();
+      setIsDataLoaded(false);
+    }
+  }, [showModal, createMutation.isPending, clearFormData]);
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
@@ -62,24 +118,39 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
     const errors = validateForm();
     setFieldErrors(errors);
     if (Object.keys(errors).length === 0) {
+      // Clear saved data before submitting (form is complete)
+      clearFormData();
       handleSubmit(e);
+    }
+  };
+
+  const handleModalClose = (open: boolean) => {
+    setShowModal(open);
+    if (!open) {
+      // Reset form and errors when closing
+      resetForm();
+      setFieldErrors({});
+      // Don't clear saved data here - let the useEffect handle it
+      // based on whether submission was successful
     }
   };
 
   return (
     <Dialog
       open={showModal}
-      onOpenChange={(open) => {
-        setShowModal(open);
-        if (!open) {
-          resetForm();
-          setFieldErrors({});
-        }
-      }}
+      onOpenChange={handleModalClose}
     >
       <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden">
         <DialogHeader>
-          <DialogTitle>Subject</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            Subject
+            {/* Data restoration indicator */}
+            {isDataLoaded && (formData.name || formData.description || formData.year) && (
+              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                📄 Previous data restored
+              </span>
+            )}
+          </DialogTitle>
         </DialogHeader>
         <form
           onSubmit={onSubmit}
@@ -194,29 +265,32 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
 
           {/* Submit Button */}
           <DialogFooter className="flex justify-between pt-4">
-            <Button
-              textButton="Submit"
-              disabled={createMutation.isPending}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center justify-center gap-2"
-            >
-              {createMutation.isPending ? (
-                <> 
-                  <LoaderIcon className="inline animate-spin" size={16} />
-                  <span>Saving...</span>
-                </>
-              ) : (
-                "Save Subject"
-              )}
-            </Button>
-
-            {/* Cancel Button */}
-            <DialogClose asChild>
+            <div className="flex gap-2">
               <Button
-                textButton="Cancel"
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold"
-                onClick={resetForm}
-              />
-            </DialogClose>
+                textButton="Submit"
+                disabled={createMutation.isPending}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center justify-center gap-2"
+              >
+                {createMutation.isPending ? (
+                  <> 
+                    <LoaderIcon className="inline animate-spin" size={16} />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  "Save Subject"
+                )}
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              {/* Cancel Button */}
+              <DialogClose asChild>
+                <Button
+                  textButton="Cancel"
+                  className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                  onClick={resetForm}
+                />
+              </DialogClose>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
