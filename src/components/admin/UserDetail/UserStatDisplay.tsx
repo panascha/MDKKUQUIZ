@@ -1,18 +1,19 @@
 "use client";
 
 import React from 'react';
-import type { UserStat } from '../../../types/api/Stat';
+import type { Stat, UserStat } from '../../../types/api/Stat';
 import type { Subject } from '../../../types/api/Subject';
 import { LoaderIcon } from 'lucide-react';
 import { ChartBarIcon, ClipboardDocumentListIcon, TagIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export interface UserStatDisplayProps {
+  totalStat: Stat | null;
   stat: UserStat | null;
   subject: Subject | null;
   isLoading: boolean;
 }
 
-const UserStatDisplay: React.FC<UserStatDisplayProps> = ({ stat, subject, isLoading }) => {
+const UserStatDisplay: React.FC<UserStatDisplayProps> = ({ totalStat, stat, subject, isLoading }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -101,12 +102,12 @@ const UserStatDisplay: React.FC<UserStatDisplayProps> = ({ stat, subject, isLoad
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium text-blue-700">Quizzes</span>
-                <span className="text-sm text-blue-600">{stat.quizCount} ({safePct(stat.quizCount, stat.total).toFixed(1)}%)</span>
+                <span className="text-sm text-blue-600">{stat.quizCount} ({safePct(stat.quizCount, totalStat.totalQuizzes).toFixed(1)}%)</span>
               </div>
               <div className="w-full bg-blue-200 rounded-full h-2">
                 <div 
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                  style={{ width: `${safePct(stat.quizCount, stat.total)}%` }}
+                  style={{ width: `${safePct(stat.quizCount, totalStat.totalQuizzes)}%` }}
                 ></div>
               </div>
             </div>
@@ -115,12 +116,12 @@ const UserStatDisplay: React.FC<UserStatDisplayProps> = ({ stat, subject, isLoad
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium text-green-700">Keywords</span>
-                <span className="text-sm text-green-600">{stat.keywordCount} ({safePct(stat.keywordCount, stat.total).toFixed(1)}%)</span>
+                <span className="text-sm text-green-600">{stat.keywordCount} ({safePct(stat.keywordCount, totalStat.totalKeywords).toFixed(1)}%)</span>
               </div>
               <div className="w-full bg-green-200 rounded-full h-2">
                 <div 
                   className="bg-green-600 h-2 rounded-full transition-all duration-300" 
-                  style={{ width: `${safePct(stat.keywordCount, stat.total)}%` }}
+                  style={{ width: `${safePct(stat.keywordCount, totalStat.totalKeywords)}%` }}
                 ></div>
               </div>
             </div>
@@ -129,12 +130,12 @@ const UserStatDisplay: React.FC<UserStatDisplayProps> = ({ stat, subject, isLoad
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium text-red-700">Reports</span>
-                <span className="text-sm text-red-600">{stat.reportCount} ({safePct(stat.reportCount, stat.total).toFixed(1)}%)</span>
+                <span className="text-sm text-red-600">{stat.reportCount} ({safePct(stat.reportCount, totalStat.totalPendingReports).toFixed(1)}%)</span>
               </div>
               <div className="w-full bg-red-200 rounded-full h-2">
                 <div 
                   className="bg-red-600 h-2 rounded-full transition-all duration-300" 
-                  style={{ width: `${safePct(stat.reportCount, stat.total)}%` }}
+                  style={{ width: `${safePct(stat.reportCount, totalStat.totalPendingReports)}%` }}
                 ></div>
               </div>
             </div>

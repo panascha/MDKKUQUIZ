@@ -4,24 +4,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useQuery } from '@tanstack/react-query';
-import { BACKEND_URL } from '../../../../config/apiRoutes';
 import { useGetUserStatById } from '../../../../hooks/stats/useGetUserStatById';
 import { useGetSubject } from '../../../../hooks/subject/useGetSubject';
 import { Subject } from '../../../../types/api/Subject';
-import { UserStat } from '../../../../types/api/Stat';
 import { useUser } from '../../../../hooks/User/useUser';
 import { Role_type } from '../../../../config/role';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../../components/ui/DropdownMenu';
-import { ArrowLeftIcon, ShieldCheckIcon, ChartBarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ShieldCheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { LoaderIcon } from 'lucide-react';
-import toast from 'react-hot-toast';
-import Image from 'next/image';
 import UserStatDisplay from '../../../../components/admin/UserDetail/UserStatDisplay';
 import UserInfoCard from '../../../../components/admin/UserDetail/UserInfoCard';
 import SubjectFilter from '../../../../components/admin/UserDetail/SubjectFilter';
 import UserAdditionalInfo from '../../../../components/admin/UserDetail/UserAdditionalInfo';
-
-// extracted into components in ../../../../components/admin/UserDetail
+import { useGetStatOverAll } from '../../../../hooks/stats/useGetStatOverAll';
+import { stat } from 'fs/promises';
 
 export default function UserDetailPage() {
   const params = useParams();
@@ -30,7 +25,8 @@ export default function UserDetailPage() {
   const { user: currentUser } = useUser();
   const userId = typeof params.userId === 'string' ? params.userId : '';
   const [selectedSubject, setSelectedSubject] = useState<string>('');
-
+  const { data: stats, isLoading: isStatsLoading } = useGetStatOverAll();
+  
   // Check permissions
   if (currentUser?.role !== Role_type.SADMIN) {
     return (
@@ -51,6 +47,7 @@ export default function UserDetailPage() {
       </div>
     );
   }
+
 
   // Fetch subjects using React Query with the existing useGetSubject function
   const { data: subjects = [], isLoading: isLoadingSubjects } = useQuery<Subject[]>({
@@ -106,7 +103,7 @@ export default function UserDetailPage() {
     }
   };
 
-  if (isLoadingStats) {
+  if (isLoadingStats || isStatsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -136,8 +133,6 @@ export default function UserDetailPage() {
       </div>
     );
   }
-
-  const status = getUserStatus();
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -176,6 +171,7 @@ export default function UserDetailPage() {
 
               {/* Stats Display */}
               <UserStatDisplay
+                totalStat={stats || null}
                 stat={userStat || null}
                 subject={selectedSubjectObj || null}
                 isLoading={isLoadingStats}
