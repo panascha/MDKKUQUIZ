@@ -5,7 +5,7 @@ import { UserStat } from '../../types/api/Stat';
 import { BackendRoutes } from '../../config/apiRoutes';
 
 
-export const useGetUserStatById = (userId: string, subjectId: string, enabled: boolean = true) => {
+export const useGetUserStatById = (userId: string, subjectId?: string, enabled: boolean = true) => {
   const { data: session } = useSession();
 
   return useQuery<UserStat, Error>({
@@ -13,8 +13,12 @@ export const useGetUserStatById = (userId: string, subjectId: string, enabled: b
     queryFn: async () => {
       if (!session) throw new Error('No session');
       if (!userId) throw new Error('No userId');
-      if (!subjectId) throw new Error('No subjectId');
-      const res = await axios.get(`${BackendRoutes.USER_STATS}/${userId}/${subjectId}`, {
+      
+      const url = subjectId 
+        ? `${BackendRoutes.USER_STATS}/${userId}/${subjectId}`
+        : `${BackendRoutes.USER_STATS}/${userId}`;
+        
+      const res = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${session.user.token}`,
         },
@@ -24,6 +28,6 @@ export const useGetUserStatById = (userId: string, subjectId: string, enabled: b
       }
       throw new Error(res.data?.message || 'Failed to fetch user stat');
     },
-    enabled: enabled && !!session && !!userId && !!subjectId,
+    enabled: enabled && !!session && !!userId,
   });
 };

@@ -1,3 +1,5 @@
+import { User } from "../User";
+
 export interface Stat {
     totalQuizzes?: number;
     totalReports?: number;
@@ -9,12 +11,7 @@ export interface Stat {
 }
 
 export interface UserStat {
-    user: {
-      _id: string;
-      name: string;
-      email: string;
-      role: string;
-    };
+    user: User;
     quizCount: number;
     keywordCount: number;
     reportCount: number;
