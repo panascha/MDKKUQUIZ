@@ -14,6 +14,8 @@ import { FrontendRoutes } from '../../../../../config/apiRoutes'
 import { useShuffledChoices } from '../../../../../hooks/quiz/useShuffledChoices';
 import { useQuizSessionStorage } from '../../../../../hooks/quiz/useQuizSessionStorage';
 import { useQuizKeyboardNavigation } from '../../../../../hooks/quiz/useQuizKeyboardNavigation';
+import { useTabChangeDetection } from '../../../../../hooks/useTabChangeDetection';
+import { useAdvancedSessionStorage } from '../../../../../hooks/useAdvancedSessionStorage';
 import QuizHeader from '../../../../../components/quiz/quizQuestion/QuizHeader';
 import QuizNavigation from '../../../../../components/quiz/quizQuestion/QuizNavigation';
 import QuizQuestion from '../../../../../components/quiz/quizQuestion/QuizQuestion';
@@ -58,6 +60,46 @@ export default function Problem() {
         selectedQuestionTypes: selectedQuestionTypes || '',
         questionCount,
         selectCategory
+    });
+
+    // Enhanced session storage with tab change detection
+    const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
+    const progressKey = `${sessionKey}_progress`;
+    
+    const { 
+        debouncedSave, 
+        saveImmediately, 
+        loadFromSessionStorage,
+        clearTimeouts 
+    } = useAdvancedSessionStorage({ 
+        key: progressKey,
+        debounceMs: 500 
+    });
+
+    // Tab change detection - automatically save when user switches tabs
+    const { saveNow } = useTabChangeDetection({
+        onTabChange: () => {
+            console.log('Tab changed - saving quiz progress...');
+            if (showQuestion.length > 0) {
+                saveImmediately(showQuestion);
+            }
+        },
+        onBeforeUnload: () => {
+            console.log('Page unloading - saving quiz progress...');
+            if (showQuestion.length > 0) {
+                saveImmediately(showQuestion);
+            }
+        },
+        onVisibilityChange: (isVisible) => {
+            if (isVisible) {
+                console.log('Tab became visible');
+            } else {
+                console.log('Tab became hidden - saving progress...');
+                if (showQuestion.length > 0) {
+                    saveImmediately(showQuestion);
+                }
+            }
+        }
     });
 
     const { data: quizData, isLoading } = useGetQuizzes({
@@ -147,14 +189,12 @@ export default function Problem() {
 
     useEffect(() => {
         if (quizData?.questions) {
-            const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
-            const savedProgress = sessionStorage.getItem(`${sessionKey}_progress`);
+            const savedProgress = loadFromSessionStorage();
             
             if (savedProgress) {
                 try {
-                    const parsedProgress = JSON.parse(savedProgress);
                     const questionsWithProgress = quizData.questions.map((question: Question, index: number) => {
-                        const savedQuestion = parsedProgress[index];
+                        const savedQuestion = savedProgress[index];
                         if (savedQuestion && savedQuestion.quiz._id === question.quiz._id) {
                             return {
                                 ...question,
@@ -176,53 +216,32 @@ export default function Problem() {
                 setShowQuestion(quizData.questions);
             }
         }
-    }, [quizData, subjectID, selectedQuestionTypes, questionCount, selectCategory]);
+    }, [quizData, loadFromSessionStorage]);
 
+    // Auto-save progress when showQuestion changes (debounced)
     useEffect(() => {
         if (showQuestion.length > 0) {
-            const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
-            
-            const timeoutId = setTimeout(() => {
-                try {
-                    sessionStorage.setItem(`${sessionKey}_progress`, JSON.stringify(showQuestion));
-                } catch (error) {
-                    console.warn('Failed to save progress to session storage:', error);
-                }
-            }, 500);
-
-            return () => clearTimeout(timeoutId);
+            debouncedSave(showQuestion);
         }
-    }, [showQuestion, subjectID, selectedQuestionTypes, questionCount, selectCategory]);
+    }, [showQuestion, debouncedSave]);
 
-    useEffect(() => {
-        const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
-        
-        const saveProgress = () => {
-            if (showQuestion.length > 0) {
-                try {
-                    sessionStorage.setItem(`${sessionKey}_progress`, JSON.stringify(showQuestion));
-                } catch (error) {
-                    console.warn('Failed to save progress to session storage:', error);
-                }
-            }
-        };
-
-        return () => {
-            saveProgress();
-        };
-    }, [showQuestion, subjectID, selectedQuestionTypes, questionCount, selectCategory]);
-
-    // Save progress when navigating between questions
+    // Save immediately when navigating between questions
     useEffect(() => {
         if (showQuestion.length > 0) {
-            const sessionKey = `quiz_${subjectID}_${selectedQuestionTypes}_${questionCount}_${selectCategory.sort().join('_')}`;
-            try {
-                sessionStorage.setItem(`${sessionKey}_progress`, JSON.stringify(showQuestion));
-            } catch (error) {
-                console.warn('Failed to save progress to session storage:', error);
-            }
+            saveImmediately(showQuestion);
         }
     }, [currentQuestionIndex]); // Only save when question index changes
+
+    // Cleanup timeouts on unmount
+    useEffect(() => {
+        return () => {
+            clearTimeouts();
+            // Final save before component unmounts
+            if (showQuestion.length > 0) {
+                saveImmediately(showQuestion);
+            }
+        };
+    }, [clearTimeouts, saveImmediately, showQuestion]);
 
     useEffect(() => {
         const interval = setInterval(() => {

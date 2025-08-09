@@ -46,7 +46,6 @@ const QuestionDetail = () => {
 
                 const data = await response.json();
                 setQuestion(data.data);
-                console.log("Question data:", data.data);
             } catch (error) {
                 setError(`${error}`);
             } finally {

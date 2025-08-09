@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
@@ -21,6 +21,8 @@ import { useDeleteQuiz } from '../../hooks/quiz/useDeleteQuiz';
 import { Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { BackButton } from '../../components/subjects/Detail/BackButton';
+import { useAdvancedSessionStorage } from '../../hooks/useAdvancedSessionStorage';
+import { useTabChangeDetection } from '../../hooks/useTabChangeDetection';
 
 const QuestionPage = () => {
     const router = useRouter();
@@ -42,24 +44,81 @@ const QuestionPage = () => {
     const [selectedSubject, setSelectedSubject] = useState<string | null>(subjectFromUrl);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     
-    // Memoize filter options
-    const filterOptions = useMemo(() => ({
-        searchTerm,
-        selectedSubject,
-        selectedCategory,
-    }), [searchTerm, selectedSubject, selectedCategory]);
+    // Tab change detection to prevent unnecessary API calls during tab switches
+    const tabDetection = useTabChangeDetection();
+    
+    // Session storage for caching data
+    const questionsStorage = useAdvancedSessionStorage({
+        key: `questions_${selectedSubject || 'all'}`,
+        debounceMs: 1000,
+    });
+    
+    const subjectsStorage = useAdvancedSessionStorage({
+        key: 'subjects_cache',
+        debounceMs: 1000,
+    });
+    
+    const categoriesStorage = useAdvancedSessionStorage({
+        key: 'categories_cache',
+        debounceMs: 1000,
+    });
 
+    // Use ref to track if initial load is complete to prevent unnecessary reloads
+    const initialLoadComplete = useRef(false);
+    const lastFetchParams = useRef<{selectedSubject: string | null, isAdmin: boolean} | null>(null);
     // Check if user is admin or S-admin
     const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
     const isSAdmin = user?.role === Role_type.SADMIN;
 
     const deleteQuizMutation = useDeleteQuiz();
 
+    // Load cached data on component mount
     useEffect(() => {
-        if (!session){
+        const loadCachedData = () => {
+            try {
+                // Load subjects
+                const cachedSubjects = subjectsStorage.loadFromSessionStorage();
+                if (cachedSubjects && Array.isArray(cachedSubjects) && cachedSubjects.length > 0) {
+                    setSubjects(cachedSubjects);
+                }
+
+                // Load categories  
+                const cachedCategories = categoriesStorage.loadFromSessionStorage();
+                if (cachedCategories && Array.isArray(cachedCategories) && cachedCategories.length > 0) {
+                    setCategories(cachedCategories);
+                }
+
+                // Load questions
+                const cachedQuestions = questionsStorage.loadFromSessionStorage();
+                if (cachedQuestions && Array.isArray(cachedQuestions) && cachedQuestions.length > 0) {
+                    setQuestions(cachedQuestions);
+                    setIsLoading(false);
+                    initialLoadComplete.current = true;
+                }
+            } catch (error) {
+                console.warn('Failed to load cached data:', error);
+            }
+        };
+
+        loadCachedData();
+    }, []); // Only run once on mount
+
+    useEffect(() => {
+        if (!session) {
             toast.error("there is no session");
             return;  
-        } 
+        }
+
+        // Check if we need to fetch data
+        const currentParams = { selectedSubject, isAdmin };
+        const shouldFetch = !initialLoadComplete.current || 
+                           !lastFetchParams.current ||
+                           lastFetchParams.current.selectedSubject !== currentParams.selectedSubject ||
+                           lastFetchParams.current.isAdmin !== currentParams.isAdmin;
+
+        if (!shouldFetch) {
+            return; // Skip fetching if parameters haven't changed
+        }
 
         const fetchQuestions = async () => {
             try {
@@ -76,46 +135,58 @@ const QuestionPage = () => {
                 const filteredQuestions = isAdmin 
                     ? response.data.data.filter((q: Quiz) => q.status !== "reported")
                     : response.data.data.filter((q: Quiz) => q.status === "approved");
+                
                 setQuestions(filteredQuestions);
-                console.log("Fetched questions:", filteredQuestions);
+                questionsStorage.saveImmediately(filteredQuestions); // Cache the data
                 setIsLoading(false);
+                initialLoadComplete.current = true;
+                lastFetchParams.current = currentParams;
             }
             catch (err) {
                 setError("Failed to fetch questions.");
                 setIsLoading(false);
             }
         };
-        fetchQuestions();
 
         const fetchSubjects = async () => {
             try {
-                const response = await axios.get(BackendRoutes.SUBJECT, {
-                    headers: {
-                        Authorization: `Bearer ${session.user.token}`,
-                    },
-                });
-                setSubjects(response.data.data);
+                // Only fetch if we don't have subjects cached
+                if (subjects.length === 0) {
+                    const response = await axios.get(BackendRoutes.SUBJECT, {
+                        headers: {
+                            Authorization: `Bearer ${session.user.token}`,
+                        },
+                    });
+                    setSubjects(response.data.data);
+                    subjectsStorage.saveImmediately(response.data.data); // Cache the data
+                }
             } catch (err) {
                 setError("Failed to fetch subjects.");
             }
         };
-        fetchSubjects();
 
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(BackendRoutes.CATEGORY, {
-                    headers: {
-                        Authorization: `Bearer ${session.user.token}`,
-                    },
-                });
-                setCategories(response.data.data);
+                // Only fetch if we don't have categories cached
+                if (categories.length === 0) {
+                    const response = await axios.get(BackendRoutes.CATEGORY, {
+                        headers: {
+                            Authorization: `Bearer ${session.user.token}`,
+                        },
+                    });
+                    setCategories(response.data.data);
+                    categoriesStorage.saveImmediately(response.data.data); // Cache the data
+                }
             } catch (err) {
                 setError("Failed to fetch categories.");
             }
         };
+
+        fetchQuestions();
+        fetchSubjects();
         fetchCategories();
 
-    }, [session, selectedSubject, isAdmin]);
+    }, [session?.user.token, selectedSubject, isAdmin]); // More stable dependencies
 
     // Update URL when subject filter changes
     useEffect(() => {
@@ -189,19 +260,12 @@ const QuestionPage = () => {
         try {
             await deleteQuizMutation.mutateAsync(quizId);
             toast.success('Question deleted successfully');
-            // Refresh the questions list
-            const response = await axios.get(BackendRoutes.QUIZ, {
-                headers: {
-                    Authorization: `Bearer ${session?.user.token}`,
-                },
-                params: {
-                    subjectID: selectedSubject,
-                },
-            });
-            const filteredQuestions = isAdmin 
-                ? response.data.data.filter((q: Quiz) => q.status !== "reported")
-                : response.data.data.filter((q: Quiz) => q.status === "approved");
-            setQuestions(filteredQuestions);
+            
+            // Update local state and cache
+            const updatedQuestions = questions.filter(q => q._id !== quizId);
+            setQuestions(updatedQuestions);
+            questionsStorage.saveImmediately(updatedQuestions); // Update cache immediately
+            
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to delete question');
         }

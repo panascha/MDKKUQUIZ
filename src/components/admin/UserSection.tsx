@@ -3,22 +3,45 @@ import { useGetAllUser } from '../../hooks/User/useGetAllUser';
 import { BackendRoutes } from '../../config/apiRoutes';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
-import { useUser } from '../../hooks/User/useUser';
+import { useGetUserStats } from '../../hooks/stats/useGetUserStats';
 import BanUserModal from './BanUserModal';
 import { Role_type } from '../../config/role';
+import Link from 'next/link';
+import { useUser } from '../../hooks/User/useUser';
 
 const roles = ['user', 'admin', 'S-admin'];
 
 export default function UserSection() {
   const { data: users, isLoading, error, refetch } = useGetAllUser();
   const { data: session } = useSession();
-  const { user: currentUser } = useUser();
+  const { user } = useUser();
+  const { data: userStats } = useGetUserStats();
+  
+  // Find current user from userStats
+  const currentUserStat = userStats?.find(stat => stat.user._id === user?._id);
+  const currentUser = currentUserStat?.user;
+  
   const [editUserId, setEditUserId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [banModalUser, setBanModalUser] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'banned' | 'unbanned'>('all');
+
+  // Helper function to get user stats
+  const getUserStats = (userId: string) => {
+    const userStat = userStats?.find(stat => stat.user._id === userId);
+    return userStat ? userStat.total : 0;
+  };
+
+  // Calculate total activity across all users for percentage calculation
+  const totalActivity = userStats?.reduce((sum, stat) => sum + stat.total, 0) || 1; // Avoid division by zero
+
+  // Helper function to get activity percentage
+  const getActivityPercentage = (userId: string) => {
+    const userTotal = getUserStats(userId);
+    return totalActivity > 0 ? ((userTotal / totalActivity) * 100).toFixed(1) : '0.0';
+  };
 
   if (currentUser?.role !== 'S-admin') {
     return (
@@ -213,14 +236,16 @@ export default function UserSection() {
               <th className="py-2 px-2 sm:px-4 text-left whitespace-nowrap">Email</th>
               <th className="py-2 px-2 sm:px-4 text-left whitespace-nowrap">Role</th>
               <th className="py-2 px-2 sm:px-4 text-left whitespace-nowrap">Year</th>
+              <th className="py-2 px-2 sm:px-4 text-left whitespace-nowrap">Activity</th>
               <th className="py-2 px-2 sm:px-4 text-left whitespace-nowrap">Actions</th>
+              <th className="py-2 px-2 sm:px-4 text-left whitespace-nowrap">Details</th>
               <th className="py-2 px-2 sm:px-4 text-left whitespace-nowrap">Ban</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-gray-500">
+                <td colSpan={8} className="py-8 text-center text-gray-500">
                   {activeTab === 'banned' ? (
                     <div className="flex flex-col items-center">
                       <svg className="h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,9 +275,18 @@ export default function UserSection() {
               </tr>
             ) : (
               filteredUsers.map((user: any) => {
-              console.log('user._id:', user._id, 'currentUser._id:', currentUser?._id, 'equal:', user._id === currentUser?._id);
+              const userTotal = getUserStats(user._id);
+              const isInactive = userTotal === 0;
+              
               return (
-                <tr key={user._id} className="border-t border-gray-100 hover:bg-gray-50">
+                <tr 
+                  key={user._id} 
+                  className={`border-t border-gray-100 transition-colors duration-200 ${
+                    isInactive 
+                      ? 'bg-red-50 hover:bg-red-100 border-red-200' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
                 <td className="py-2 px-2 sm:px-4 max-w-[120px] truncate">{user.name}</td>
                 <td className="py-2 px-2 sm:px-4 max-w-[160px] truncate">{user.email}</td>
                 <td className="py-2 px-2 sm:px-4">
@@ -286,6 +320,33 @@ export default function UserSection() {
                     user.year
                   )}
                 </td>
+                <td className="py-2 px-2 sm:px-4">
+                  {(() => {
+                    const userTotal = getUserStats(user._id);
+                    const percentage = getActivityPercentage(user._id);
+                    return (
+                      <div className="flex flex-col items-center space-y-1">
+                        <span 
+                          className={`text-sm font-medium ${
+                            userTotal === 0 
+                              ? 'text-red-600' 
+                              : userTotal >= 10 
+                                ? 'text-green-600' 
+                                : 'text-yellow-600'
+                          }`}
+                        >
+                          {userTotal}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {percentage}%
+                        </span>
+                        {userTotal === 0 && (
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </td>
                 <td className="py-2 px-2 sm:px-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                   {editUserId === user._id ? (
                     <>
@@ -313,6 +374,15 @@ export default function UserSection() {
                       Edit
                     </button>
                   )}
+                </td>
+                <td className="py-2 px-2 sm:px-4">
+                  <Link
+                    href={`/admin/user/${user._id}`}
+                    className="px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors w-full sm:w-auto inline-block text-center"
+                    title="View user details and statistics"
+                  >
+                    View Details
+                  </Link>
                 </td>
                 <td className="py-2 px-2 sm:px-4">
                   {user.status?.isBanned ? (

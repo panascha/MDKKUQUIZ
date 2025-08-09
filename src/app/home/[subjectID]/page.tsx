@@ -14,8 +14,6 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
 import SubjectTopics from '../../../components/subjects/Detail/SubjectTopics';
 import { useGetUserStatById } from '../../../hooks/stats/useGetUserStatById';
-import { useGetKeyword } from "../../../hooks/keyword/useGetKeyword";
-import { useGetQuizzes } from '../../../hooks/quiz/useGetQuizzes';
 
 export default function SubjectDetailPage() {
     const params = useParams();
@@ -27,14 +25,6 @@ export default function SubjectDetailPage() {
 
     const { data: userStat } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
     const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 4;
-    // const getKeyword = useGetKeyword();
-    // const { data: quizzes } = useGetQuizzes({
-    //     subjectID: subjectID
-    // });
-
-    // const allKeywordsUsed = getKeyword.data?.filter((keyword: any) => keyword._id === subjectID).flatMap((keyword: any) => keyword.keywords);
-    // console.log("All keywords used:", allKeywordsUsed);
-    // const canTakeQuiz = isAdmin || allKeywordsUsed || (userStat?.quizCount ?? 0) >= 2;
 
     const { data: subject, isLoading, error } = useQuery({
         queryKey: ["subject", subjectID],

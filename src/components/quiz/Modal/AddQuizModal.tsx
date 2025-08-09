@@ -26,7 +26,15 @@ interface AddQuizModalProps {
 }
 
 function filterKeywords(keywords: string[], value: string) {
-  return keywords.filter(k => k.toLowerCase().includes(value.toLowerCase()));
+  if (!value.trim()) return keywords;
+  
+  const filtered = keywords.filter(k => k.toLowerCase().includes(value.toLowerCase()));
+  
+  // Maintain priority: exact matches first, then partial matches
+  const exactMatches = filtered.filter(k => k.toLowerCase() === value.toLowerCase());
+  const partialMatches = filtered.filter(k => k.toLowerCase() !== value.toLowerCase());
+  
+  return [...exactMatches, ...partialMatches];
 }
 
 // Image Preview Gallery Component
@@ -39,8 +47,6 @@ const ImagePreviewGallery: React.FC<{
   const {
     currentIndex,
     isModalOpen,
-    isLoading,
-    imageError,
     currentImage,
     hasMultipleImages,
     goToPrevious,
@@ -208,8 +214,8 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const createQuizMutation = useCreateQuiz();
   const { user } = useUser();
-  const getKeyword = useGetKeyword({ status: 'approved' }); // Get approved keywords
-  const getGlobalKeyword = useGetKeyword({ isGlobal: true }); // Get global keywords
+  const getKeyword = useGetKeyword({ status: 'approved' }); 
+  const getGlobalKeyword = useGetKeyword({ isGlobal: true });
   const getQuestionBySubjectandCategory = useGetQuizzes({
     subjectID: formData.subject,
     categoryID: formData.category
@@ -223,6 +229,20 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     ...(getGlobalKeyword?.data || [])
   ];
   
+  const questionKeywordOptions = formData.category
+    ? (() => {
+        const globalKeywords = Array.from(new Set(allKeywords
+          .filter((kw: Keyword) => kw.isGlobal)
+          .flatMap((kw: Keyword) => kw.keywords) as string[]));
+        
+        const categoryKeywords = Array.from(new Set(allKeywords
+          .filter((kw: Keyword) => !kw.isGlobal && kw.category && kw.category._id === formData.category)
+          .flatMap((kw: Keyword) => kw.keywords) as string[]));
+        
+        return [...globalKeywords, ...categoryKeywords];
+      })()
+    : [];
+
   const keywordOptions = formData.category
     ? Array.from(new Set(allKeywords
       .filter((kw: Keyword) => 
@@ -551,20 +571,32 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
               placeholder="Enter your question"
               autoComplete="off"
             />
-            {dropdown.question && filterKeywords(keywordOptions, formData.question).length > 0 && (
+            {dropdown.question && filterKeywords(questionKeywordOptions, formData.question).length > 0 && (
               <div className="absolute z-50 bg-white border border-gray-200 rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full">
-                {filterKeywords(keywordOptions, formData.question).map((keyword, idx) => (
-                  <div
-                    key={idx}
-                    className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800"
-                    onMouseDown={() => {
-                      handleInputChange({ target: { name: 'question', value: keyword } } as any);
-                      setDropdown(d => ({ ...d, question: false }));
-                    }}
-                  >
-                    {keyword}
-                  </div>
-                ))}
+                {filterKeywords(questionKeywordOptions, formData.question).map((keyword, idx) => {
+                  // Check if this keyword is global
+                  const isGlobal = allKeywords.some((kw: Keyword) => 
+                    kw.isGlobal && kw.keywords.includes(keyword)
+                  );
+                  
+                  return (
+                    <div
+                      key={idx}
+                      className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800 flex items-center justify-between"
+                      onMouseDown={() => {
+                        handleInputChange({ target: { name: 'question', value: keyword } } as any);
+                        setDropdown(d => ({ ...d, question: false }));
+                      }}
+                    >
+                      <span>{keyword}</span>
+                      {isGlobal && (
+                        <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-2">
+                          Common
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -627,14 +659,14 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
                     <div className="absolute z-50 bg-white border border-gray-200 rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full">
                     {filterKeywords(keywordOptions, choice).map((keyword, kidx) => (
                       <div
-                      key={kidx}
-                      className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800"
-                      onMouseDown={() => {
-                        handleChoiceChange(index, keyword);
-                        setDropdown(d => ({ ...d, ['choice' + index]: false }));
-                      }}
+                        key={kidx}
+                        className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800"
+                        onMouseDown={() => {
+                          handleChoiceChange(index, keyword);
+                          setDropdown(d => ({ ...d, ['choice' + index]: false }));
+                        }}
                       >
-                      {keyword}
+                        {keyword}
                       </div>
                     ))}
                     </div>
