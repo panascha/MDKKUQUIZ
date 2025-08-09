@@ -65,7 +65,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Touch handling for mobile zoom and pan
+  // Touch handling for mobile pan and zoom
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 1 && zoomLevel > 1) {
       // Single touch for panning when zoomed
@@ -76,23 +76,26 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
         y: touch.clientY - position.y,
       });
     } else if (e.touches.length === 2) {
-      // Two finger pinch for zooming
+      // Two finger gesture for panning (changed from zooming)
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
-      const distance = Math.sqrt(
-        Math.pow(touch2.clientX - touch1.clientX, 2) + 
-        Math.pow(touch2.clientY - touch1.clientY, 2)
-      );
-      setTouchDistance(distance);
-      setIsTouchDragging(false); // Disable dragging during pinch
+      // Calculate center point of the two touches for panning
+      const centerX = (touch1.clientX + touch2.clientX) / 2;
+      const centerY = (touch1.clientY + touch2.clientY) / 2;
+      setIsTouchDragging(true);
+      setTouchStartPos({
+        x: centerX - position.x,
+        y: centerY - position.y,
+      });
     }
   }, [zoomLevel, position]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    e.preventDefault(); // Prevent page scroll
+    // Remove preventDefault to avoid passive event listener warning
+    // The native event listeners will handle preventDefault
     
     if (e.touches.length === 1 && isTouchDragging && zoomLevel > 1) {
-      // Handle single touch panning
+      // Handle single touch panning (only when zoomed in)
       const touch = e.touches[0];
       const newX = touch.clientX - touchStartPos.x;
       const newY = touch.clientY - touchStartPos.y;
@@ -114,34 +117,74 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
           y: Math.max(minY, Math.min(maxY, newY)),
         });
       }
-    } else if (e.touches.length === 2) {
-      // Handle two finger pinch zoom
+    } else if (e.touches.length === 2 && isTouchDragging) {
+      // Handle two finger panning (works at any zoom level)
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
-      const distance = Math.sqrt(
-        Math.pow(touch2.clientX - touch1.clientX, 2) + 
-        Math.pow(touch2.clientY - touch1.clientY, 2)
-      );
+      // Calculate center point of the two touches
+      const centerX = (touch1.clientX + touch2.clientX) / 2;
+      const centerY = (touch1.clientY + touch2.clientY) / 2;
       
-      if (touchDistance > 0) {
-        const scale = distance / touchDistance;
-        const newZoom = Math.max(minZoom, Math.min(maxZoom, zoomLevel * scale));
-        setZoomLevel(newZoom);
-        setTouchDistance(distance);
+      const newX = centerX - touchStartPos.x;
+      const newY = centerY - touchStartPos.y;
+
+      // Calculate boundaries for panning
+      if (imageRef.current && modalRef.current) {
+        const imageWidth = imageRef.current.offsetWidth * zoomLevel;
+        const imageHeight = imageRef.current.offsetHeight * zoomLevel;
+        const modalWidth = modalRef.current.offsetWidth;
+        const modalHeight = modalRef.current.offsetHeight;
+
+        const maxX = Math.max(0, imageWidth - modalWidth) / 2;
+        const maxY = Math.max(0, imageHeight - modalHeight) / 2;
+        const minX = -maxX;
+        const minY = -maxY;
+
+        setPosition({
+          x: Math.max(minX, Math.min(maxX, newX)),
+          y: Math.max(minY, Math.min(maxY, newY)),
+        });
       }
     }
-  }, [touchDistance, zoomLevel, minZoom, maxZoom, isTouchDragging, touchStartPos]);
+  }, [zoomLevel, isTouchDragging, touchStartPos]);
 
   const handleTouchEnd = useCallback(() => {
     setIsTouchDragging(false);
     setTouchDistance(0);
+    // Reset touch start position
+    setTouchStartPos({ x: 0, y: 0 });
   }, []);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    setZoomLevel(prev => Math.max(minZoom, Math.min(maxZoom, prev + delta)));
-  }, [minZoom, maxZoom]);
+    e.preventDefault(); // Always prevent default to enable panning
+    
+    // Use scroll for panning instead of zooming
+    const panSpeed = 0.5; // Adjust this value to control panning sensitivity
+    const deltaX = e.deltaX * panSpeed;
+    const deltaY = e.deltaY * panSpeed;
+    
+    // Calculate new position
+    const newX = position.x - deltaX;
+    const newY = position.y - deltaY;
+    
+    // Calculate boundaries for panning
+    if (imageRef.current && modalRef.current) {
+      const imageWidth = imageRef.current.offsetWidth * zoomLevel;
+      const imageHeight = imageRef.current.offsetHeight * zoomLevel;
+      const modalWidth = modalRef.current.offsetWidth;
+      const modalHeight = modalRef.current.offsetHeight;
+
+      const maxX = Math.max(0, (imageWidth - modalWidth) / 2);
+      const maxY = Math.max(0, (imageHeight - modalHeight) / 2);
+      const minX = -maxX;
+      const minY = -maxY;
+
+      setPosition({
+        x: Math.max(minX, Math.min(maxX, newX)),
+        y: Math.max(minY, Math.min(maxY, newY)),
+      });
+    }
+  }, [position, zoomLevel]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (zoomLevel > 1 && imageRef.current && modalRef.current) {
@@ -300,6 +343,37 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
     };
   }, [handleKeyDown]);
 
+  // Native touch event listeners with non-passive options to allow preventDefault
+  useEffect(() => {
+    if (!isModalOpen || !imageRef.current) return;
+
+    const imageElement = imageRef.current;
+
+    const handleNativeTouchMove = (e: TouchEvent) => {
+      // Prevent default scroll behavior when interacting with the image
+      if ((e.touches.length === 1 && isTouchDragging && zoomLevel > 1) || 
+          (e.touches.length === 2 && isTouchDragging)) {
+        e.preventDefault();
+      }
+    };
+
+    const handleNativeTouchStart = (e: TouchEvent) => {
+      // Prevent default behavior for touch interactions with the image
+      if (e.touches.length >= 1) {
+        e.preventDefault();
+      }
+    };
+
+    // Add non-passive touch listeners
+    imageElement.addEventListener('touchmove', handleNativeTouchMove, { passive: false });
+    imageElement.addEventListener('touchstart', handleNativeTouchStart, { passive: false });
+
+    return () => {
+      imageElement.removeEventListener('touchmove', handleNativeTouchMove);
+      imageElement.removeEventListener('touchstart', handleNativeTouchStart);
+    };
+  }, [isModalOpen, isTouchDragging, zoomLevel]);
+
   const handleImageLoad = () => {
     setIsLoading(false);
     setImageError(false);
@@ -422,10 +496,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
           )}
           ref={modalRef}
           onClick={handleModalClick}
-          onWheel={handleWheel}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
           role="dialog"
           aria-modal="true"
           aria-label="Image gallery modal"
@@ -471,6 +541,10 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
+                onWheel={handleWheel}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
                 onLoad={handleImageLoad}
                 onError={handleImageError}
                 onClick={(e) => {

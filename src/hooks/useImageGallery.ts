@@ -20,7 +20,7 @@ export const useImageGallery = ({ images, initialIndex = 0 }: UseImageGalleryPro
   const dragStart = useRef({ x: 0, y: 0 });
 
   const minZoom = 0.5;
-  const maxZoom = 5;
+  const maxZoom = 2;
 
   const resetImageState = useCallback(() => {
     setPosition({ x: 0, y: 0 });

@@ -77,7 +77,6 @@ const QuestionPage = () => {
                     ? response.data.data.filter((q: Quiz) => q.status !== "reported")
                     : response.data.data.filter((q: Quiz) => q.status === "approved");
                 setQuestions(filteredQuestions);
-                console.log("Fetched questions:", filteredQuestions);
                 setIsLoading(false);
             }
             catch (err) {
