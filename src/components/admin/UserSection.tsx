@@ -275,7 +275,6 @@ export default function UserSection() {
               </tr>
             ) : (
               filteredUsers.map((user: any) => {
-              console.log('user._id:', user._id, 'currentUser._id:', currentUser?._id, 'equal:', user._id === currentUser?._id);
               const userTotal = getUserStats(user._id);
               const isInactive = userTotal === 0;
               
