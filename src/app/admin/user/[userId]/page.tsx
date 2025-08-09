@@ -16,7 +16,6 @@ import UserInfoCard from '../../../../components/admin/UserDetail/UserInfoCard';
 import SubjectFilter from '../../../../components/admin/UserDetail/SubjectFilter';
 import UserAdditionalInfo from '../../../../components/admin/UserDetail/UserAdditionalInfo';
 import { useGetStatOverAll } from '../../../../hooks/stats/useGetStatOverAll';
-import { stat } from 'fs/promises';
 
 export default function UserDetailPage() {
   const params = useParams();
