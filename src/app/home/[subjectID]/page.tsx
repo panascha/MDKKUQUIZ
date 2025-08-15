@@ -20,11 +20,10 @@ export default function SubjectDetailPage() {
     const subjectID = typeof params.subjectID === 'string' ? params.subjectID : '';
     const { user } = useUser();
     const isSAdmin = user?.role === Role_type.SADMIN;
-    const isAdmin = user?.role === Role_type.ADMIN || isSAdmin;
     const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
 
     const { data: userStat } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
-    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 4;
+    const canTakeQuiz = isSAdmin || (userStat?.quizCount ?? 0) >= 4;
 
     const { data: subject, isLoading, error } = useQuery({
         queryKey: ["subject", subjectID],

@@ -16,6 +16,7 @@ export default function UserSection() {
   const { data: session } = useSession();
   const { user } = useUser();
   const { data: userStats } = useGetUserStats();
+  const SAdmin = user?.role === Role_type.SADMIN;
   
   // Find current user from userStats
   const currentUserStat = userStats?.find(stat => stat.user._id === user?._id);
@@ -43,7 +44,7 @@ export default function UserSection() {
     return totalActivity > 0 ? ((userTotal / totalActivity) * 100).toFixed(1) : '0.0';
   };
 
-  if (currentUser?.role !== 'S-admin') {
+  if (!SAdmin) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-6 mt-8 text-center text-lg text-gray-500">
         Only <span className="font-bold text-blue-700">Super Admin</span> can access this section.
