@@ -46,7 +46,7 @@ const Page = () => {
           MSEB
         </div>
         <Tabs defaultValue="login" className="w-[400px] px-3" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-md transition-all duration-300 ease-in-out">
+          <TabsList className="w-full bg-gray-100 rounded-md transition-all duration-300 ease-in-out">
             <TabsTrigger value="login" className="transition-colors duration-300 ease-in-out cursor-pointer">
               Login
             </TabsTrigger>
