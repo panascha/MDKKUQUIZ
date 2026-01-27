@@ -69,7 +69,7 @@ export default function Home() {
               imageSrc="/Vision3.svg"
               altText="Vision 3"
               title="Success"
-              description="Success in Medical Education"
+              description="Success in Medical Educationnnn"
             />
           </div>
         </section>
