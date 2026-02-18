@@ -44,7 +44,7 @@ export default function Problem() {
     }, [selectCategory, questionCount, answerMode, selectedQuestionTypes, router, subjectID]);
     
     const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
-    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 4;
+    const canTakeQuiz = isAdmin || (userStat?.quizCount ?? 0) >= 4 || userStat?.allKeywordsUsed;
 
     const [seconds, setSeconds] = useState(0);
     const [showQuestion, setShowQuestion] = useState<Question[]>([]);
@@ -251,6 +251,7 @@ export default function Problem() {
         return () => clearInterval(interval);
     }, []);
 
+
     const handleQuestionNavigation = (direction: 'next' | 'previous') => {
         if (direction === 'next') {
             setCurrentQuestionIndex((prevIndex: number) => (prevIndex + 1) % showQuestion.length);
@@ -376,6 +377,38 @@ export default function Problem() {
         currentQuestion.isSubmitted = true;
         setShowQuestion(updatedQuestions);
     };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!currentQuestion) return;
+
+            const activeElement = document.activeElement as HTMLElement;
+            const isTyping = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA');
+
+            if (e.key === 'Enter' && !e.shiftKey) {
+                if (!currentQuestion.isSubmitted && currentQuestion.isAnswered) {
+                    e.preventDefault();
+                    submitCurrentQuestion();
+                }
+                return;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [currentQuestion, submitCurrentQuestion]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const inputElement = document.querySelector('textarea, input[type="text"]') as HTMLElement;
+            
+            if (inputElement) {
+                inputElement.focus();
+            }
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [currentQuestionIndex]);
 
     const navigateToQuestion = (index: number) => {
         setCurrentQuestionIndex(index);

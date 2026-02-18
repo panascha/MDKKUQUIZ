@@ -16,4 +16,5 @@ export interface UserStat {
     keywordCount: number;
     reportCount: number;
     total: number;
+    allKeywordsUsed: boolean;
   }

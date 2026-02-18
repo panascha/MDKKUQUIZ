@@ -23,7 +23,7 @@ export default function SubjectDetailPage() {
     const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
 
     const { data: userStat } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
-    const canTakeQuiz = isSAdmin || (userStat?.quizCount ?? 0) >= 4;
+    const canTakeQuiz = isSAdmin || (userStat?.quizCount ?? 0) >= 4 || userStat?.allKeywordsUsed;
 
     const { data: subject, isLoading, error } = useQuery({
         queryKey: ["subject", subjectID],
