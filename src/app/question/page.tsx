@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 import { BackButton } from '../../components/subjects/Detail/BackButton';
 import { useAdvancedSessionStorage } from '../../hooks/useAdvancedSessionStorage';
 import { useTabChangeDetection } from '../../hooks/useTabChangeDetection';
+import ImageGallery from '../../components/magicui/ImageGallery';
 
 const QuestionPage = () => {
     const router = useRouter();
@@ -493,6 +494,14 @@ const QuestionPage = () => {
                                                 )}
                                             </div>
                                             <div className="mt-2 sm:mt-4 space-y-1 text-xs sm:text-sm text-gray-600">
+                                                {question.img && question.img.length > 0 && (
+                                                <div className="mt-4 md:mt-0 flex-shrink-0 flex justify-center md:justify-end">
+                                                    <ImageGallery
+                                                        images={question.img}
+                                                        className="w-40 h-40 pointer-events-none"
+                                                    />
+                                                </div>
+                                            )}
                                                 {question.type === 'choice' ? (
                                                     <>
                                                         <p className="font-medium">Choices:</p>
