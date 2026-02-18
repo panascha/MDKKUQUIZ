@@ -23,8 +23,9 @@ import type { AnswerMode, QuestionType } from '../../../../context/quiz'
 
 export default function SetupQuizPage() {
 
-    const answerModes: AnswerMode[] = ['end-of-quiz', 'each-question'];
-    const questionTypes: QuestionType[] = ['mcq', 'shortanswer'];
+    const answerModes: AnswerMode[] = ['end-of-quiz','each-question'];
+    const questionTypes: QuestionType[] = ['mcq','shortanswer'];
+    
 
     const { state, dispatch } = useQuiz()
     const { answerMode, questionType: selectedQuestionTypes, categories: selectCategory, questionCount } = state
@@ -65,6 +66,8 @@ export default function SetupQuizPage() {
             max = filteredQuiz.length;
         }
         setMaxQuestions(max);
+        dispatch({ type: 'SET_COUNT', payload: max });
+
     }, [filteredQuiz, selectedQuestionTypes]);
 
         const handleStartQuiz = useCallback(() => {
@@ -94,7 +97,7 @@ export default function SetupQuizPage() {
     const { user, loading: userLoading } = useUser();
     const isSAdmin = user?.role === Role_type.SADMIN;
     const { data: userStat, isLoading: statLoading } = useGetUserStatById(user?._id || '', subjectID, !!user?._id && !!subjectID);
-    const canTakeQuiz = isSAdmin || (userStat?.quizCount ?? 0) >= 4;
+    const canTakeQuiz = isSAdmin || (userStat?.quizCount ?? 0) >= 4 || userStat?.allKeywordsUsed;
 
     if (userLoading || statLoading) {
         return (

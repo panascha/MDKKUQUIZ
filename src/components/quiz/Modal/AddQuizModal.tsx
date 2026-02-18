@@ -203,7 +203,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     question: '',
     subject: '',
     category: '',
-    type: 'choice', 
+    type: 'written', 
     choice: ['', ''], 
     correctAnswer: [''], 
     img: [],
@@ -349,7 +349,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
       question: '',
       subject: '',
       category: '',
-      type: 'choice',
+      type: 'written',
       choice: ['', ''],
       correctAnswer: [''], // Reset to one empty answer
       img: [],

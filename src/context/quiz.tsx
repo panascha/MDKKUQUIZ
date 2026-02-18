@@ -22,10 +22,10 @@ type Action =
 
 const initialState: State = {
   quizType: 'chillquiz',
-  answerMode: 'end-of-quiz',
-  questionType: 'mcq',
+  answerMode: 'each-question',
+  questionType: 'shortanswer',
   categories: [],
-  questionCount: 0,
+  questionCount: 10,
 }
 
 function reducer(state: State, action: Action): State {

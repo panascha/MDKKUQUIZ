@@ -26,13 +26,6 @@ export default function QuizActions({
              currentQuestion.isAnswered && (
                 <div className="flex gap-3">
                     <button
-                        className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2"
-                        onClick={onSubmitCurrentQuestion}
-                    >
-                        <CheckCircle className="mr-2" />
-                        Submit
-                    </button>
-                    <button
                         className={`
                         px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2
                         ${currentQuestion.isAnswered ? 'opacity-75 cursor-not-allowed' : ''}`}
@@ -41,6 +34,14 @@ export default function QuizActions({
                         <Cancel className="mr-2" />
                         Clear Answer
                     </button>
+                    <button
+                        className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-1/2"
+                        onClick={onSubmitCurrentQuestion}
+                    >
+                        <CheckCircle className="mr-2" />
+                        Submit
+                    </button>
+                    
                 </div>
             )}
             {(selectedQuestionTypes === 'mcq' || selectedQuestionTypes === 'shortanswer') && 
