@@ -16,6 +16,9 @@ import {
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { BackendRoutes, FrontendRoutes } from "../../config/apiRoutes";
+import { CheckCircle2, Circle, LoaderIcon } from "lucide-react";
+import { cn } from "../../lib/utils";
+
 
 export const RegisterForm = () => {
   const router = useRouter();
@@ -24,10 +27,17 @@ export const RegisterForm = () => {
   const [year, setYear] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(true);
   const [registerErrors, setRegisterErrors] = useState<{ [key: string]: string }>({});
   const [error, setError] = useState<string | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
+
+  const passwordCriteria = [
+    { label: "อย่างน้อย 6 ตัวอักษร", met: newPassword.length >= 6 },
+    { label: "อักษรพิมพ์ใหญ่ (A-Z)", met: /[A-Z]/.test(newPassword) },
+    { label: "อักษรพิมพ์เล็ก (a-z)", met: /[a-z]/.test(newPassword) },
+    { label: "ตัวเลข (0-9)", met: /\d/.test(newPassword) },
+  ];
 
   const validateRegisterForm = () => {
     const errors: { [key: string]: string } = {};
@@ -169,28 +179,50 @@ export const RegisterForm = () => {
             {registerErrors.year && <p className="text-red-500 text-xs">{registerErrors.year}</p>}
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-password">Password</Label>
-            <Input
-              id="new-password"
-              type="password"
-              placeholder="Enter your password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            {registerErrors.password && <p className="text-red-500 text-xs">{registerErrors.password}</p>}
+          <Label htmlFor="new-password">Password</Label>
+          <Input
+            id="new-password"
+            type="password"
+            placeholder="Enter your password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          
+          {/* Password Checklist UI */}
+          <div className="mt-2 grid grid-cols-2 gap-y-1.5 gap-x-4 rounded-lg bg-gray-50 p-3 border border-gray-100">
+            {passwordCriteria.map((item, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "flex items-center gap-1.5 text-[11px] transition-colors duration-300",
+                  item.met ? "text-green-600" : "text-gray-400"
+                )}
+              >
+                {item.met ? (
+                  <CheckCircle2 className="size-3.5 fill-green-50" />
+                ) : (
+                  <Circle className="size-3.5" />
+                )}
+                <span className={item.met ? "font-medium" : ""}>{item.label}</span>
+              </div>
+            ))}
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="confirm-password">Confirm Password</Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            {registerErrors.confirmPassword && <p className="text-red-500 text-xs">{registerErrors.confirmPassword}</p>}
-          </div>
-          <div className="flex items-center gap-2 mt-2">
+          
+          {registerErrors.password && <p className="text-red-500 text-xs mt-1">{registerErrors.password}</p>}
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="confirm-password">Confirm Password</Label>
+          <Input
+            id="confirm-password"
+            type="password"
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          {registerErrors.confirmPassword && <p className="text-red-500 text-xs">{registerErrors.confirmPassword}</p>}
+        </div>
+          {/* <div className="flex items-center gap-2 mt-2">
             <input
               type="checkbox"
               id="terms"
@@ -201,7 +233,7 @@ export const RegisterForm = () => {
               I agree to the <span className="underline">Terms of Service</span>
             </label>
           </div>
-          {registerErrors.terms && <p className="text-red-500 text-xs">{registerErrors.terms}</p>}
+          {registerErrors.terms && <p className="text-red-500 text-xs">{registerErrors.terms}</p>} */}
           {error && <p className="text-red-500">{error}</p>}
         </CardContent>
         <CardFooter className="py-3 flex flex-col items-center gap-3">
