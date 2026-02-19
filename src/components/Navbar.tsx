@@ -7,10 +7,16 @@ import toast from "react-hot-toast";
 import { FrontendRoutes } from '../config/apiRoutes';
 import { useRouter } from 'next/navigation';
 import { Role_type } from '../config/role';
+import { useGetReport } from '../hooks/report/useGetReport';
+
 
 export default function Navbar() {
     const { user, logout } = useUser();
     const router = useRouter();
+    
+    const { data: reports = [] } = useGetReport({ status: 'pending' });
+    const pendingReportCount = reports.length;
+
 
     const handleLogout = () => {
         toast.promise(
@@ -72,11 +78,16 @@ export default function Navbar() {
                                 </button>
                                 {isAdmin && (
                                     <button
-                                        onClick={() => router.push(FrontendRoutes.ADMIN)}
-                                        className="cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
-                                    >
-                                        Admin
-                                    </button>
+                    onClick={() => router.push(FrontendRoutes.ADMIN)}
+                    className="flex items-center cursor-pointer px-4 py-1.5 rounded-md hover:text-gray-200 border-1 border-transparent hover:border-gray-200 text-base font-medium transition duration-300 ease-in-out bg-transparent"
+                >
+                    Admin
+                    {pendingReportCount > 0 && (
+                        <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white ring-1 ring-white/20">
+                            {pendingReportCount > 99 ? '99+' : pendingReportCount}
+                        </span>
+                    )}
+                </button>
                                 )}
                             </div>
                         )}
@@ -176,13 +187,13 @@ export default function Navbar() {
                                         Keyword
                                     </button>
                                     <button
-                                        className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
-                                        onClick={() => {
-                                            setIsMenuOpen(false);
-                                            router.push(FrontendRoutes.REPORT);
-                                        }}>
-                                        Report
-                                    </button>
+            className="relative w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all flex justify-between items-center"
+            onClick={() => {
+                setIsMenuOpen(false);
+                router.push(FrontendRoutes.REPORT);
+            }}>
+            Report
+        </button>
                                     <button
                                         className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
                                         onClick={() => {
@@ -193,12 +204,17 @@ export default function Navbar() {
                                     </button>
                                     {isAdmin && 
                                         <button
-                                            className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all"
+                                            className="w-full text-left px-6 py-3 hover:bg-blue-50 font-semibold transition-all flex justify-between items-center"
                                             onClick={() => {
                                                 setIsMenuOpen(false);
                                                 router.push(FrontendRoutes.ADMIN);
                                             }}>
                                             Admin
+              {pendingReportCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                            {pendingReportCount}
+                        </span>
+                    )}
                                         </button>
                                     }
                                     <button

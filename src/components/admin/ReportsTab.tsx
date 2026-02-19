@@ -363,12 +363,12 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ reports, onReview, onDismiss })
                                     <Button
                                         onClick={() => onReview(report._id, reason[report._id] || '')}
                                         className="flex-1 sm:flex-none bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
-                                        textButton="Review"
+                                        textButton="Approve and Update"
                                     />
                                     <Button
                                         onClick={() => onDismiss(report._id, reason[report._id] || '')}
                                         className="flex-1 sm:flex-none bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
-                                        textButton="Dismiss"
+                                        textButton="Reject"
                                     />
                                 </div>
                             </div>
