@@ -73,6 +73,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
             </div>
           ) : (
             <Image
+              unoptimized
               src={`${BACKEND_URL}${images[currentIndex]}`}
               alt={`Gallery Image ${currentIndex + 1}`}
               fill

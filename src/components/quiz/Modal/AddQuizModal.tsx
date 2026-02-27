@@ -16,6 +16,7 @@ import { useGetQuizzes } from '../../../hooks/quiz/useGetQuizzes';
 import { LoaderIcon } from 'lucide-react';
 import { Quiz } from '../../../types/api/Quiz';
 import { useImageGallery } from '../../../hooks/useImageGallery';
+import heic2any from "heic2any";
 
 interface AddQuizModalProps {
   showModal: boolean;
@@ -323,21 +324,63 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = Array.from(e.target.files || []);
+  setError(""); // ล้าง error เก่า
 
-    const invalidFiles = files.filter(file => 
-      !file.type.startsWith('image/') || 
-      !['image/jpeg', 'image/png', 'image/gif'].includes(file.type)
+  // 1. ตรวจสอบเบื้องต้น (Validation)
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.heic', '.heif'];
+  const invalidFiles = files.filter(file => {
+    const fileName = file.name.toLowerCase();
+    const isImage = file.type.startsWith('image/') || fileName.endsWith('.heic') || fileName.endsWith('.heif');
+    return !isImage;
+  });
+
+  if (invalidFiles.length > 0) {
+    setError('Only JPG, PNG, GIF and HEIC images are allowed');
+    return;
+  }
+
+  try {
+    // 2. ประมวลผลไฟล์ (แปลง HEIC ถ้าจำเป็น)
+    const processedFiles = await Promise.all(
+      files.map(async (file) => {
+        const fileName = file.name.toLowerCase();
+        
+        // ตรวจสอบว่าเป็น HEIC หรือไม่
+        if (fileName.endsWith(".heic") || fileName.endsWith(".heif") || file.type === "image/heic") {
+          try {
+            // แปลง HEIC เป็น Blob (JPEG)
+            const convertedBlob = await heic2any({
+              blob: file,
+              toType: "image/jpeg",
+              quality: 0.8 // ปรับคุณภาพได้ 0-1
+            });
+
+            // สร้าง File Object ใหม่จาก Blob
+            const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+            return new File(
+              [finalBlob],
+              file.name.replace(/\.(heic|heif)$/i, ".jpg"),
+              { type: "image/jpeg" }
+            );
+          } catch (err) {
+            console.error("HEIC Conversion Error:", err);
+            return file; // ถ้าแปลงพลาด ให้ส่งไฟล์เดิมไป (แล้วค่อยไปลุ้นที่ Backend)
+          }
+        }
+        return file; // ถ้าไม่ใช่ HEIC ส่งไฟล์เดิมกลับไป
+      })
     );
 
-    if (invalidFiles.length > 0) {
-      setError('Only JPG, PNG and GIF images are allowed');
-      return;
-    }
-
-    setImageFiles(prev => [...prev, ...files]);
-  };
+    // 3. เก็บไฟล์ที่ประมวลผลแล้วลงใน State
+    setImageFiles(prev => [...prev, ...processedFiles]);
+    
+  } catch (err) {
+    setError("Failed to process images. Please try again.");
+    console.error(err);
+  }
+};
 
   const removeImage = (index: number) => {
     setImageFiles(prev => prev.filter((_, i) => i !== index));
