@@ -74,7 +74,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
             <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending Items</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg transition hover:bg-blue-100 cursor-pointer" onClick={() => onNavigateTab && onNavigateTab('keywords')}>
+                    {/* <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg transition hover:bg-blue-100 cursor-pointer" onClick={() => onNavigateTab && onNavigateTab('keywords')}>
                         <div className="p-3 bg-blue-50 rounded-lg">
                             <FileText className="w-6 h-6 text-blue-600" />
                         </div>
@@ -89,8 +89,8 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
                                 <p className="text-xl font-semibold text-gray-900">{stat?.totalPendingKeywords || 0}</p>
                             )}
                         </div>
-                    </div>
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg transition hover:bg-amber-100 cursor-pointer" onClick={() => onNavigateTab && onNavigateTab('quizzes')}>
+                    </div> */}
+                    {/* <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg transition hover:bg-amber-100 cursor-pointer" onClick={() => onNavigateTab && onNavigateTab('quizzes')}>
                         <div className="p-3 bg-amber-50 rounded-lg">
                             <Clock className="w-6 h-6 text-amber-600" />
                         </div>
@@ -105,20 +105,20 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
                                 <p className="text-xl font-semibold text-gray-900">{stat?.totalPendingQuizzes || 0}</p>
                             )}
                         </div>
-                    </div>
+                    </div> */}
                     <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg transition hover:bg-orange-100 cursor-pointer" onClick={() => onNavigateTab && onNavigateTab('reports')}>
                         <div className="p-3 bg-orange-50 rounded-lg">
                             <AlertTriangle className="w-6 h-6 text-orange-600" />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500">Pending Reports</p>
+                            <p className={`text-sm ${hasNoPendingReports ? 'text-gray-500' : 'text-red-500'}`}>Pending Reports</p>
                             {hasNoPendingReports ? (
                                 <div className="flex items-center gap-2 text-emerald-600">
                                     <FileCheck className="w-5 h-5" />
                                     <p className="text-sm font-medium">All reviewed</p>
                                 </div>
                             ) : (
-                                <p className="text-xl font-semibold text-gray-900">{stat?.totalPendingReports || 0}</p>
+                                <p className="text-xl font-semibold text-red-500">{stat?.totalPendingReports || 0}</p>
                             )}
                         </div>
                     </div>
