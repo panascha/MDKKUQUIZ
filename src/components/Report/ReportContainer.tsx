@@ -1,283 +1,162 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+
+import React, { useState, useMemo } from 'react';
 import { useGetReport } from '../../hooks/report/useGetReport';
-import { useUser } from '../../hooks/User/useUser';
-import { Role_type } from '../../config/role';
-import { Badge } from '../ui/Badge';
-import ProtectedPage from '../ProtectPage';
+import ReportCard from './ReportCard';
+import { LoaderIcon, Search, Filter } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/DropdownMenu';
-import { IoIosArrowBack } from 'react-icons/io';
-import Link from 'next/link';
-import { FrontendRoutes } from '../../config/apiRoutes';
 import { Report } from '../../types/api/Report';
-import ReportDetailDropdown from "./ReportDetailDropdown";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
-import { Trash2 } from 'lucide-react';
-import { useDeleteReport } from '../../hooks/report/useDeleteReport';
-import { BackButton } from "../subjects/Detail/BackButton";
 
-const ReportContainer = () => {
-  const router = useRouter();
-  const { data: session } = useSession();
-  const { data: reports = [], isLoading, error } = useGetReport();
-  const { user } = useUser();
-  const deleteReportMutation = useDeleteReport();
+export default function ReportContainer() {
+    const { data: reports = [], isLoading, error } = useGetReport();
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [openReportId, setOpenReportId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'status-az' | 'status-za'>('newest');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+    const [typeFilter, setTypeFilter] = useState<'all' | 'quiz' | 'keyword'>('all');
 
-  const isAdmin = user?.role === Role_type.ADMIN || user?.role === Role_type.SADMIN;
+    // Filter & Sort Logic
+    const filteredReports = useMemo(() => {
+        // 1. Sort by Date (Newest first)
+        const sortedReports = [...reports].sort((a: Report, b: Report) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
 
-  const filteredReports = useMemo(() => {
-    let filtered = reports;
-    if (!isAdmin && user?._id) {
-      filtered = filtered.filter((r: any) => r.User?._id === user._id);
-    }
-    if (selectedStatus) {
-      filtered = filtered.filter((r: any) => r.status === selectedStatus);
-    }
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter((r: any) =>
-        (r.title && r.title.toLowerCase().includes(term)) ||
-        (r.description && r.description.toLowerCase().includes(term))
-      );
-    }
-    return filtered;
-  }, [reports, user?._id, isAdmin, searchTerm, selectedStatus]);
+        return sortedReports.filter((report: Report) => {
+            // 2. Filter by Status
+            if (statusFilter !== 'all' && report.status !== statusFilter) return false;
 
-  const sortedReports = useMemo(() => {
-    let sorted = [...filteredReports];
-    if (sortBy === 'newest') {
-      sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    } else if (sortBy === 'oldest') {
-      sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    } else if (sortBy === 'status-az') {
-      sorted.sort((a, b) => a.status.localeCompare(b.status));
-    } else if (sortBy === 'status-za') {
-      sorted.sort((a, b) => b.status.localeCompare(a.status));
-    }
-    return sorted;
-  }, [filteredReports, sortBy]);
+            // 3. Filter by Type
+            if (typeFilter !== 'all' && report.type !== typeFilter) return false;
 
-  const quizReports = sortedReports.filter((r: Report) => r.type === 'quiz');
-  const keywordReports = sortedReports.filter((r: Report) => r.type === 'keyword');
+            // 4. Filter by Search Term
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                
+                // Check Reason
+                if (report.reason?.toLowerCase().includes(term)) return true;
+                
+                if (report.type === 'quiz') {
+                    // Helper to check array of strings (for choices/answers)
+                    const hasTerm = (arr?: string[]) => arr?.some(item => item.toLowerCase().includes(term));
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
-  if (error) {
-    return <div className="flex items-center justify-center min-h-screen text-red-500">{error.toString()}</div>;
-  }
+                    // Check Question (Original & Suggested)
+                    if (report.originalQuiz?.question.toLowerCase().includes(term)) return true;
+                    if (report.suggestedChanges?.question.toLowerCase().includes(term)) return true;
 
-  return (
-    <ProtectedPage>
-      <div className="container mx-auto p-4 mt-20 flex flex-col items-center">
-        <div className="absolute top-23 left-8 text-lg">
-          <BackButton />
-        </div>
-        <h1 className="text-3xl font-bold text-center mb-4">Report List</h1>
-        <div className="w-full max-w-5xl mb-4 flex justify-end">
-          <select
-            className="border border-gray-300 rounded-md p-2"
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value as any)}
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="status-az">Status (A-Z)</option>
-            <option value="status-za">Status (Z-A)</option>
-          </select>
-        </div>
-        <section className="flex flex-col gap-4 mt-3 mx-auto p-2 sm:p-4 md:p-6 w-full max-w-5xl items-center justify-center md:flex-row md:justify-between">
-          <div className="flex flex-col gap-2 w-full md:w-7/12">
-            <label htmlFor="search" className="text-sm md:text-md text-center md:text-left">Search:</label>
-            <input
-              id="search"
-              type="text"
-              placeholder="Search by title or description"
-              className="border border-gray-300 rounded-md p-2 w-full"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-2 w-full md:w-5/12 md:flex-row md:gap-4">
-            <div className="flex flex-col gap-2 w-full">
-              <label className="text-sm md:text-md text-center md:text-left hidden md:block">Filter status:</label>
-              <DropdownMenu>
-                <DropdownMenuTrigger className="hover:bg-gray-200 border border-gray-300 rounded-md p-2 w-full transition duration-300 ease-in-out cursor-pointer">
-                  {selectedStatus ? selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1) : "All Statuses"}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 sm:w-56 bg-white">
-                  <DropdownMenuItem onClick={() => setSelectedStatus(null)} className="cursor-pointer hover:bg-gray-200">All Statuses</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedStatus("approved")} className="cursor-pointer hover:bg-gray-200">Approved</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedStatus("pending")} className="cursor-pointer hover:bg-gray-200">Pending</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedStatus("rejected")} className="cursor-pointer hover:bg-gray-200">Rejected</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    // Check Choices (Original & Suggested)
+                    if (hasTerm(report.originalQuiz?.choice)) return true;
+                    if (hasTerm(report.suggestedChanges?.choice)) return true;
+
+                    // Check Correct Answer (Original & Suggested)
+                    if (hasTerm(report.originalQuiz?.correctAnswer)) return true;
+                    if (hasTerm(report.suggestedChanges?.correctAnswer)) return true;
+
+                } else {
+                    // Check Keyword Name
+                    if (report.originalKeyword?.name.toLowerCase().includes(term)) return true;
+                    if (report.suggestedChangesKeyword?.name.toLowerCase().includes(term)) return true;
+                    
+                    // Check Keywords tags
+                    if (report.originalKeyword?.keywords.some(k => k.toLowerCase().includes(term))) return true;
+                    if (report.suggestedChangesKeyword?.keywords.some(k => k.toLowerCase().includes(term))) return true;
+                }
+
+                return false;
+            }
+
+            return true;
+        });
+    }, [reports, statusFilter, typeFilter, searchTerm]);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center text-gray-500 gap-3">
+                <LoaderIcon className="animate-spin w-8 h-8 text-blue-500" />
+                <p>Loading reports...</p>
             </div>
-          </div>
-        </section>
-        <div className="w-full max-w-5xl mb-4 text-right">
-          <p className="text-gray-600">
-            Total Reports: <span className="font-semibold">{filteredReports.length}</span>
-          </p>
-        </div>
-        <Tabs defaultValue="quiz" className="w-full max-w-5xl">
-          <TabsList className="bg-white p-1 rounded-lg shadow-sm overflow-x-auto flex whitespace-nowrap mb-4">
-            <TabsTrigger value="quiz" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
-              Quiz Reports
-            </TabsTrigger>
-            <TabsTrigger value="keyword" className="data-[state=active]:bg-gray-100 text-sm sm:text-base">
-              Keyword Reports
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="quiz">
-            <div className="grid gap-6">
-              {quizReports.length === 0 ? (
-                <div className="text-gray-500 text-center">No quiz reports found.</div>
-              ) : (
-                quizReports.map((report: Report) => (
-                  <div
-                    key={report._id}
-                    className={`relative group rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer ${openReportId === report._id ? 'bg-gray-50' : ''}`}
-                    onClick={() => setOpenReportId(openReportId === report._id ? null : report._id)}
-                    tabIndex={0}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setOpenReportId(openReportId === report._id ? null : report._id); }}
-                    role="button"
-                    aria-expanded={openReportId === report._id}
-                  >
-                    {isAdmin && openReportId === report._id && (
-                      <Badge
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 absolute top-4 right-4 z-10 ${
-                          report.status === "approved"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                            : report.status === "pending"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
-                            : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
-                        }`}
-                      >
-                        {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                      </Badge>
-                    )}
-                    {user?.role === 'S-admin' && openReportId === report._id && (
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          if (window.confirm('Are you sure you want to delete this report?')) {
-                            deleteReportMutation.mutate(report._id);
-                          }
-                        }}
-                        className="absolute top-4 right-28 z-10 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200"
-                        title="Delete report"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    )}
-                    <div className="items-center justify-between mb-4">
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold text-gray-700">Quiz Report</p>
-                        <p className="text-sm text-gray-500 truncate max-w-xs">{report.reason}</p>
-                        <div className="flex justify-center w-full">
-                          <ReportDetailDropdown report={report} open={openReportId === report._id} />
-                        </div>
-                      </div>
-                      {isAdmin && openReportId !== report._id && (
-                        <Badge
-                          className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
-                            report.status === "approved"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                              : report.status === "pending"
-                              ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
-                              : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
-                          }`}
-                        >
-                          {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                        </Badge>
-                      )}
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-[60vh] flex items-center justify-center text-red-500">
+                Error loading reports. Please try again later.
+            </div>
+        );
+    }
+
+    // Common style for dropdown items
+    const dropdownItemClass = "cursor-pointer hover:bg-gray-100 transition-colors duration-200";
+
+    return (
+        <div className="container mx-auto px-4 py-8 max-w-5xl mt-16">
+            <div className="mb-8 text-center">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Report Status</h1>
+                <p className="text-gray-500">Track and manage content reports</p>
+            </div>
+
+            {/* Search and Filter Section */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 sticky top-20 z-10">
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    
+                    {/* Search Bar */}
+                    <div className="relative w-full md:w-1/2">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                            type="text"
+                            placeholder="Search in question, choice, answer or reason..."
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </TabsContent>
-          <TabsContent value="keyword">
-            <div className="grid gap-6">
-              {keywordReports.length === 0 ? (
-                <div className="text-gray-500 text-center">No keyword reports found.</div>
-              ) : (
-                keywordReports.map((report: Report) => (
-                  <div
-                    key={report._id}
-                    className={`relative group rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer ${openReportId === report._id ? 'bg-gray-50' : ''}`}
-                    onClick={() => setOpenReportId(openReportId === report._id ? null : report._id)}
-                    tabIndex={0}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setOpenReportId(openReportId === report._id ? null : report._id); }}
-                    role="button"
-                    aria-expanded={openReportId === report._id}
-                  >
-                    {isAdmin && openReportId === report._id && (
-                      <Badge
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 absolute top-4 right-4 z-10 ${
-                          report.status === "approved"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                            : report.status === "pending"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
-                            : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
-                        }`}
-                      >
-                        {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                      </Badge>
-                    )}
-                    {user?.role === 'S-admin' && openReportId === report._id && (
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          if (window.confirm('Are you sure you want to delete this report?')) {
-                            deleteReportMutation.mutate(report._id);
-                          }
-                        }}
-                        className="absolute top-4 right-28 z-10 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200"
-                        title="Delete report"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    )}
-                    <div className="items-center justify-between mb-4">
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold text-gray-700">Keyword Report</p>
-                        <p className="text-sm text-gray-500 truncate max-w-xs">{report.reason}</p>
-                        <div className="flex justify-center w-full">
-                          <ReportDetailDropdown report={report} open={openReportId === report._id} />
-                        </div>
-                      </div>
-                      {isAdmin && openReportId !== report._id && (
-                        <Badge
-                          className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
-                            report.status === "approved"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                              : report.status === "pending"
-                              ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
-                              : "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100"
-                          }`}
-                        >
-                          {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </ProtectedPage>
-  );
-};
 
-export default ReportContainer;
+                    {/* Filters */}
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-lg transition-colors text-sm font-medium text-gray-700 w-1/2 md:w-auto justify-center cursor-pointer">
+                                <Filter className="w-4 h-4" />
+                                <span>Status: {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}</span>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem className={dropdownItemClass} onClick={() => setStatusFilter('all')}>All Statuses</DropdownMenuItem>
+                                <DropdownMenuItem className={dropdownItemClass} onClick={() => setStatusFilter('pending')}>Pending</DropdownMenuItem>
+                                <DropdownMenuItem className={dropdownItemClass} onClick={() => setStatusFilter('approved')}>Approved</DropdownMenuItem>
+                                <DropdownMenuItem className={dropdownItemClass} onClick={() => setStatusFilter('rejected')}>Rejected</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-lg transition-colors text-sm font-medium text-gray-700 w-1/2 md:w-auto justify-center cursor-pointer">
+                                <Filter className="w-4 h-4" />
+                                <span>Type: {typeFilter === 'all' ? 'All' : typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1)}</span>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem className={dropdownItemClass} onClick={() => setTypeFilter('all')}>All Types</DropdownMenuItem>
+                                <DropdownMenuItem className={dropdownItemClass} onClick={() => setTypeFilter('quiz')}>Quiz</DropdownMenuItem>
+                                <DropdownMenuItem className={dropdownItemClass} onClick={() => setTypeFilter('keyword')}>Keyword</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </div>
+            </div>
+
+            {/* Report List */}
+            <div className="space-y-4">
+                {filteredReports.length === 0 ? (
+                    <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                        <p className="text-gray-500 text-lg">No reports found.</p>
+                    </div>
+                ) : (
+                    filteredReports.map((report: Report) => (
+                        <ReportCard key={report._id} report={report} />
+                    ))
+                )}
+            </div>
+            
+            <div className="mt-4 text-right text-sm text-gray-400">
+                Total: {filteredReports.length}
+            </div>
+        </div>
+    );
+}
