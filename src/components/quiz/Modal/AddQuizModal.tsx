@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '../../ui/Dialog';
 import Button from '../../ui/Button';
 import { X, PlusIcon } from "lucide-react";
@@ -37,6 +37,20 @@ function filterKeywords(keywords: string[], value: string) {
   
   return [...exactMatches, ...partialMatches];
 }
+
+const QUESTION_PATTERN_REGEX = /^(Identify|What\s+is|Which|Name|Explain|What)\b/i;
+
+const isNotPattern = (word: string, isGlobal?: boolean) => {
+  if (isGlobal && QUESTION_PATTERN_REGEX.test(word)) return false;
+  return true;
+};
+
+const decodeHTML = (str: string) => {
+  if (typeof document === 'undefined') return str;
+  const txt = document.createElement("textarea");
+  txt.innerHTML = str;
+  return txt.value;
+};
 
 // Image Preview Gallery Component
 const ImagePreviewGallery: React.FC<{
@@ -223,6 +237,8 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
   });
 
   const [dropdown, setDropdown] = useState<{[key: string]: boolean}>({});
+  const [isSubjectOpen, setIsSubjectOpen] = useState(false);
+const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   
   // Combine approved and global keywords
   const allKeywords = [
@@ -234,23 +250,69 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     ? (() => {
         const globalKeywords = Array.from(new Set(allKeywords
           .filter((kw: Keyword) => kw.isGlobal)
-          .flatMap((kw: Keyword) => kw.keywords) as string[]));
+          .flatMap((kw: Keyword) => {
+             return kw.keywords.filter(k => !isNotPattern(k, true));
+          }) as string[]));
         
-        const categoryKeywords = Array.from(new Set(allKeywords
-          .filter((kw: Keyword) => !kw.isGlobal && kw.category && kw.category._id === formData.category)
-          .flatMap((kw: Keyword) => kw.keywords) as string[]));
+        // เปลี่ยน ONLY GLOBAL KEYWORD
+        // const categoryKeywords = Array.from(new Set(allKeywords
+        //   .filter((kw: Keyword) => !kw.isGlobal && kw.category && kw.category._id === formData.category)
+        //   .flatMap((kw: Keyword) => kw.keywords) as string[]));
         
-        return [...globalKeywords, ...categoryKeywords];
+        //return [...globalKeywords, ...categoryKeywords];
+        return [...globalKeywords];
       })()
     : [];
 
-  const keywordOptions = formData.category
-    ? Array.from(new Set(allKeywords
-      .filter((kw: Keyword) => 
-        kw.isGlobal || (kw.category && kw.category._id === formData.category)
-      )
-      .flatMap((kw: Keyword) => kw.keywords) as string[]))
-    : [];    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+// เปลี่ยนไปใช้ memo
+//   const keywordOptions = formData.category
+//     ? Array.from(new Set(allKeywords
+//       .filter((kw: Keyword) => 
+//         kw.isGlobal || (kw.category && kw.category._id === formData.category)
+//       )
+//       .flatMap((kw: Keyword) => {
+//         return kw.keywords.filter(k => isNotPattern(k, kw.isGlobal));
+//       }) as string[]))
+//     : [];
+  
+  // 1. Caching Usage Count (ใช้วิธีนับแบบเรียบง่าย)
+  const keywordFrequencyMap = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const approvedQuizzes = getQuestionBySubjectandCategory.data?.filter((q: Quiz) => q.status === 'approved') || [];
+    
+    for (const quiz of approvedQuizzes) {
+      for (const ans of quiz.correctAnswer) {
+        counts[ans] = (counts[ans] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [getQuestionBySubjectandCategory.data]);
+
+  // 2. กรองและเรียงลำดับ (Unused -> Used)
+  const keywordOptions = useMemo(() => {
+    if (!formData.category) return [];
+
+    const base = Array.from(new Set(allKeywords
+      .filter((kw: Keyword) => kw.isGlobal || (kw.category && kw.category._id === formData.category))
+      .flatMap((kw: Keyword) => kw.keywords.filter(k => isNotPattern(k, kw.isGlobal)))
+    )) as string[];
+
+    // Sort: คำที่ใช้น้อย (0) จะอยู่หน้าสุด
+    return base.sort((a, b) => (keywordFrequencyMap[a] || 0) - (keywordFrequencyMap[b] || 0));
+  }, [allKeywords, formData.category, keywordFrequencyMap]);
+
+  // 3. กรองคำแนะนำ 10 คำแรก
+  const suggestedKeywords = useMemo(() => keywordOptions.slice(0, 10), [keywordOptions]);
+
+  // CSS Class Helper
+  const getKeywordColorClass = (keyword: string) => {
+    const freq = keywordFrequencyMap[keyword] || 0;
+    if (freq === 0) return "text-emerald-700 bg-emerald-50 border-emerald-200";
+    if (freq <= 2) return "text-amber-700 bg-amber-50 border-amber-200";
+    return "text-slate-500 bg-slate-50 border-slate-200";
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'type') {
       setFormData(prev => ({
@@ -469,10 +531,11 @@ const usedCorrectAnswers = new Set(
     ?.filter((quiz: Quiz) => quiz.status === 'approved')
     .flatMap((quiz: Quiz) => quiz.correctAnswer) || []
 );
-
-const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
-  .filter(keyword => !usedCorrectAnswers.has(keyword))
-  .slice(0, 10);
+  
+// เปลี่ยนไปใช้ memo
+// const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
+//   .filter(keyword => !usedCorrectAnswers.has(keyword))
+//   .slice(0, 10);
 
   return (
     <Dialog
@@ -484,7 +547,7 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
         }
       }}
     >
-      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto mt-8 flex flex-col">
+      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden max-h-[90vh] overflow-y-auto sm:mt-18 md:mt-12 lg:mt-8 flex flex-col">
         <DialogHeader>
           <DialogTitle>Add Quiz</DialogTitle>
           {/* Loading indicator for keywords/questions */}
@@ -494,32 +557,32 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
               <span>Loading suggestions...</span>
             </div>
           )}
-          {/* Show unused keywords only when not loading */}
-          {!(getKeyword.isLoading || getGlobalKeyword.isLoading || getQuestionBySubjectandCategory.isLoading) && unusedKeywords.length > 0 && (
-            <div className="mb-4">
-              <p className="text-sm text-gray-500 mb-2">
-                Here are some keywords that you can use as correct answers:
-              </p>
-                <div className="flex flex-col sm:flex-row flex-wrap sm:justify-between gap-2 sm:gap-0 max-h-40 overflow-y-auto">
-                {/* First Column */}
-                <ul className="w-1/2 pr-0 sm:pr-2 list-disc pl-5 text-xs sm:text-sm">
-                  {unusedKeywords.slice(0, 4).map((keyword, index) => (
-                  <li key={`col1-${index}`} className="text-gray-700 py-0.5 text-left">
-                  {keyword}
-                  </li>
-                  ))}
-                </ul>
-
-                {unusedKeywords.length > 4 && (
-                  <ul className="w-1/2 pl-0 sm:pl-2 list-disc text-xs sm:text-sm">
-                  {unusedKeywords.slice(4, 8).map((keyword, index) => (
-                  <li key={`col2-${index}`} className="text-gray-700 py-0.5 text-left">
-                  {keyword}
-                  </li>
-                  ))}
-                  </ul>
-                )}
+          {/* Show suggested keywords with color coding */}
+          {!(getKeyword.isLoading || getGlobalKeyword.isLoading || getQuestionBySubjectandCategory.isLoading) && suggestedKeywords.length > 0 && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-sm font-semibold text-gray-700">Keyword Suggestions:</p>
+                <div className="flex gap-2 text-[10px]">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-emerald-400 rounded-full"></span> Unused</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-400 rounded-full"></span> Used</span>
                 </div>
+              </div>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {suggestedKeywords.map((keyword, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => {
+                      handleCorrectAnswerChange(keyword, 0);
+                      toast.success(`Selected: ${keyword}`);
+                    }}
+                    className={`text-xs px-2 py-1 rounded-md border transition-all hover:scale-105 select-none touch-manipulation ${getKeywordColorClass(keyword)}`}
+                  >
+                    {keyword} 
+                    <span className="ml-1 opacity-60">({keywordFrequencyMap[keyword] || 0})</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </DialogHeader>
@@ -531,8 +594,11 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
           {/* Subject Selection */}
           <div>
             <label className="mb-1 block text-sm font-semibold">Subject *</label>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="w-full text-left hover:bg-gray-200 border border-gray-300 rounded-md p-2 transition duration-300 ease-in-out cursor-pointer">
+            <DropdownMenu open={isSubjectOpen} onOpenChange={setIsSubjectOpen}>
+              <DropdownMenuTrigger
+              onPointerDown={(e) => e.preventDefault()} 
+    onClick={() => setIsSubjectOpen(true)}
+                className="w-full text-left [@media(hover:hover)]:hover:bg-gray-200 active:bg-gray-200 border border-gray-300 rounded-md p-2 transition duration-300 ease-in-out cursor-pointer">
                 {formData.subject ? subject.find(s => s._id === formData.subject)?.name : 'Select Subject'}
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full bg-white">
@@ -561,9 +627,13 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
           {/* Category Selection */}
           <div>
             <label className="mb-1 block text-sm font-semibold">Category *</label>
-            <DropdownMenu>
+            <DropdownMenu open={isCategoryOpen} onOpenChange={setIsCategoryOpen}>
               <DropdownMenuTrigger 
-                className={`w-full text-left hover:bg-gray-200 border border-gray-300 rounded-md p-2 transition duration-300 ease-in-out cursor-pointer ${
+                onPointerDown={(e) => e.preventDefault()} 
+    onClick={() => {
+        if (formData.subject) setIsCategoryOpen(true);
+    }}
+                className={`w-full text-left [@media(hover:hover)]:hover:bg-gray-200 active:bg-gray-200 border border-gray-300 rounded-md p-2 transition duration-300 ease-in-out cursor-pointer ${
                   !formData.subject ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 disabled={!formData.subject}
@@ -631,7 +701,7 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
                         setDropdown(d => ({ ...d, question: false }));
                       }}
                     >
-                      <span>{keyword}</span>
+                      <span>{decodeHTML(keyword)}</span>
                       {isGlobal && (
                         <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-2">
                           Common
@@ -691,7 +761,7 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
                     type="text"
                     value={choice}
                     onChange={e => handleChoiceChange(index, e.target.value)}
-                    onFocus={() => setDropdown(d => ({ ...d, ['choice' + index]: true }))}
+                    onClick={() => setDropdown(d => ({ ...d, ['choice' + index]: true }))}
                     onBlur={() => setTimeout(() => setDropdown(d => ({ ...d, ['choice' + index]: false })), 150)}
                     required
                     className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
@@ -700,18 +770,28 @@ const unusedKeywords: string[] = [...new Set(keywordOptions as string[])]
                   />
                   {dropdown['choice' + index] && filterKeywords(keywordOptions, choice).length > 0 && (
                     <div className="absolute z-50 bg-white border border-gray-200 rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full">
-                    {filterKeywords(keywordOptions, choice).map((keyword, kidx) => (
-                      <div
-                        key={kidx}
-                        className="px-3 py-2 cursor-pointer hover:bg-blue-100 text-sm text-gray-800"
-                        onMouseDown={() => {
-                          handleChoiceChange(index, keyword);
-                          setDropdown(d => ({ ...d, ['choice' + index]: false }));
-                        }}
-                      >
-                        {keyword}
-                      </div>
-                    ))}
+                    {filterKeywords(keywordOptions, choice).map((keyword, kidx) => {
+  const freq = keywordFrequencyMap[keyword] || 0;
+  return (
+    <div
+      key={kidx}
+      className={`px-3 py-2 cursor-pointer border-l-4 transition-colors hover:bg-blue-50 flex justify-between items-center ${
+        freq === 0 ? "border-emerald-400" : "border-gray-200"
+      }`}
+      onMouseDown={() => {
+        handleChoiceChange(index, keyword);
+        setDropdown(d => ({ ...d, ['choice' + index]: false }));
+      }}
+    >
+      <span className="text-sm">{decodeHTML(keyword)}</span>
+      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+        freq === 0 ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"
+      }`}>
+        Used: {freq}
+      </span>
+    </div>
+  );
+})}
                     </div>
                   )}
                   </div>
