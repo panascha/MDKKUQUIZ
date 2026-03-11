@@ -583,7 +583,9 @@ const usedCorrectAnswers = new Set(
         }
       }}
     >
-      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden overflow-y-auto lg:mt-[2%] flex flex-col w-[90vw] md:max-w-4xl lg:w-[95vw] max-h-[60vh] md:max-h-[75vh] lg:max-h-[85vh] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+      <DialogContent className="sm:max-w-md md:max-w-lg [&>button:last-child]:hidden overflow-y-auto lg:mt-[2%] flex flex-col w-[90vw] md:max-w-4xl lg:w-[95vw] max-h-[60vh] md:max-h-[75vh] lg:max-h-[85vh] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Add Quiz</DialogTitle>
           {/* Loading indicator for keywords/questions */}
