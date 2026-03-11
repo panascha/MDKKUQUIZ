@@ -482,15 +482,9 @@ export default function Problem() {
                             onToggleTimer={() => setIsTimerVisible((v) => !v)}
                         />
 
-                        <QuizNavigation
-                            currentQuestionIndex={currentQuestionIndex}
-                            totalQuestions={showQuestion.length}
-                            onNavigate={handleQuestionNavigation}
-                        />
-
                         <div className="flex flex-col items-center justify-center mb-8 sm:mb-12">
                             {currentQuestion && (
-                                <>
+                                <div className="w-full max-w-4xl">
                                     <QuizQuestion
                                         currentQuestion={currentQuestion}
                                         currentQuestionIndex={currentQuestionIndex}
@@ -510,10 +504,16 @@ export default function Problem() {
                                     />
                                     
                                     <CorrectAnswerDisplay currentQuestion={currentQuestion} />
-                                </>
+                                </div>
                             )}
                         </div>
 
+                        <QuizNavigation
+                            currentQuestionIndex={currentQuestionIndex}
+                            totalQuestions={showQuestion.length}
+                            onNavigate={handleQuestionNavigation}
+                        />
+                        
                         <QuizSubmitButtons
                             answerMode={answerMode || ''}
                             allQuestionsAnswered={allQuestionsAnswered}
@@ -522,6 +522,7 @@ export default function Problem() {
                             onSubmit={handleSubmit}
                             onViewAllQuestions={() => setIsQuestionTableOpen(true)}
                         />
+                        
                     </div>
                 </div>
             </div>

@@ -60,7 +60,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
   // --- Thumbnail Component ---
   return (
     <>
-      <div className={cn("relative group select-none w-full max-w-[300px]", className)}>
+      <div className={cn("relative group select-none w-full max-w-lg mx-auto", className)}>
         {/* Main Thumbnail Card */}
         <div 
           className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-100 shadow-md border border-gray-200 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
@@ -110,13 +110,13 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, className }) => {
           <>
             <button
               onClick={handlePrev}
-              className="absolute -left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg hover:bg-white text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200 disabled:opacity-0"
+              className="absolute -left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg hover:bg-white text-gray-700 opacity-100 transition-opacity duration-200 disabled:opacity-0"
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
             <button
               onClick={handleNext}
-              className="absolute -right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg hover:bg-white text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200 disabled:opacity-0"
+              className="absolute -right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg hover:bg-white text-gray-700 opacity-100 transition-opacity duration-200 disabled:opacity-0"
             >
               <ChevronRightIcon className="h-5 w-5" />
             </button>
@@ -279,7 +279,7 @@ const LightboxModal: React.FC<LightboxProps> = ({ images, initialIndex, onClose 
             ref={imgRef}
             src={`${BACKEND_URL}${images[index]}`}
             alt="Fullscreen view"
-            className="max-h-full max-w-full object-contain select-none transition-transform duration-200"
+            className="max-h-full max-w-full object-contain select-none transition-transform duration-200 max-h-[70vh]"
             style={{ 
               transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
             }}

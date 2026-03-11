@@ -504,10 +504,10 @@ const QuestionPage = () => {
                                             )}
                                                 {question.type === 'choice' ? (
                                                     <>
-                                                        <p className="font-medium">Choices:</p>
-                                                        {question.choice.map((choice, index) => (
+                                                        <p className="font-medium">Answer:</p>
+                                                        {question.correctAnswer.map((answer, index) => (
                                                             <p key={index} className="ml-4 break-words">
-                                                                {String.fromCharCode(65 + index)}. {choice}
+                                                                {answer}
                                                             </p>
                                                         ))}
                                                     </>
