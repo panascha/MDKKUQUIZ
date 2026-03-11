@@ -219,7 +219,7 @@ const AddQuizModal: React.FC<AddQuizModalProps> = ({
     subject: '',
     category: '',
     type: 'written', 
-    choice: ['', ''], 
+    choice: ['', '','',''], 
     correctAnswer: [''], 
     img: [],
     status: 'pending'
@@ -245,6 +245,9 @@ const [isCategoryOpen, setIsCategoryOpen] = useState(false);
     ...(getKeyword?.data || []),
     ...(getGlobalKeyword?.data || [])
   ];
+  const shuffleArray = (array: any[]) => {
+  return [...array].sort(() => Math.random() - 0.5);
+};
   
   const questionKeywordOptions = formData.category
     ? (() => {
@@ -352,6 +355,39 @@ const [isCategoryOpen, setIsCategoryOpen] = useState(false);
       correctAnswer: prev.correctAnswer.filter(answer => answer !== prev.choice[index])
     }));
   };
+  const handleAutoFillChoices = () => {
+  const correctAnswer = formData.correctAnswer[0]; // สมมติว่าเป็น Single Choice
+  if (!correctAnswer) {
+    toast.error("Please select a correct answer first");
+    return;
+  }
+
+
+  const relatedGroup = allKeywords.find((kw: Keyword) =>
+    kw.keywords.includes(correctAnswer)
+  );
+
+  if (!relatedGroup) {
+    toast.error("No related keywords found for this answer");
+    return;
+  }
+
+  let distractors = relatedGroup.keywords.filter((kw: string) => kw !== correctAnswer);
+
+  distractors = shuffleArray(distractors);
+
+
+  const finalChoices = [correctAnswer, ...distractors.slice(0, 4)];
+  
+  const randomizedChoices = shuffleArray(finalChoices);
+
+  setFormData({
+    ...formData,
+    choice: randomizedChoices
+  });
+
+  toast.success("Choices generated from keyword group!");
+};
 
   const handleCorrectAnswerChange = (value: string, index: number) => {
     setFormData(prev => {
@@ -455,7 +491,7 @@ const [isCategoryOpen, setIsCategoryOpen] = useState(false);
       subject: '',
       category: '',
       type: 'written',
-      choice: ['', ''],
+      choice: ['', '','',''],
       correctAnswer: [''], // Reset to one empty answer
       img: [],
       status: 'pending'
@@ -745,7 +781,16 @@ const usedCorrectAnswers = new Set(
 
           {formData.type === 'choice' || formData.type === 'both'? (
             <div>
-                <label className="mb-1 block text-sm font-semibold">Choices *</label>
+              <label className="mb-1 block text-sm font-semibold">Choices *</label>
+              <div className="flex justify-between items-center mb-2">
+  <button
+    type="button"
+    onClick={handleAutoFillChoices}
+    className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200 transition"
+  >
+    ✨ Auto-fill from Keywords
+  </button>
+</div>
                 {formData.choice.map((choice, index) => (
                 <div key={index} className="mb-2 flex items-center gap-2">
                   <input
